@@ -79,12 +79,12 @@ export async function simpleWorkflow(value: number) {
 }
 
 /** @step */
-async function startNode(value: number) {
+export async function startNode(value: number) {
   return value
 }
 
 /** @step */
-async function doubleNode(input: number) {
+export async function doubleNode(input: number) {
   return input * 2
 }
 ```
