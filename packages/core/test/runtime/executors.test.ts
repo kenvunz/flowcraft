@@ -25,7 +25,32 @@ describe('FunctionNodeExecutor', () => {
 		} as any
 		const result = await executor.execute(nodeDef, context)
 		expect(result.output).toBe('success')
-		expect(mockFunction).toHaveBeenCalledWith(context)
+		expect(mockFunction).toHaveBeenCalledWith(context, 'test')
+	})
+
+	it('should pass nodeId as second argument to function nodes', async () => {
+		const mockFunction = vi.fn().mockResolvedValue({ output: 'success' })
+		const executor = new FunctionNodeExecutor(mockFunction, 1, {
+			emit: vi.fn(),
+		})
+		const nodeDef = { id: 'test-node-id', uses: 'test', params: {} }
+		const context = {
+			context: {
+				get: vi.fn(),
+				set: vi.fn(),
+				type: 'sync',
+				has: vi.fn(),
+				delete: vi.fn(),
+				toJSON: vi.fn(),
+			},
+			input: 'input',
+			params: {},
+			dependencies: { logger: { info: vi.fn() } },
+			signal: undefined,
+		} as any
+
+		await executor.execute(nodeDef, context)
+		expect(mockFunction).toHaveBeenCalledWith(context, 'test-node-id')
 	})
 
 	it('should handle retries on failure', async () => {
@@ -112,11 +137,13 @@ describe('FunctionNodeExecutor', () => {
 describe('ClassNodeExecutor', () => {
 	it('should execute class nodes successfully', async () => {
 		// Simplified test without extending BaseNode due to type complexity
+		let capturedNodeId: string | undefined
 		const mockImplementation = class {
 			prep: any
 			exec: any
 			post: any
-			constructor(_params: any, _nodeId: string) {
+			constructor(_params: any, nodeId: string) {
+				capturedNodeId = nodeId
 				this.prep = vi.fn().mockResolvedValue(null)
 				this.exec = vi.fn().mockResolvedValue({ output: 'success' })
 				this.post = vi.fn().mockResolvedValue({ output: 'success' })
@@ -142,6 +169,7 @@ describe('ClassNodeExecutor', () => {
 		} as any
 		const result = await executor.execute(nodeDef, context)
 		expect(result.output).toBe('success')
+		expect(capturedNodeId).toBe('test')
 	})
 
 	it('should handle retries on failure', async () => {

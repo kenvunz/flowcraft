@@ -87,7 +87,7 @@ export class FunctionNodeExecutor implements ExecutionStrategy {
 		signal?: AbortSignal,
 	): Promise<NodeResult<any, any>> {
 		return withRetries(
-			() => this.implementation(context),
+			() => this.implementation(context, nodeDef.id),
 			this.maxRetries,
 			nodeDef,
 			context,

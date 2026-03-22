@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { UnsafeEvaluator } from '../src/evaluator'
 import { createFlow } from '../src/flow'
+import { BaseNode } from '../src/node'
 import { FlowRuntime } from '../src/runtime'
 
 import type { FlowcraftEvent, IEventBus, Middleware, NodeResult } from '../src/types'
@@ -669,6 +670,19 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 			expect(capturedDeps.db).toBe(deps.db)
 			expect(capturedDeps.logger).toBeDefined()
+		})
+
+		it('should pass nodeId as second argument to a NodeFunction', async () => {
+			let capturedNodeId: string | undefined
+			const flow = createFlow('node-id-fn').node('A', async (_ctx, nodeId) => {
+				capturedNodeId = nodeId
+				return { output: 'A' }
+			})
+
+			const runtime = new FlowRuntime({})
+			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+
+			expect(capturedNodeId).toBe('A')
 		})
 	})
 
