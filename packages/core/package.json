@@ -28,15 +28,18 @@
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
 		},
 		"./sdk": {
 			"types": "./dist/sdk.d.ts",
-			"import": "./dist/sdk.js"
+			"import": "./dist/sdk.js",
+			"require": "./dist/sdk.cjs"
 		},
 		"./testing": {
 			"types": "./dist/testing/index.d.ts",
-			"import": "./dist/testing/index.js"
+			"import": "./dist/testing/index.js",
+			"require": "./dist/testing/index.cjs"
 		}
 	},
 	"files": [
