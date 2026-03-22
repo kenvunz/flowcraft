@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p artifacts
           SHA="$(git rev-parse --short HEAD)"
-          ASSET="flowcraft-${SHA}.tgz"
+          ASSET="${SHA}.tgz"
           pnpm --dir packages/core build
           pnpm --dir packages/core pack --out "../../artifacts/${ASSET}"
           echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
@@ -50,11 +50,11 @@ jobs:
 
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             RELEASE_TAG="${GITHUB_REF_NAME}"
-            RELEASE_TITLE="flowcraft ${GITHUB_REF_NAME} (${SHA})"
+            RELEASE_TITLE="${GITHUB_REF_NAME} (${SHA})"
             RELEASE_NOTES="Release build from ${GITHUB_SHA}"
           else
             RELEASE_TAG="snapshot-${SHA}"
-            RELEASE_TITLE="flowcraft ${SHA}"
+            RELEASE_TITLE="${SHA}"
             RELEASE_NOTES="Snapshot build from ${GITHUB_SHA}"
           fi
 
