@@ -70,11 +70,44 @@ describe('FlowRuntime', () => {
 		const targetNode = { id: 'B', uses: 'test', params: {} }
 		const context = {
 			type: 'sync',
+			get: vi.fn(),
 			set: vi.fn(),
 			toJSON: vi.fn().mockReturnValue({}),
 		} as any
 		await runtime.applyEdgeTransform(edge, sourceResult, targetNode, context)
 		expect(context.set).toHaveBeenCalledWith('_inputs.B', 10)
+	})
+
+	it('should merge transformed inputs from multiple predecessors', async () => {
+		const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
+		const targetNode = { id: 'C', uses: 'test', params: {} }
+		const allPredecessors = new Map([['C', new Set(['A', 'B'])]])
+		const state: Record<string, any> = {}
+		const context = {
+			type: 'sync',
+			get: vi.fn((key: string) => state[key]),
+			set: vi.fn((key: string, value: any) => {
+				state[key] = value
+			}),
+			toJSON: vi.fn().mockReturnValue({}),
+		} as any
+
+		await runtime.applyEdgeTransform(
+			{ source: 'A', target: 'C', transform: '({ fromA: input })' },
+			{ output: 1 },
+			targetNode,
+			context,
+			allPredecessors,
+		)
+		await runtime.applyEdgeTransform(
+			{ source: 'B', target: 'C', transform: '({ fromB: input })' },
+			{ output: 2 },
+			targetNode,
+			context,
+			allPredecessors,
+		)
+
+		expect(state['_inputs.C']).toEqual({ fromA: 1, fromB: 2 })
 	})
 
 	it('should respect abort signals', async () => {

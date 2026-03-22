@@ -136,14 +136,23 @@ export class WorkflowLogicHandler {
 				})
 			: sourceResult.output
 		const inputKey = `_inputs.${targetNode.id}`
-		await asyncContext.set(inputKey as any, finalInput)
+		let inputToSet = finalInput
+		const shouldMerge = hasEdgeTransform && !hasSinglePredecessor
+		if (shouldMerge) {
+			const existingInput = await asyncContext.get(inputKey as any)
+			if (isMergeableObject(existingInput) && isMergeableObject(finalInput)) {
+				inputToSet = { ...existingInput, ...finalInput }
+			}
+		}
+
+		await asyncContext.set(inputKey as any, inputToSet)
 		await this.eventBus.emit({
 			type: 'context:change',
 			payload: {
 				sourceNode: edge.source,
 				key: inputKey,
 				op: 'set',
-				value: finalInput,
+				value: inputToSet,
 				executionId: executionId || 'unknown',
 			},
 		})
@@ -198,4 +207,8 @@ export class WorkflowLogicHandler {
 		const inputKey = `_inputs.${nodeDef.id}`
 		return await asyncContext.get(inputKey as any)
 	}
+}
+
+function isMergeableObject(value: unknown): value is Record<string, any> {
+	return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
