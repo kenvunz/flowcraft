@@ -31,15 +31,18 @@
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",
-			"import": "./dist/index.mjs"
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs"
 		},
 		"./sdk": {
 			"types": "./dist/sdk.d.mts",
-			"import": "./dist/sdk.mjs"
+			"import": "./dist/sdk.mjs",
+			"require": "./dist/sdk.cjs"
 		},
 		"./testing": {
 			"types": "./dist/testing/index.d.mts",
-			"import": "./dist/testing/index.mjs"
+			"import": "./dist/testing/index.mjs",
+			"require": "./dist/testing/index.cjs"
 		}
 	},
 	"scripts": {
