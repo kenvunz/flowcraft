@@ -118,7 +118,7 @@ export type NodeFunction<
 	TInput = any,
 	TOutput = any,
 	TAction extends string = string,
-> = (context: NodeContext<TContext, TDependencies, TInput>) => Promise<NodeResult<TOutput, TAction>>
+> = (context: NodeContext<TContext, TDependencies, TInput>, nodeId?: string) => Promise<NodeResult<TOutput, TAction>>
 
 /** Represents a constructor for any concrete class that extends the abstract BaseNode. */
 export type NodeClass<
