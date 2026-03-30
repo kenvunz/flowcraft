@@ -30,7 +30,7 @@ describe('PubSubAdapter - Testcontainers Integration', () => {
 		;[pubsubContainer, firestoreContainer, redisContainer] = await Promise.all([
 			new PubSubEmulatorContainer('gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators').start(),
 			new FirestoreEmulatorContainer('gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators').start(),
-			new RedisContainer('redis:latest').start(),
+			new RedisContainer('redis:8.2.2').start(),
 		])
 
 		pubsub = new PubSub({

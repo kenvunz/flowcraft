@@ -50,8 +50,8 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 	beforeAll(async () => {
 		console.log('Starting all containers...')
 		;[azuriteContainer, redisContainer, cosmosContainer] = await Promise.all([
-			new AzuriteContainer('mcr.microsoft.com/azure-storage/azurite:latest').start(),
-			new RedisContainer('redis:latest').start(),
+			new AzuriteContainer('mcr.microsoft.com/azure-storage/azurite:3.35.0').start(),
+			new RedisContainer('redis:8.2.2').start(),
 			new GenericContainer('mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator')
 				.withExposedPorts(8081)
 				.withResourcesQuota({ memory: 3 * 1024 * 1024 * 1024 })

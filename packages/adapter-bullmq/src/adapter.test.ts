@@ -14,7 +14,7 @@ describe('BullMQAdapter - Testcontainers Integration', () => {
 	let redis: Redis
 
 	beforeAll(async () => {
-		redisContainer = await new RedisContainer('redis:latest').start()
+		redisContainer = await new RedisContainer('redis:8.2.2').start()
 		redis = new Redis(redisContainer.getConnectionUrl())
 	}, 30000)
 

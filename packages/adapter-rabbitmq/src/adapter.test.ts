@@ -28,9 +28,9 @@ describe('RabbitMqAdapter - Testcontainers Integration', () => {
 
 	beforeAll(async () => {
 		;[rabbitContainer, pgContainer, redisContainer] = await Promise.all([
-			new RabbitMQContainer('rabbitmq:management-alpine').start(),
-			new PostgreSqlContainer('postgres:latest').start(),
-			new RedisContainer('redis:latest').start(),
+			new RabbitMQContainer('rabbitmq:3.13.0-management-alpine').start(),
+			new PostgreSqlContainer('postgres:16.4').start(),
+			new RedisContainer('redis:8.2.2').start(),
 		])
 
 		amqpConnection = (await amqplib.connect(rabbitContainer.getAmqpUrl())) as unknown as amqplib.Connection

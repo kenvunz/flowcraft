@@ -12,11 +12,11 @@ else
 fi
 
 # Pull Cassandra image
-docker pull cassandra:5.0.5
+docker pull cassandra:4.1
 if [ $? -eq 0 ]; then
-	echo "Successfully pulled cassandra:5.0.5"
+	echo "Successfully pulled cassandra:4.1"
 else
-	echo "Failed to pull cassandra:5.0.5"
+	echo "Failed to pull cassandra:4.1"
 	exit 1
 fi
 

@@ -19,7 +19,7 @@ describe('SqsAdapter', () => {
 	let queueUrl: string
 
 	beforeAll(async () => {
-		container = await new LocalstackContainer('localstack/localstack:latest').start()
+		container = await new LocalstackContainer('localstack/localstack:3.8.1').start()
 		const endpoint = container.getConnectionUri()
 
 		sqsClient = new SQSClient({

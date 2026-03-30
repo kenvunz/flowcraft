@@ -31,8 +31,8 @@ describe('KafkaAdapter - Testcontainers Integration', () => {
 	beforeAll(async () => {
 		;[kafkaContainer, cassandraContainer, redisContainer] = await Promise.all([
 			new KafkaContainer('confluentinc/cp-kafka:7.9.4').withExposedPorts(9093).withKraft().start(),
-			new CassandraContainer('cassandra:latest').start(),
-			new RedisContainer('redis:latest').start(),
+			new CassandraContainer('cassandra:4.1').start(),
+			new RedisContainer('redis:8.2.2').start(),
 		])
 
 		kafka = new Kafka({
