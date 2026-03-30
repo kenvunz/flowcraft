@@ -14,7 +14,7 @@
 	},
 	"dependencies": {
 		"dotenv": "^17.3.1",
-		"flowcraft": "^2.8.1",
+		"flowcraft": "workspace:*",
 		"openai": "^6.33.0"
 	},
 	"devDependencies": {

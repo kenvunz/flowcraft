@@ -7,8 +7,8 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@flowcraft/compiler": "^1.0.0-alpha.1",
-		"flowcraft": "^2.8.1"
+		"@flowcraft/compiler": "workspace:*",
+		"flowcraft": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^25.5.0",

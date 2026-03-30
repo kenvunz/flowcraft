@@ -9,7 +9,7 @@
 	"dependencies": {
 		"@example/declarative-shared-logic": "workspace:*",
 		"dotenv": "^17.3.1",
-		"flowcraft": "^2.8.1",
+		"flowcraft": "workspace:*",
 		"openai": "^6.33.0",
 		"serpapi": "^2.2.1",
 		"yaml": "^2.8.3"
