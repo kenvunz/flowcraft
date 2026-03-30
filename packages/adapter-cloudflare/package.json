@@ -1,0 +1,30 @@
+{
+	"name": "@flowcraft/cloudflare-adapter",
+	"type": "module",
+	"version": "1.0.0",
+	"homepage": "https://flowcraft.js.org",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm --dts",
+		"test": "vitest run src/*.test.ts",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"flowcraft": "^2.7.1"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20250519.0",
+		"miniflare": "^4.20250519.0",
+		"tsup": "^8.5.1",
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.18"
+	}
+}

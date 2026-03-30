@@ -72,5 +72,6 @@ Each adapter implements `patch()` using its database's most efficient partial up
 - **[`@flowcraft/azure-adapter`](https://www.npmjs.com/package/@flowcraft/azure-adapter)**: Azure Queues, Cosmos DB, and Redis.
 - **[`@flowcraft/kafka-adapter`](https://www.npmjs.com/package/@flowcraft/kafka-adapter)**: Apache Kafka, Cassandra, and Redis.
 - **[`@flowcraft/rabbitmq-adapter`](https://www.npmjs.com/package/@flowcraft/rabbitmq-adapter)**: RabbitMQ, PostgreSQL, and Redis.
+- **[`@flowcraft/cloudflare-adapter`](https://www.npmjs.com/package/@flowcraft/cloudflare-adapter)**: Cloudflare Queues, Durable Objects, and KV.
 
 For examples, see the [Adapters Guide](/guide/adapters/).
