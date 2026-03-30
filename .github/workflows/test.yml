@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'flowcraft*'
+  workflow_dispatch:
 
 jobs:
   test:
