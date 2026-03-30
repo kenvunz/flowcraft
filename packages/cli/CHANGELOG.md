@@ -1,5 +1,15 @@
 # @flowcraft/cli
 
+## 1.0.0-beta.0
+
+### Patch Changes
+
+- Upgrade to Typescript 6
+- Updated dependencies
+  - flowcraft@2.8.1
+  - @flowcraft/postgres-history@1.0.0-beta.0
+  - @flowcraft/sqlite-history@1.0.0-beta.0
+
 ## 1.0.0-alpha.1
 
 ### Patch Changes

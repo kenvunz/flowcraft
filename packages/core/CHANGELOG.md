@@ -1,13 +1,21 @@
 # flowcraft
 
+## 2.8.1
+
+### Patch Changes
+
+- Upgrade to Typescript 6
+
 ## 2.8.0
 
 ### Minor Changes
 
 **Features**
+
 - Evaluate conditional edges from loop controllers for early loop exit (#659c59e)
 
 **Fixes**
+
 - Throw descriptive error when loop controller lacks continue edge (#13906a5)
 - Refactor loop detection to reset all nodes for re-execution (#a4af9f0)
 - Fix loop siblings not executing by removing dead code (#a4af9f0)
@@ -15,6 +23,7 @@
 - Fix distributed execution by properly instantiating WorkflowState (#77e54d5)
 
 **Docs**
+
 - Add loop controller error handling section (#3d0495c)
 - Document conditional edges from loop controllers (#3d0495c)
 

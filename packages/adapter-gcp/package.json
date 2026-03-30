@@ -1,7 +1,7 @@
 {
 	"name": "@flowcraft/gcp-adapter",
 	"type": "module",
-	"version": "1.4.2",
+	"version": "1.4.3",
 	"homepage": "https://flowcraft.js.org",
 	"exports": {
 		".": {
@@ -20,7 +20,7 @@
 	"dependencies": {
 		"@google-cloud/firestore": "^8.3.0",
 		"@google-cloud/pubsub": "^5.3.0",
-		"flowcraft": "^2.7.1",
+		"flowcraft": "^2.8.1",
 		"ioredis": "^5.10.1"
 	},
 	"devDependencies": {

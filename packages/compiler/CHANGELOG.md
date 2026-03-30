@@ -1,5 +1,13 @@
 # @flowcraft/compiler
 
+## 1.0.0-alpha.1
+
+### Patch Changes
+
+- Upgrade to Typescript 6
+- Updated dependencies
+  - flowcraft@2.8.1
+
 ## 1.0.0-alpha.0
 
 ### Major Changes

@@ -1,5 +1,13 @@
 # @flowcraft/opentelemetry-middleware
 
+## 1.0.2
+
+### Patch Changes
+
+- Upgrade to Typescript 6
+- Updated dependencies
+  - flowcraft@2.8.1
+
 ## 1.0.1
 
 ### Patch Changes

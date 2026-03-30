@@ -1,5 +1,13 @@
 # @flowcraft/sqs-adapter
 
+## 1.4.3
+
+### Patch Changes
+
+- Upgrade to Typescript 6
+- Updated dependencies
+  - flowcraft@2.8.1
+
 ## 1.4.2
 
 ### Patch Changes
