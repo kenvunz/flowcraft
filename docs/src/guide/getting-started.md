@@ -15,7 +15,7 @@ npm install flowcraft
 Let's create a simple workflow with three steps: one node to provide a starting number, a sleep node to pause for 1 second, and a final node to double the number, demonstrating Flowcraft's durable timers and strongly-typed context system.
 
 ```typescript
-import { createFlow, FlowRuntime } from 'flowcraft'
+import { createFlow, FlowRuntime, NodeContext } from 'flowcraft'
 
 // 1. Define your functions for the nodes
 async function startNode({ context }: NodeContext) {
@@ -35,12 +35,13 @@ const flow = createFlow('simple-workflow')
 	.edge('pause', 'double')
 
 // 3. Initialize the runtime
-const runtime = new FlowRuntime()
+const runtime = new FlowRuntime({})
 
 // 4. Run the workflow
 async function run() {
-	const blueprint = flow.toBlueprint()
-	const result = await runtime.run(blueprint, { value: 42 })
+	const pause = await flow.run(runtime, { value: 42 })
+	// Resume the workflow after the sleep node
+	const result = await flow.resume(runtime, pause.serializedContext, {})
 
 	console.log('Workflow Result:', result)
 	// Expected Output:

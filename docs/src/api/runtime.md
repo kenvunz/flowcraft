@@ -127,6 +127,54 @@ The replay system processes these event types to reconstruct state:
 
 Replay always produces a "completed" status since it reconstructs the final state without re-executing logic.
 
+### `.startScheduler(checkIntervalMs?)`
+
+Starts the internal [`WorkflowScheduler`](/api/runtime#workflowscheduler) that monitors awaiting workflows and automatically resumes them when their timers expire. Required for `sleep` nodes to function in in-memory workflows.
+
+-   **`checkIntervalMs?`** `number`: How often (in ms) to check for expired timers. Defaults to `1000`.
+
+```typescript
+const runtime = new FlowRuntime()
+runtime.startScheduler()
+// sleep nodes will now auto-resume
+```
+
+### `.stopScheduler()`
+
+Stops the internal scheduler. Call this when shutting down to clean up the polling interval.
+
+### `scheduler`
+
+The runtime's [`WorkflowScheduler`](/api/runtime#workflowscheduler) instance. Use it to inspect active workflows and retrieve auto-resumed results.
+
+## `WorkflowScheduler`
+
+Manages awaiting workflows that have timer-based pauses (sleep nodes). The scheduler polls at a configurable interval and calls `runtime.resume()` automatically when a workflow's timer expires.
+
+### `.getActiveWorkflows()`
+
+Returns a list of currently awaiting workflows being tracked by the scheduler.
+
+-   **Returns**: `AwaitingWorkflow[]`
+
+### `.getResumeResult(executionId)`
+
+Retrieves the `WorkflowResult` from a workflow that was automatically resumed by the scheduler. Results are stored after each auto-resume and can be looked up by execution ID.
+
+-   **`executionId`** `string`: The execution ID, available from `result.context._executionId` after the initial `run()`.
+-   **Returns**: `WorkflowResult | undefined`
+
+```typescript
+const result = await flow.run(runtime)
+// result.status === 'awaiting'
+
+// ... scheduler auto-resumes when timer expires ...
+
+const executionId = result.context._executionId as string
+const resumed = runtime.scheduler.getResumeResult(executionId)
+// resumed.status === 'completed'
+```
+
 ### `.executeNode(...)`
 
 A lower-level method to execute a single node within a workflow's state. This is primarily used internally by the `GraphTraverser` and `BaseDistributedAdapter`.

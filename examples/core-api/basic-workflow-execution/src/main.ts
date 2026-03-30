@@ -34,13 +34,7 @@ async function main() {
 		// Execute the workflow
 		console.log('▶️  Starting workflow execution...\n')
 
-		const result = await runtime.run(
-			blueprint,
-			{ user: sampleUser }, // Initial context
-			{
-				functionRegistry: workflow.getFunctionRegistry(),
-			},
-		)
+		const result = await workflow.run(runtime, { user: sampleUser })
 
 		console.log('\n✅ Workflow completed successfully!')
 		console.log('\n📊 Execution Results:')

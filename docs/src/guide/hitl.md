@@ -30,15 +30,13 @@ const flow = createFlow('approval-workflow')
 	.edge('start', 'wait-for-approval')
 	.edge('wait-for-approval', 'process')
 
-const blueprint = flow.toBlueprint()
-const functionRegistry = flow.getFunctionRegistry()
 const runtime = new FlowRuntime({ logger: new ConsoleLogger() })
 
 // Run until awaiting
-const result = await runtime.run(blueprint, {}, { functionRegistry })
+const result = await flow.run(runtime)
 if (result.status === 'awaiting') {
 	// Resume with input
-	const finalResult = await runtime.resume(blueprint, result.serializedContext, { output: { approved: true } }, 'wait-for-approval')
+	const finalResult = await flow.resume(runtime, result.serializedContext, { output: { approved: true } }, 'wait-for-approval')
 	console.log(finalResult.context)
 }
 ```
@@ -62,7 +60,7 @@ const flow = createFlow('conditional-approval')
 	.edge('review', 'escalate', { action: 'escalate' })
 
 // Resume with different actions
-await runtime.resume(blueprint, serializedContext, {
+await flow.resume(runtime, serializedContext, {
 	output: { reviewer: 'john@example.com' },
 	action: 'approve' // or 'reject' or 'escalate'
 })

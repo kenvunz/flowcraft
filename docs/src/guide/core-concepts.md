@@ -271,9 +271,8 @@ const runtime = new FlowRuntime()
 const controller = new AbortController()
 
 // Run with cancellation signal
-const result = await runtime.run(flow.toBlueprint(), {}, {
+const result = await flow.run(runtime, {}, {
   signal: controller.signal,
-  functionRegistry: flow.getFunctionRegistry()
 })
 
 // Cancel after 500ms
@@ -333,11 +332,11 @@ Paused workflows can be resumed using the `runtime.resume()` method:
 
 ```typescript
 // Run until awaiting
-const result = await runtime.run(blueprint, {}, { functionRegistry })
+const result = await flow.run(runtime)
 if (result.status === 'awaiting') {
   // Resume wait node with input
-  const finalResult = await runtime.resume(
-    blueprint,
+  const finalResult = await flow.resume(
+    runtime,
     result.serializedContext,
     { output: { approved: true } },
     'approval' // optional: specify which node to resume

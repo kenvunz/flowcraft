@@ -67,9 +67,7 @@ const runtime = new FlowRuntime({
   logger: new ConsoleLogger(),
 })
 
-const result = await runtime.run(blueprint, initialContext, {
-  functionRegistry: workflow.getFunctionRegistry(),
-})
+const result = await workflow.run(runtime, initialContext)
 ```
 
 ## Expected Output

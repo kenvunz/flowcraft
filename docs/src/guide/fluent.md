@@ -87,16 +87,20 @@ const flowBuilder = createFlow<UserProcessingContext>('user-processing')
 
 ## Finalizing the Flow
 
-Once your workflow is defined, call [`.toBlueprint()`](/api/flow#toblueprint) to get the serializable [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface) object. You might also need the function registry, which contains the node implementations.
+Once your workflow is defined, call [`.toBlueprint()`](/api/flow#toblueprint) to get the serializable [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface) object.
+
+The easiest way to run your flow is with [`flow.run(runtime)`](/api/flow#run-runtime-initialstate-options), which automatically passes the node implementations to the runtime:
 
 ```typescript
-// Continuing from above...
-const blueprint = flowBuilder.toBlueprint()
-const functionRegistry = flowBuilder.getFunctionRegistry()
+const runtime = new FlowRuntime()
 
-// Now you can pass these to the FlowRuntime with type safety
-// const runtime = new FlowRuntime({ registry: functionRegistry });
-// const result = await runtime.run(blueprint, { user_data: initialUser });
+// Recommended: convenience method
+const result = await flow.run(runtime, { user_data: initialUser })
+
+// Equivalent to:
+// const blueprint = flowBuilder.toBlueprint()
+// const functionRegistry = flowBuilder.getFunctionRegistry()
+// const result = await runtime.run(blueprint, { user_data: initialUser }, { functionRegistry })
 ```
 
 ## Demo

@@ -182,6 +182,60 @@ Returns a `Map` containing the node implementations (`NodeFunction` or `NodeClas
 
 -   **Returns**: `Map<string, NodeFunction | NodeClass>`
 
+### `.run(runtime, initialState?, options?)`
+
+Runs this flow on the given runtime, automatically passing the function registry. This is a convenience wrapper around `runtime.run(blueprint, initialState, { functionRegistry })`.
+
+-   **`runtime`** [`FlowRuntime`](/api/runtime#flowruntime-class): The runtime to execute on.
+-   **`initialState?`** `Partial<TContext> | string`: The initial state for the workflow's context.
+-   **`options?`** `{ strict?: boolean, signal?: AbortSignal, concurrency?: number }`: Runtime options (excluding `functionRegistry`, which is provided automatically).
+-   **Returns**: `Promise<WorkflowResult<TContext>>`
+
+**Before:**
+```typescript
+const blueprint = flow.toBlueprint()
+const result = await runtime.run(blueprint, {}, {
+  functionRegistry: flow.getFunctionRegistry()
+})
+```
+
+**After:**
+```typescript
+const result = await flow.run(runtime)
+```
+
+### `.resume(runtime, serializedContext, resumeData, nodeId?, options?)`
+
+Resumes this flow on the given runtime, automatically passing the function registry. This is a convenience wrapper around `runtime.resume(blueprint, serializedContext, resumeData, nodeId, { functionRegistry })`.
+
+-   **`runtime`** [`FlowRuntime`](/api/runtime#flowruntime-class): The runtime to execute on.
+-   **`serializedContext`** `string`: The serialized context from an awaiting workflow result.
+-   **`resumeData`** `{ output?: any; action?: string }`: Data to provide to the awaiting node.
+-   **`nodeId?`** `string`: The ID of the node to resume. Defaults to the first awaiting node.
+-   **`options?`** `{ strict?: boolean, signal?: AbortSignal, concurrency?: number }`: Runtime options.
+-   **Returns**: `Promise<WorkflowResult<TContext>>`
+
+**Before:**
+```typescript
+const result = await runtime.resume(
+  blueprint,
+  serializedContext,
+  { output: { approved: true } },
+  'wait-for-approval',
+  { functionRegistry: flow.getFunctionRegistry() }
+)
+```
+
+**After:**
+```typescript
+const result = await flow.resume(
+  runtime,
+  serializedContext,
+  { output: { approved: true } },
+  'wait-for-approval'
+)
+```
+
 ### `.toGraphRepresentation()`
 
 Returns a [`UIGraph`](/api/flow#uigraph-interface) representation of the workflow, optimized for visualization. This method transforms the blueprint by:

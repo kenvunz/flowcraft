@@ -39,13 +39,7 @@ async function main() {
 
 	try {
 		const batchWorkflow = createBatchProcessingWorkflow()
-		const batchResult = await runtime.run(
-			batchWorkflow.toBlueprint(),
-			{},
-			{
-				functionRegistry: batchWorkflow.getFunctionRegistry(),
-			},
-		)
+		const batchResult = await batchWorkflow.run(runtime)
 
 		console.log('\n📊 Batch Processing Results:')
 		const batchStats = batchResult.context.batchStats
@@ -74,13 +68,7 @@ async function main() {
 
 	try {
 		const loopWorkflow = createLoopProcessingWorkflow()
-		const loopResult = await runtime.run(
-			loopWorkflow.toBlueprint(),
-			{},
-			{
-				functionRegistry: loopWorkflow.getFunctionRegistry(),
-			},
-		)
+		const loopResult = await loopWorkflow.run(runtime)
 
 		console.log('\n📈 Loop Processing Results:')
 		const loopSummary = loopResult.context.loopSummary
@@ -106,13 +94,7 @@ async function main() {
 
 	try {
 		const waitWorkflow = createWaitWorkflow()
-		const waitResult = await runtime.run(
-			waitWorkflow.toBlueprint(),
-			{},
-			{
-				functionRegistry: waitWorkflow.getFunctionRegistry(),
-			},
-		)
+		const waitResult = await waitWorkflow.run(runtime)
 
 		console.log(`   Status: ${waitResult.status}`)
 		console.log('\n⏰ Wait Processing Results:')
@@ -184,6 +166,7 @@ async function main() {
 	}
 
 	console.log('🎉 All built-in nodes examples completed!')
+	process.exit(0)
 }
 
 // Handle errors and run the main function

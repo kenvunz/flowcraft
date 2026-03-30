@@ -42,18 +42,15 @@ const flow = createFlow<ApprovalContext>('expense-approval')
   .edge('manager-approval', 'process')
 
 const runtime = new FlowRuntime()
-const blueprint = flow.toBlueprint()
 
 // Initial run - pauses at wait node
-const initialResult = await runtime.run(blueprint, {}, {
-  functionRegistry: flow.getFunctionRegistry()
-})
+const initialResult = await flow.run(runtime)
 
 console.log(initialResult.status) // 'awaiting'
 
 // Resume with approval decision
-const finalResult = await runtime.resume(
-  blueprint,
+const finalResult = await flow.resume(
+  runtime,
   initialResult.serializedContext,
   {
     output: { approved: true, reviewer: 'Bob' },
@@ -95,15 +92,15 @@ const flow = createFlow<ReviewContext>('parallel-review')
   .edge('legal-review', 'finalize')
 
 // Run and resume each wait node separately
-const result1 = await runtime.run(blueprint, {}, { functionRegistry })
+const result1 = await flow.run(runtime)
 
 // Resume technical review
-await runtime.resume(blueprint, result1.serializedContext, {
+await flow.resume(runtime, result1.serializedContext, {
   output: { approved: true, comments: 'Looks good' }
 }, 'technical-review')
 
 // Resume legal review
-await runtime.resume(blueprint, result1.serializedContext, {
+await flow.resume(runtime, result1.serializedContext, {
   output: { approved: true, comments: 'Approved' }
 }, 'legal-review')
 ```
@@ -123,7 +120,7 @@ const flow = createFlow('delayed-notification')
   .edge('delay', 'send')
 
 // Workflow automatically completes after 1 hour
-const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry })
+const result = await flow.run(runtime)
 ```
 
 ### Automatic Resumption
@@ -137,10 +134,16 @@ const runtime = new FlowRuntime()
 runtime.startScheduler()
 
 // Run a workflow with sleep nodes
-const result = await runtime.run(blueprint, {}, { functionRegistry })
+const result = await flow.run(runtime)
+// result.status === 'awaiting'
 
 // The scheduler will automatically resume the workflow when the timer expires
 // No manual intervention required for timer-based pauses
+
+// You can retrieve the result after auto-resume via the scheduler:
+// const executionId = result.context._executionId as string
+// const resumed = runtime.scheduler.getResumeResult(executionId)
+// resumed.status === 'completed'
 
 // Stop the scheduler when done
 runtime.stopScheduler()
@@ -212,14 +215,14 @@ Awaiting workflows maintain their state in the serialized context, enabling dura
 
 ```typescript
 // Store the serialized context (e.g., in database)
-const result = await runtime.run(blueprint, initialContext, { functionRegistry })
+const result = await flow.run(runtime, initialContext)
 if (result.status === 'awaiting') {
   await saveToDatabase(result.serializedContext)
 }
 
 // Later, resume from stored state
 const storedContext = await loadFromDatabase()
-const finalResult = await runtime.resume(blueprint, storedContext, resumeData)
+const finalResult = await flow.resume(runtime, storedContext, resumeData)
 ```
 
 ## Error Handling
@@ -228,7 +231,7 @@ Handle errors that occur during paused execution:
 
 ```typescript
 try {
-  const result = await runtime.resume(blueprint, serializedContext, resumeData)
+  const result = await flow.resume(runtime, serializedContext, resumeData)
   if (result.errors) {
     console.error('Resume failed:', result.errors)
   }
@@ -240,10 +243,11 @@ try {
 ## Best Practices
 
 1. **Check Status**: Always verify `result.status === 'awaiting'` before resuming
-2. **Persist State**: Store serialized context for durability
-3. **Handle Errors**: Implement proper error handling for resume operations
-4. **Use Actions**: Leverage action-based routing for complex workflows
-5. **Timeout Management**: Combine sleep nodes with wait nodes for escalation patterns
-6. **Concurrent Waits**: Use multiple wait nodes for parallel approvals
-7. **State Validation**: Validate resume data before processing
-8. **Start Scheduler**: For in-memory workflows with timers, call `runtime.startScheduler()` to enable automatic resumption
+2. **Use Convenience Methods**: Prefer `flow.run(runtime)` and `flow.resume(runtime, ...)` over manually passing the blueprint and function registry
+3. **Persist State**: Store serialized context for durability
+4. **Handle Errors**: Implement proper error handling for resume operations
+5. **Use Actions**: Leverage action-based routing for complex workflows
+6. **Timeout Management**: Combine sleep nodes with wait nodes for escalation patterns
+7. **Concurrent Waits**: Use multiple wait nodes for parallel approvals
+8. **State Validation**: Validate resume data before processing
+9. **Start Scheduler**: For in-memory workflows with timers, call `runtime.startScheduler()` to enable automatic resumption
