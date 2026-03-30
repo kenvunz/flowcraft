@@ -28,4 +28,44 @@ describe('SleepNode output passthrough', () => {
 		expect(result2.status).toBe('completed')
 		expect(result2.context['_outputs.double']).toBe(84)
 	})
+
+	it('should auto-resume via WorkflowScheduler', async () => {
+		const flow = createFlow('sleep-scheduler-test')
+			.node('start', async () => {
+				return { output: 42 }
+			})
+			.sleep('pause', { duration: 1 })
+			.node('double', async ({ input }) => {
+				return { output: input * 2 }
+			})
+			.edge('start', 'pause')
+			.edge('pause', 'double')
+
+		const blueprint = flow.toBlueprint()
+
+		// Register blueprint so the scheduler can find it when resuming
+		const runtime = new FlowRuntime({
+			blueprints: { [blueprint.id]: blueprint },
+		})
+
+		// Start scheduler with fast check interval for testing
+		runtime.startScheduler(50)
+
+		const result = await runtime.run(blueprint, {}, { functionRegistry: flow.getFunctionRegistry() })
+		expect(result.status).toBe('awaiting')
+
+		// The scheduler will detect the expired timer and call resume automatically
+		await new Promise((resolve) => setTimeout(resolve, 200))
+
+		// Workflow should have been resumed and removed from active tracking
+		expect(runtime.scheduler.getActiveWorkflows().length).toBe(0)
+
+		// Retrieve the result from the scheduler's auto-resume
+		const executionId = result.context._executionId as string
+		const resumed = runtime.scheduler.getResumeResult(executionId)!
+		expect(resumed.status).toBe('completed')
+		expect(resumed.context['_outputs.double']).toBe(84)
+
+		runtime.stopScheduler()
+	})
 })

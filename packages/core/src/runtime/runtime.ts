@@ -250,6 +250,7 @@ export class FlowRuntime<TContext extends Record<string, any>, TDependencies ext
 							result.serializedContext,
 							nodeId,
 							details.wakeUpAt,
+							options?.functionRegistry,
 						)
 					}
 				}

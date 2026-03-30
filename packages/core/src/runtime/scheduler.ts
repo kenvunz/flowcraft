@@ -1,3 +1,4 @@
+import type { WorkflowResult } from '../types'
 import type { FlowRuntime } from './runtime'
 
 export interface AwaitingWorkflow {
@@ -6,11 +7,13 @@ export interface AwaitingWorkflow {
 	serializedContext: string
 	awaitingNodeId: string
 	wakeUpAt: string
+	functionRegistry?: Map<string, any>
 }
 
 export class WorkflowScheduler {
 	private runtime: FlowRuntime<any, any>
 	private activeWorkflows: Map<string, AwaitingWorkflow> = new Map()
+	private resumeResults: Map<string, WorkflowResult> = new Map()
 	private intervalId?: NodeJS.Timeout
 	private checkIntervalMs: number
 
@@ -40,6 +43,7 @@ export class WorkflowScheduler {
 		serializedContext: string,
 		awaitingNodeId: string,
 		wakeUpAt: string,
+		functionRegistry?: Map<string, any>,
 	): void {
 		this.activeWorkflows.set(executionId, {
 			executionId,
@@ -47,6 +51,7 @@ export class WorkflowScheduler {
 			serializedContext,
 			awaitingNodeId,
 			wakeUpAt,
+			functionRegistry,
 		})
 	}
 
@@ -78,7 +83,10 @@ export class WorkflowScheduler {
 					workflow.serializedContext,
 					{ output: undefined },
 					workflow.awaitingNodeId,
+					{ functionRegistry: workflow.functionRegistry },
 				)
+
+				this.resumeResults.set(workflow.executionId, result)
 
 				if (result.status === 'completed' || result.status === 'failed') {
 					this.unregisterWorkflow(workflow.executionId)
@@ -92,5 +100,9 @@ export class WorkflowScheduler {
 
 	getActiveWorkflows(): AwaitingWorkflow[] {
 		return Array.from(this.activeWorkflows.values())
+	}
+
+	getResumeResult(executionId: string): WorkflowResult | undefined {
+		return this.resumeResults.get(executionId)
 	}
 }
