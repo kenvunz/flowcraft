@@ -3,9 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"lint": "oxlint --fix && oxfmt --check",
-		"lint:fix": "oxlint --fix && oxfmt",
-		"format": "oxfmt",
+		"lint": "oxlint --fix && oxfmt",
 		"build": "turbo build",
 		"test": "turbo test"
 	},
