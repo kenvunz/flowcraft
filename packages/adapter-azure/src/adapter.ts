@@ -47,7 +47,11 @@ export class AzureQueueAdapter extends BaseDistributedAdapter {
 		await this.queueClient.sendMessage(message)
 	}
 
-	protected async onJobStart(_runId: string, _blueprintId: string, _nodeId: string): Promise<void> {
+	protected async onJobStart(
+		_runId: string,
+		_blueprintId: string,
+		_nodeId: string,
+	): Promise<void> {
 		// Touch the status container to update the 'lastUpdated' timestamp.
 		try {
 			const statusContext = new CosmosDbContext(_runId, {
@@ -59,7 +63,10 @@ export class AzureQueueAdapter extends BaseDistributedAdapter {
 			await statusContext.set('status' as any, 'running')
 			await statusContext.set('lastUpdated' as any, Math.floor(Date.now() / 1000))
 		} catch (error) {
-			console.error(`[AzureQueueAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`, error)
+			console.error(
+				`[AzureQueueAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`,
+				error,
+			)
 		}
 	}
 
@@ -79,7 +86,10 @@ export class AzureQueueAdapter extends BaseDistributedAdapter {
 		console.log(`[AzureQueueAdapter] Published final result for Run ID ${runId}.`)
 	}
 
-	public async registerWebhookEndpoint(_runId: string, _nodeId: string): Promise<{ url: string; event: string }> {
+	public async registerWebhookEndpoint(
+		_runId: string,
+		_nodeId: string,
+	): Promise<{ url: string; event: string }> {
 		// TODO: Implement webhook endpoint registration for Azure adapter
 		// This would typically involve setting up Azure Functions for webhook handling
 		throw new Error('registerWebhookEndpoint not implemented for AzureAdapter')
@@ -107,12 +117,22 @@ export class AzureQueueAdapter extends BaseDistributedAdapter {
 					await Promise.all(
 						response.receivedMessageItems.map(async (message) => {
 							try {
-								const job = JSON.parse(Buffer.from(message.messageText, 'base64').toString()) as JobPayload
-								console.log(`[AzureQueueAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`)
+								const job = JSON.parse(
+									Buffer.from(message.messageText, 'base64').toString(),
+								) as JobPayload
+								console.log(
+									`[AzureQueueAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`,
+								)
 								await handler(job)
-								await this.queueClient.deleteMessage(message.messageId, message.popReceipt)
+								await this.queueClient.deleteMessage(
+									message.messageId,
+									message.popReceipt,
+								)
 							} catch (err) {
-								console.error('[AzureQueueAdapter] Error processing message, it will become visible again:', err)
+								console.error(
+									'[AzureQueueAdapter] Error processing message, it will become visible again:',
+									err,
+								)
 								// if we fail, we don't delete the message - it will reappear after the visibilityTimeout
 							}
 						}),

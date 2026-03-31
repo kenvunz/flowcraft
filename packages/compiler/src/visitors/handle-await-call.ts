@@ -2,7 +2,11 @@ import type { NodeDefinition } from 'flowcraft'
 import ts from 'typescript'
 import type { FlowAnalyzer } from '../flow-analyzer'
 
-export function handleAwaitCall(analyzer: FlowAnalyzer, callee: ts.CallExpression, node: ts.AwaitExpression): void {
+export function handleAwaitCall(
+	analyzer: FlowAnalyzer,
+	callee: ts.CallExpression,
+	node: ts.AwaitExpression,
+): void {
 	const symbol = analyzer.typeChecker.getSymbolAtLocation(callee.expression)
 	if (symbol) {
 		let originalSymbol = symbol
@@ -44,7 +48,12 @@ export function handleAwaitCall(analyzer: FlowAnalyzer, callee: ts.CallExpressio
 					} else {
 						return // unknown type
 					}
-					analyzer.state.addNodeAndWire(nodeDef, node, analyzer.sourceFile, analyzer.typeChecker)
+					analyzer.state.addNodeAndWire(
+						nodeDef,
+						node,
+						analyzer.sourceFile,
+						analyzer.typeChecker,
+					)
 				} else {
 					analyzer.addDiagnostic(
 						node,

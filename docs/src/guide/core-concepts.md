@@ -7,9 +7,10 @@ Flowcraft is built on a few simple but powerful concepts. Understanding them is 
 A [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface) is a JSON-serializable object that declaratively defines your workflow's structure. It's the "data" part of the "functions as data" philosophy.
 
 A blueprint consists of:
--   **`id`**: A unique identifier for the workflow.
--   **`nodes`**: An array of [`NodeDefinition`](/api/nodes-and-edges#nodedefinition-interface) objects, representing the tasks to be executed.
--   **`edges`**: An array of [`EdgeDefinition`](/api/nodes-and-edges#edgedefinition-interface) objects, defining the dependencies and data flow between nodes.
+
+- **`id`**: A unique identifier for the workflow.
+- **`nodes`**: An array of [`NodeDefinition`](/api/nodes-and-edges#nodedefinition-interface) objects, representing the tasks to be executed.
+- **`edges`**: An array of [`EdgeDefinition`](/api/nodes-and-edges#edgedefinition-interface) objects, defining the dependencies and data flow between nodes.
 
 ```typescript
 interface WorkflowBlueprint {
@@ -30,14 +31,14 @@ Because blueprints are just data, they can be stored as JSON, sent over a networ
 
 ## Nodes & Edges
 
-Nodes and edges are the core components of any workflow. Nodes define *what* happens, and edges define *when* it happens.
+Nodes and edges are the core components of any workflow. Nodes define _what_ happens, and edges define _when_ it happens.
 
 ### Node: The Unit of Work
 
 A node is a single, executable task. Flowcraft offers two primary ways to implement a node's logic.
 
--   **Function-based**: A simple `async` function that receives a [`NodeContext`](/api/nodes-and-edges#nodecontext-interface) and returns a [`NodeResult`](/api/nodes-and-edges#noderesult-interface). Ideal for simple, self-contained tasks.
--   **Class-based**: A class that extends [`BaseNode`](/api/nodes-and-edges#basenode-abstract-class). This provides a more structured lifecycle (`prep`, `exec`, `post`, `fallback`, `recover`), which is useful for complex logic, dependency injection, and testability.
+- **Function-based**: A simple `async` function that receives a [`NodeContext`](/api/nodes-and-edges#nodecontext-interface) and returns a [`NodeResult`](/api/nodes-and-edges#noderesult-interface). Ideal for simple, self-contained tasks.
+- **Class-based**: A class that extends [`BaseNode`](/api/nodes-and-edges#basenode-abstract-class). This provides a more structured lifecycle (`prep`, `exec`, `post`, `fallback`, `recover`), which is useful for complex logic, dependency injection, and testability.
 
 #### Function-Based Nodes
 
@@ -68,11 +69,11 @@ async function fetchUserData(ctx: NodeContext): Promise<NodeResult> {
 
 For more complex logic, dependency injection, or better testability, you can extend the [`BaseNode`](/api/nodes-and-edges#basenode-abstract-class) class. This provides a structured lifecycle.
 
--   **`prep()`**: Prepares data for execution. This phase is **not** retried on failure.
--   **`exec()`**: Contains the core, isolated logic. This is the **only** phase that is retried.
--   **`post()`**: Processes the result from `exec` or `fallback`. Not retried.
--   **`fallback()`**: An optional safety net that runs if all `exec` retries fail.
--   **`recover()`**: An optional cleanup phase for non-retriable errors, ensuring resources are released.
+- **`prep()`**: Prepares data for execution. This phase is **not** retried on failure.
+- **`exec()`**: Contains the core, isolated logic. This is the **only** phase that is retried.
+- **`post()`**: Processes the result from `exec` or `fallback`. Not retried.
+- **`fallback()`**: An optional safety net that runs if all `exec` retries fail.
+- **`recover()`**: An optional cleanup phase for non-retriable errors, ensuring resources are released.
 
 ```typescript
 import { BaseNode, NodeContext, NodeResult } from 'flowcraft'
@@ -87,7 +88,7 @@ class MultiplyNode extends BaseNode {
 	// The 'exec' method contains the core logic
 	async exec(
 		prepResult: number, // The result from `prep()`
-		context: NodeContext
+		context: NodeContext,
 	): Promise<Omit<NodeResult, 'error'>> {
 		if (typeof prepResult !== 'number') {
 			throw new TypeError('Input must be a number.')
@@ -106,8 +107,9 @@ class MultiplyNode extends BaseNode {
 The [`Context`](/api/context#context-class) is the strongly-typed, shared state of a running workflow. It's a key-value store where nodes can read and write data with compile-time type safety. For example, an early node might fetch user data and save it to the context, allowing a later node to read that user data and perform an action with full type checking.
 
 Flowcraft provides two strongly-typed context interfaces:
--   **[`ISyncContext<TContext>`](/api/context#isynccontext-interface)**: A high-performance, in-memory context used for local execution with full type safety.
--   **[`IAsyncContext<TContext>`](/api/context#iasynccontext-interface)**: A promise-based interface designed for distributed systems where state might be stored in a remote database like Redis, maintaining type safety across distributed execution.
+
+- **[`ISyncContext<TContext>`](/api/context#isynccontext-interface)**: A high-performance, in-memory context used for local execution with full type safety.
+- **[`IAsyncContext<TContext>`](/api/context#iasynccontext-interface)**: A promise-based interface designed for distributed systems where state might be stored in a remote database like Redis, maintaining type safety across distributed execution.
 
 Nodes always interact with an [`IAsyncContext<TContext>`](/api/context#iasynccontext-interface) view, ensuring your business logic remains consistent and type-safe whether you run locally or distributed.
 
@@ -115,6 +117,7 @@ Nodes always interact with an [`IAsyncContext<TContext>`](/api/context#iasynccon
 For distributed workflows with large state objects, Flowcraft uses [**delta-based persistence**](/guide/distributed-execution#delta-based-persistence) to dramatically improve performance. Instead of serializing the entire context after each node, only the changes are persisted atomically, reducing payload sizes by 80-95% and lowering database costs.
 
 **Type Safety Benefits:**
+
 - Define your context shape upfront with TypeScript interfaces
 - Get compile-time validation for context key access
 - Receive precise type inference for context values
@@ -126,13 +129,13 @@ Before creating workflows, define the shape of your context data using a TypeScr
 
 ```typescript
 interface SearchWorkflowContext {
-  query: string
-  search_results: SearchResult[]
-  final_answer?: string
-  metadata: {
-    startTime: Date
-    userId: string
-  }
+	query: string
+	search_results: SearchResult[]
+	final_answer?: string
+	metadata: {
+		startTime: Date
+		userId: string
+	}
 }
 ```
 
@@ -156,6 +159,7 @@ const flow = createFlow<SearchWorkflowContext>('state-example')
 ```
 
 After this workflow runs, the final context will be:
+
 ```json
 {
 	"initial_data": { "value": 100 },
@@ -167,10 +171,10 @@ After this workflow runs, the final context will be:
 
 Inside any node implementation, you get access to the `context` object, which provides a consistent, asynchronous API with full type safety:
 
--   **`context.get<K>(key)`**: Retrieves a value with precise typing. `K` is constrained to `keyof TContext`.
--   **`context.set<K>(key, value)`**: Sets a value with type checking. `value` must match `TContext[K]`.
--   **`context.has<K>(key)`**: Checks if a key exists with type safety.
--   **`context.delete<K>(key)`**: Deletes a key with type safety.
+- **`context.get<K>(key)`**: Retrieves a value with precise typing. `K` is constrained to `keyof TContext`.
+- **`context.set<K>(key, value)`**: Sets a value with type checking. `value` must match `TContext[K]`.
+- **`context.has<K>(key)`**: Checks if a key exists with type safety.
+- **`context.delete<K>(key)`**: Deletes a key with type safety.
 
 #### Type Safety Benefits
 
@@ -197,8 +201,8 @@ This workflow demonstrates type-safe state accumulation:
 
 ```typescript
 interface CounterContext {
-  count: number
-  history: string[]
+	count: number
+	history: string[]
 }
 
 const flow = createFlow<CounterContext>('stateful-workflow')
@@ -210,8 +214,8 @@ const flow = createFlow<CounterContext>('stateful-workflow')
 	})
 	.node('step2', async ({ context }) => {
 		// ✅ Type-safe reading and writing
-		const currentCount = await context.get('count') || 0
-		const history = await context.get('history') || []
+		const currentCount = (await context.get('count')) || 0
+		const history = (await context.get('history')) || []
 
 		const newCount = currentCount + 1
 		const newHistory = [...history, `Step 2: count is now ${newCount}`]
@@ -237,11 +241,12 @@ graph TD
 ```
 
 The runtime is responsible for:
--   Managing the workflow's state (the Context).
--   Handling retries and fallbacks.
--   Evaluating edge conditions to determine the next nodes to run.
--   Injecting dependencies and middleware.
--   Orchestrating both in-memory and distributed execution.
+
+- Managing the workflow's state (the Context).
+- Handling retries and fallbacks.
+- Evaluating edge conditions to determine the next nodes to run.
+- Injecting dependencies and middleware.
+- Orchestrating both in-memory and distributed execution.
 
 ## Cancellation
 
@@ -255,25 +260,29 @@ You can pass an `AbortSignal` to the runtime when executing a workflow. If the s
 import { createFlow, FlowRuntime } from 'flowcraft'
 
 const flow = createFlow('cancellable-workflow')
-  .node('task1', async ({ context, signal }) => {
-    // Check for cancellation
-    signal?.throwIfAborted()
-    // Long-running task
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    return { output: 'Task 1 complete' }
-  })
-  .node('task2', async ({ context }) => {
-    return { output: 'Task 2 complete' }
-  })
-  .edge('task1', 'task2')
+	.node('task1', async ({ context, signal }) => {
+		// Check for cancellation
+		signal?.throwIfAborted()
+		// Long-running task
+		await new Promise((resolve) => setTimeout(resolve, 1000))
+		return { output: 'Task 1 complete' }
+	})
+	.node('task2', async ({ context }) => {
+		return { output: 'Task 2 complete' }
+	})
+	.edge('task1', 'task2')
 
 const runtime = new FlowRuntime()
 const controller = new AbortController()
 
 // Run with cancellation signal
-const result = await flow.run(runtime, {}, {
-  signal: controller.signal,
-})
+const result = await flow.run(
+	runtime,
+	{},
+	{
+		signal: controller.signal,
+	},
+)
 
 // Cancel after 500ms
 setTimeout(() => controller.abort(), 500)
@@ -301,16 +310,16 @@ Wait nodes pause execution until external input is provided. Use the `.wait()` m
 
 ```typescript
 const flow = createFlow('approval-workflow')
-  .node('prepare', () => ({ output: { item: 'document.pdf' } }))
-  .wait('approval')
-  .node('process', async ({ input }) => {
-    if (input?.approved) {
-      return { output: 'Document approved and processed' }
-    }
-    return { output: 'Document rejected' }
-  })
-  .edge('prepare', 'approval')
-  .edge('approval', 'process')
+	.node('prepare', () => ({ output: { item: 'document.pdf' } }))
+	.wait('approval')
+	.node('process', async ({ input }) => {
+		if (input?.approved) {
+			return { output: 'Document approved and processed' }
+		}
+		return { output: 'Document rejected' }
+	})
+	.edge('prepare', 'approval')
+	.edge('approval', 'process')
 ```
 
 ### Sleep Nodes
@@ -319,11 +328,11 @@ Sleep nodes pause execution for a specified duration. Use the `.sleep()` method 
 
 ```typescript
 const flow = createFlow('delayed-workflow')
-  .node('start', () => ({ output: 'Starting delayed task' }))
-  .sleep('delay', { duration: 5000 }) // Sleep for 5 seconds
-  .node('finish', () => ({ output: 'Task completed after delay' }))
-  .edge('start', 'delay')
-  .edge('delay', 'finish')
+	.node('start', () => ({ output: 'Starting delayed task' }))
+	.sleep('delay', { duration: 5000 }) // Sleep for 5 seconds
+	.node('finish', () => ({ output: 'Task completed after delay' }))
+	.edge('start', 'delay')
+	.edge('delay', 'finish')
 ```
 
 ### Resuming Workflows
@@ -334,13 +343,13 @@ Paused workflows can be resumed using the `runtime.resume()` method:
 // Run until awaiting
 const result = await flow.run(runtime)
 if (result.status === 'awaiting') {
-  // Resume wait node with input
-  const finalResult = await flow.resume(
-    runtime,
-    result.serializedContext,
-    { output: { approved: true } },
-    'approval' // optional: specify which node to resume
-  )
+	// Resume wait node with input
+	const finalResult = await flow.resume(
+		runtime,
+		result.serializedContext,
+		{ output: { approved: true } },
+		'approval', // optional: specify which node to resume
+	)
 }
 ```
 
@@ -357,14 +366,16 @@ The [`DIContainer`](/api/container#dicontainer-class) implements the Inversion o
 For most use cases, you can pass options directly to the `FlowRuntime` constructor. However, for advanced scenarios like mocking dependencies in tests or managing complex, shared services (like database clients), the DI Container provides a powerful and maintainable solution.
 
 ### Benefits
--   **Loose Coupling**: Components depend only on interfaces, not concrete implementations.
--   **Centralized Configuration**: All "wiring" is defined in one place via the container.
--   **Easy Testing**: Inject mocks or stubs directly into the container for isolated testing.
--   **Pluggable Architecture**: Swap implementations (e.g., loggers, serializers) without changing code.
+
+- **Loose Coupling**: Components depend only on interfaces, not concrete implementations.
+- **Centralized Configuration**: All "wiring" is defined in one place via the container.
+- **Easy Testing**: Inject mocks or stubs directly into the container for isolated testing.
+- **Pluggable Architecture**: Swap implementations (e.g., loggers, serializers) without changing code.
 
 ### Key Components
--   **Service Tokens**: Symbolic identifiers (e.g., `ServiceTokens.Logger`) for type-safe service resolution.
--   **Registration**: Services can be registered directly or via factories for lazy instantiation.
--   **Resolution**: Retrieve services by token, with automatic dependency injection.
+
+- **Service Tokens**: Symbolic identifiers (e.g., `ServiceTokens.Logger`) for type-safe service resolution.
+- **Registration**: Services can be registered directly or via factories for lazy instantiation.
+- **Resolution**: Retrieve services by token, with automatic dependency injection.
 
 For usage examples, see the [Container API docs](/api/container#usage-example).

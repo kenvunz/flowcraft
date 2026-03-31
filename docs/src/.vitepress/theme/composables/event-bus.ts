@@ -3,7 +3,10 @@ import type { FlowcraftEvent, IEventBus } from 'flowcraft'
 // In-memory event bus for collecting node data
 export class InMemoryEventBus implements IEventBus {
 	private listeners: Map<string, ((event: FlowcraftEvent) => void)[]> = new Map()
-	public nodeData: Map<string, { inputs?: any, outputs?: any, contextChanges?: Record<string, any> }> = new Map()
+	public nodeData: Map<
+		string,
+		{ inputs?: any; outputs?: any; contextChanges?: Record<string, any> }
+	> = new Map()
 
 	emit(event: FlowcraftEvent): void {
 		console.log('Event emitted:', event)
@@ -43,7 +46,7 @@ export class InMemoryEventBus implements IEventBus {
 
 		// Notify listeners
 		const eventListeners = this.listeners.get(event.type) || []
-		eventListeners.forEach(listener => listener(event))
+		eventListeners.forEach((listener) => listener(event))
 	}
 
 	on(eventType: string, listener: (event: FlowcraftEvent) => void) {

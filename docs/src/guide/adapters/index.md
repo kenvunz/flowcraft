@@ -6,15 +6,15 @@ Each adapter provides the necessary components to bridge Flowcraft's core runtim
 
 ## Officially Supported Adapters
 
-| Package | Queue | Context Store | Coordination Store | Ideal For |
-| :--- | :--- | :--- | :--- | :--- |
-| **[@flowcraft/bullmq-adapter](/guide/adapters/bullmq)** | BullMQ (Redis) | Redis | Redis | High-performance, all-in-one Redis stack. |
-| **[@flowcraft/sqs-adapter](/guide/adapters/sqs)** | AWS SQS | DynamoDB | DynamoDB | Fully native, serverless-friendly AWS stack. |
-| **[@flowcraft/gcp-adapter](/guide/adapters/gcp)** | Google Pub/Sub | Firestore | Redis | Native Google Cloud integration. |
-| **[@flowcraft/azure-adapter](/guide/adapters/azure)** | Azure Queues | Cosmos DB | Redis | Native Microsoft Azure integration. |
-| **[@flowcraft/rabbitmq-adapter](/guide/adapters/rabbitmq)** | RabbitMQ | PostgreSQL | Redis | Classic, reliable enterprise messaging stack. |
-| **[@flowcraft/kafka-adapter](/guide/adapters/kafka)** | Apache Kafka | Cassandra | Redis | Extreme-scale, high-throughput streaming. |
-| **[@flowcraft/cloudflare-adapter](/guide/adapters/cloudflare)** | Cloudflare Queues | Durable Objects | Cloudflare KV | Edge computing, serverless Cloudflare Workers. |
+| Package                                                         | Queue             | Context Store   | Coordination Store | Ideal For                                      |
+| :-------------------------------------------------------------- | :---------------- | :-------------- | :----------------- | :--------------------------------------------- |
+| **[@flowcraft/bullmq-adapter](/guide/adapters/bullmq)**         | BullMQ (Redis)    | Redis           | Redis              | High-performance, all-in-one Redis stack.      |
+| **[@flowcraft/sqs-adapter](/guide/adapters/sqs)**               | AWS SQS           | DynamoDB        | DynamoDB           | Fully native, serverless-friendly AWS stack.   |
+| **[@flowcraft/gcp-adapter](/guide/adapters/gcp)**               | Google Pub/Sub    | Firestore       | Redis              | Native Google Cloud integration.               |
+| **[@flowcraft/azure-adapter](/guide/adapters/azure)**           | Azure Queues      | Cosmos DB       | Redis              | Native Microsoft Azure integration.            |
+| **[@flowcraft/rabbitmq-adapter](/guide/adapters/rabbitmq)**     | RabbitMQ          | PostgreSQL      | Redis              | Classic, reliable enterprise messaging stack.  |
+| **[@flowcraft/kafka-adapter](/guide/adapters/kafka)**           | Apache Kafka      | Cassandra       | Redis              | Extreme-scale, high-throughput streaming.      |
+| **[@flowcraft/cloudflare-adapter](/guide/adapters/cloudflare)** | Cloudflare Queues | Durable Objects | Cloudflare KV      | Edge computing, serverless Cloudflare Workers. |
 
 > [!TIP]
 > **Building Your Own Adapter**

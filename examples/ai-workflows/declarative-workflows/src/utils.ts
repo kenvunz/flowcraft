@@ -10,7 +10,9 @@ const openaiClient = new OpenAI()
  */
 export async function callLLM(prompt: string): Promise<string> {
 	try {
-		console.log(`\n--- Sending to LLM ---\n${prompt.substring(0, 300)}...\n---------------------\n`)
+		console.log(
+			`\n--- Sending to LLM ---\n${prompt.substring(0, 300)}...\n---------------------\n`,
+		)
 		const response = await openaiClient.chat.completions.create({
 			model: 'gpt-4o-mini',
 			messages: [{ role: 'user', content: prompt }],
@@ -21,7 +23,7 @@ export async function callLLM(prompt: string): Promise<string> {
 		return result
 	} catch (error: any) {
 		console.error('Error calling OpenAI API:', error)
-		throw new Error(`OpenAI API call failed: ${error.message}`)
+		throw new Error(`OpenAI API call failed: ${error.message}`, { cause: error })
 	}
 }
 

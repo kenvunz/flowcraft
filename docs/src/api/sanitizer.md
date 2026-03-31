@@ -20,25 +20,25 @@ Sanitizes a raw workflow blueprint by removing extraneous properties and keeping
 import { sanitizeBlueprint } from 'flowcraft'
 
 const rawBlueprint = {
-  id: 'my-workflow',
-  nodes: [
-    {
-      id: 'start',
-      uses: 'my-node',
-      params: {},
-      inputs: {},
-      config: {},
-      position: { x: 100, y: 200 }, // Extra UI property
-    },
-  ],
-  edges: [
-    {
-      source: 'start',
-      target: 'end',
-      action: 'success',
-      style: { color: 'blue' }, // Extra UI property
-    },
-  ],
+	id: 'my-workflow',
+	nodes: [
+		{
+			id: 'start',
+			uses: 'my-node',
+			params: {},
+			inputs: {},
+			config: {},
+			position: { x: 100, y: 200 }, // Extra UI property
+		},
+	],
+	edges: [
+		{
+			source: 'start',
+			target: 'end',
+			action: 'success',
+			style: { color: 'blue' }, // Extra UI property
+		},
+	],
 }
 
 const sanitized = sanitizeBlueprint(rawBlueprint)

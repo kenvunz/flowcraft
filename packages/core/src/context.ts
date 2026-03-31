@@ -40,7 +40,9 @@ export class Context<TContext extends Record<string, any>> implements ISyncConte
  * An adapter that provides a consistent, Promise-based view of a synchronous context.
  * This is created by the runtime and is transparent to the node author.
  */
-export class AsyncContextView<TContext extends Record<string, any>> implements IAsyncContext<TContext> {
+export class AsyncContextView<
+	TContext extends Record<string, any>,
+> implements IAsyncContext<TContext> {
 	public readonly type = 'async' as const
 
 	constructor(private syncContext: ISyncContext<TContext>) {}
@@ -79,7 +81,9 @@ export class AsyncContextView<TContext extends Record<string, any>> implements I
  * A proxy wrapper that tracks changes to an async context for delta-based persistence.
  * Records all mutations (set/delete operations) to enable efficient partial updates.
  */
-export class TrackedAsyncContext<TContext extends Record<string, any>> implements IAsyncContext<TContext> {
+export class TrackedAsyncContext<
+	TContext extends Record<string, any>,
+> implements IAsyncContext<TContext> {
 	public readonly type = 'async' as const
 	private deltas: PatchOperation[] = []
 	private innerContext: IAsyncContext<TContext>
@@ -87,7 +91,12 @@ export class TrackedAsyncContext<TContext extends Record<string, any>> implement
 	private executionId?: string
 	private sourceNode?: string
 
-	constructor(innerContext: IAsyncContext<TContext>, eventBus?: any, executionId?: string, sourceNode?: string) {
+	constructor(
+		innerContext: IAsyncContext<TContext>,
+		eventBus?: any,
+		executionId?: string,
+		sourceNode?: string,
+	) {
 		this.innerContext = innerContext
 		this.eventBus = eventBus
 		this.executionId = executionId

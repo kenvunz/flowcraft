@@ -24,7 +24,9 @@ describe('FlowRuntime', () => {
 			}),
 		}
 
-		vi.spyOn((runtime as any).executorFactory, 'createExecutorForNode').mockReturnValue(mockExecutor)
+		vi.spyOn((runtime as any).executorFactory, 'createExecutorForNode').mockReturnValue(
+			mockExecutor,
+		)
 		const result = await runtime.executeNode(blueprint, 'A', state)
 		expect(result.output).toBe('result')
 	})
@@ -41,7 +43,9 @@ describe('FlowRuntime', () => {
 			execute: vi.fn().mockRejectedValue(new Error('Execution failed')),
 		}
 
-		vi.spyOn((runtime as any).executorFactory, 'createExecutorForNode').mockReturnValue(mockExecutor)
+		vi.spyOn((runtime as any).executorFactory, 'createExecutorForNode').mockReturnValue(
+			mockExecutor,
+		)
 		await expect(runtime.executeNode(blueprint, 'A', state)).rejects.toThrow('Execution failed')
 	})
 

@@ -41,10 +41,15 @@ async function main() {
 
 		console.log('\n📋 Final Context:')
 		// Filter out internal Flowcraft keys for cleaner output
-		const finalContext = Object.fromEntries(Object.entries(result.context).filter(([key]) => !key.startsWith('_')))
+		const finalContext = Object.fromEntries(
+			Object.entries(result.context).filter(([key]) => !key.startsWith('_')),
+		)
 		console.log(JSON.stringify(finalContext, null, 2))
 	} catch (error) {
-		console.error('\n❌ Workflow failed:', error instanceof Error ? error.message : String(error))
+		console.error(
+			'\n❌ Workflow failed:',
+			error instanceof Error ? error.message : String(error),
+		)
 		process.exit(1)
 	}
 }

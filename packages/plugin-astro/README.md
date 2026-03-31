@@ -17,13 +17,13 @@ import { defineConfig } from 'astro/config'
 import flowcraftIntegration from '@flowcraft/astro-integration'
 
 export default defineConfig({
-  integrations: [
-    flowcraftIntegration({
-      // Optional: customize compiler options
-      // srcDir: './flows',
-      // outDir: './.flowcraft'
-    })
-  ]
+	integrations: [
+		flowcraftIntegration({
+			// Optional: customize compiler options
+			// srcDir: './flows',
+			// outDir: './.flowcraft'
+		}),
+	],
 })
 ```
 

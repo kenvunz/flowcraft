@@ -26,7 +26,12 @@ export class Compiler {
 		for (const [_filePath, fileAnalysis] of this.fileCache) {
 			for (const [exportName, { type, node }] of fileAnalysis.exports) {
 				if (type === 'flow') {
-					const analyzer = new FlowAnalyzer(this, fileAnalysis.sourceFile, node, this.typeChecker)
+					const analyzer = new FlowAnalyzer(
+						this,
+						fileAnalysis.sourceFile,
+						node,
+						this.typeChecker,
+					)
 					const result = analyzer.analyze()
 					blueprints[exportName] = result.blueprint
 					Object.assign(registry, result.registry)
@@ -44,7 +49,10 @@ export class Compiler {
 		for (const sourceFile of this.program.getSourceFiles()) {
 			if (sourceFile.isDeclarationFile) continue
 			const filePath = sourceFile.fileName
-			const exports = new Map<string, { type: 'flow' | 'step'; node: ts.FunctionDeclaration }>()
+			const exports = new Map<
+				string,
+				{ type: 'flow' | 'step'; node: ts.FunctionDeclaration }
+			>()
 
 			ts.forEachChild(sourceFile, (node) => {
 				if (ts.isExportDeclaration(node)) {
@@ -56,15 +64,28 @@ export class Compiler {
 								if (symbol.flags & ts.SymbolFlags.Alias) {
 									originalSymbol = this.typeChecker.getAliasedSymbol(symbol)
 								}
-								if (originalSymbol?.valueDeclaration && ts.isFunctionDeclaration(originalSymbol.valueDeclaration)) {
+								if (
+									originalSymbol?.valueDeclaration &&
+									ts.isFunctionDeclaration(originalSymbol.valueDeclaration)
+								) {
 									const decl = originalSymbol.valueDeclaration
 									const jsDocTags = ts.getJSDocTags(decl)
-									const hasFlowTag = jsDocTags.some((tag) => tag.tagName.text === 'flow')
-									const hasStepTag = jsDocTags.some((tag) => tag.tagName.text === 'step')
+									const hasFlowTag = jsDocTags.some(
+										(tag) => tag.tagName.text === 'flow',
+									)
+									const hasStepTag = jsDocTags.some(
+										(tag) => tag.tagName.text === 'step',
+									)
 									if (hasFlowTag) {
-										exports.set(element.name.text, { type: 'flow', node: decl })
+										exports.set(element.name.text, {
+											type: 'flow',
+											node: decl,
+										})
 									} else if (hasStepTag) {
-										exports.set(element.name.text, { type: 'step', node: decl })
+										exports.set(element.name.text, {
+											type: 'step',
+											node: decl,
+										})
 									}
 								}
 							}
@@ -101,7 +122,9 @@ export class Compiler {
 		const manifestDir = path.dirname(path.resolve('./dist/flowcraft.manifest.ts'))
 		for (const [uses, { importPath, exportName }] of Object.entries(registry)) {
 			const relativePath = path.relative(manifestDir, importPath).replace(/\.ts$/, '')
-			imports.push(`import { ${exportName} } from '${relativePath.split(path.sep).join(path.posix.sep)}'`)
+			imports.push(
+				`import { ${exportName} } from '${relativePath.split(path.sep).join(path.posix.sep)}'`,
+			)
 			registryEntries.push(`  '${uses}': ${exportName}`)
 		}
 

@@ -33,14 +33,18 @@ describe('RabbitMqAdapter - Testcontainers Integration', () => {
 			new RedisContainer('redis:8.2.2').start(),
 		])
 
-		amqpConnection = (await amqplib.connect(rabbitContainer.getAmqpUrl())) as unknown as amqplib.Connection
+		amqpConnection = (await amqplib.connect(
+			rabbitContainer.getAmqpUrl(),
+		)) as unknown as amqplib.Connection
 		pgClient = new PgClient({
 			connectionString: pgContainer.getConnectionUri(),
 		})
 		await pgClient.connect()
 		redis = new Redis(redisContainer.getConnectionUrl())
 
-		await pgClient.query(`CREATE TABLE ${CONTEXT_TABLE} (run_id TEXT PRIMARY KEY, context_data JSONB);`)
+		await pgClient.query(
+			`CREATE TABLE ${CONTEXT_TABLE} (run_id TEXT PRIMARY KEY, context_data JSONB);`,
+		)
 		await pgClient.query(
 			`CREATE TABLE ${STATUS_TABLE} (run_id TEXT PRIMARY KEY, status_data JSONB, updated_at TIMESTAMPTZ);`,
 		)

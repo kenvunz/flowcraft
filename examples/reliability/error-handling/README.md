@@ -5,6 +5,7 @@ This example demonstrates retry mechanisms and error handling middleware in Flow
 ## Overview
 
 The example showcases two reliability patterns:
+
 1. **Retry Mechanism**: Automatic retries for transient failures
 2. **Error Handling**: Structured error processing and recovery
 
@@ -27,11 +28,13 @@ pnpm start
 ## Expected Output
 
 **Retry Mechanism:**
+
 - Runs 3 iterations of an unstable operation (70% failure rate)
 - Shows retry attempts (up to 3) with 100ms delays between retries
 - Demonstrates eventual success or permanent failure after max retries
 
 **Error Handling:**
+
 - Executes a workflow that always fails
 - Shows error detection and handling by middleware
 - Demonstrates error propagation and recovery attempts

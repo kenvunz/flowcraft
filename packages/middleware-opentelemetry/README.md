@@ -18,7 +18,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 // Set up OpenTelemetry SDK
 const sdk = new NodeSDK({
-  traceExporter: new OTLPTraceExporter(),
+	traceExporter: new OTLPTraceExporter(),
 })
 sdk.start()
 
@@ -27,7 +27,7 @@ const otelMiddleware = new OpenTelemetryMiddleware('flowcraft-worker')
 
 // Add to FlowRuntime
 const runtime = new FlowRuntime({
-  middleware: [otelMiddleware],
+	middleware: [otelMiddleware],
 })
 ```
 

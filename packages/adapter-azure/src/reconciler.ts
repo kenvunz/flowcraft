@@ -25,7 +25,13 @@ export interface ReconciliationStats {
  * It queries Cosmos DB for stalled runs and attempts to resume them.
  */
 export function createAzureReconciler(options: AzureReconcilerOptions) {
-	const { adapter, cosmosClient, cosmosDatabaseName, statusContainerName, stalledThresholdSeconds } = options
+	const {
+		adapter,
+		cosmosClient,
+		cosmosDatabaseName,
+		statusContainerName,
+		stalledThresholdSeconds,
+	} = options
 
 	return {
 		async run(): Promise<ReconciliationStats> {
@@ -35,7 +41,9 @@ export function createAzureReconciler(options: AzureReconcilerOptions) {
 				failedRuns: 0,
 			}
 			const thresholdTimestamp = Math.floor(Date.now() / 1000) - stalledThresholdSeconds
-			const container = cosmosClient.database(cosmosDatabaseName).container(statusContainerName)
+			const container = cosmosClient
+				.database(cosmosDatabaseName)
+				.container(statusContainerName)
 
 			const querySpec = {
 				query: 'SELECT * FROM c WHERE c.status = @status AND c.lastUpdated < @threshold',
@@ -60,7 +68,9 @@ export function createAzureReconciler(options: AzureReconcilerOptions) {
 					const enqueued = await (adapter as any).reconcile(runId)
 					if (enqueued.size > 0) {
 						stats.reconciledRuns++
-						console.log(`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`)
+						console.log(
+							`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`,
+						)
 					}
 				} catch (error) {
 					stats.failedRuns++

@@ -5,6 +5,7 @@ This example demonstrates different retry strategies for handling transient fail
 ## Overview
 
 The example showcases three retry patterns:
+
 1. **Fixed Delay Retry**: Constant delay between retry attempts
 2. **Exponential Backoff**: Increasing delays to reduce server load
 3. **Circuit Breaker**: Fail-fast mechanism to prevent cascade failures
@@ -28,16 +29,19 @@ pnpm start
 ## Expected Output
 
 **Fixed Delay Retry:**
+
 - Retries failed operations with 200ms delays
 - Shows consistent timing between retry attempts
 - Demonstrates eventual success or permanent failure
 
 **Exponential Backoff:**
+
 - Delays increase exponentially (100ms, 200ms, 400ms)
 - Reduces load on failing services over time
 - Shows progressive delay increases
 
 **Circuit Breaker:**
+
 - Opens after 2 consecutive failures
 - Fails fast for 2 seconds when open
 - Automatically resets on success

@@ -23,13 +23,13 @@ import { sleep } from 'flowcraft/sdk'
 
 /** @flow */
 export async function delayedWorkflow() {
-  console.log('Starting workflow...')
+	console.log('Starting workflow...')
 
-  // Sleep for 5 minutes
-  await sleep('5m')
+	// Sleep for 5 minutes
+	await sleep('5m')
 
-  console.log('Workflow resumed after 5 minutes')
-  return { status: 'completed' }
+	console.log('Workflow resumed after 5 minutes')
+	return { status: 'completed' }
 }
 ```
 
@@ -44,13 +44,13 @@ The compiler transforms `await sleep('5m')` into a `sleep` node:
 ```typescript
 // Generated blueprint
 {
-  nodes: [
-    {
-      id: 'sleep_1',
-      uses: 'sleep',
-      params: { duration: '5m' }
-    }
-  ]
+	nodes: [
+		{
+			id: 'sleep_1',
+			uses: 'sleep',
+			params: { duration: '5m' },
+		},
+	]
 }
 ```
 
@@ -64,20 +64,20 @@ The `waitForEvent()` primitive pauses workflow execution until an external event
 import { waitForEvent } from 'flowcraft/sdk'
 
 interface EventData {
-  userId: string
-  action: string
-  timestamp: string
+	userId: string
+	action: string
+	timestamp: string
 }
 
 /** @flow */
 export async function eventDrivenWorkflow() {
-  console.log('Waiting for user action...')
+	console.log('Waiting for user action...')
 
-  // Wait for a specific event
-  const eventData = await waitForEvent<EventData>('user_action')
+	// Wait for a specific event
+	const eventData = await waitForEvent<EventData>('user_action')
 
-  console.log(`Received event: ${eventData.action} from user ${eventData.userId}`)
-  return { eventData }
+	console.log(`Received event: ${eventData.action} from user ${eventData.userId}`)
+	return { eventData }
 }
 ```
 
@@ -88,17 +88,17 @@ Events can be any structured data:
 ```typescript
 /** @flow */
 export async function multiEventWorkflow() {
-  // Wait for approval event
-  const approval = await waitForEvent<{ approved: boolean; reviewer: string }>('approval')
+	// Wait for approval event
+	const approval = await waitForEvent<{ approved: boolean; reviewer: string }>('approval')
 
-  if (approval.approved) {
-    // Wait for payment event
-    const payment = await waitForEvent<{ amount: number; method: string }>('payment_processed')
+	if (approval.approved) {
+		// Wait for payment event
+		const payment = await waitForEvent<{ amount: number; method: string }>('payment_processed')
 
-    return { status: 'paid', payment }
-  } else {
-    return { status: 'rejected', reason: 'not approved' }
-  }
+		return { status: 'paid', payment }
+	} else {
+		return { status: 'rejected', reason: 'not approved' }
+	}
 }
 ```
 
@@ -109,13 +109,13 @@ The compiler transforms `await waitForEvent('event_name')` into a `wait` node:
 ```typescript
 // Generated blueprint
 {
-  nodes: [
-    {
-      id: 'wait_1',
-      uses: 'wait',
-      params: { eventName: 'user_action' }
-    }
-  ]
+	nodes: [
+		{
+			id: 'wait_1',
+			uses: 'wait',
+			params: { eventName: 'user_action' },
+		},
+	]
 }
 ```
 
@@ -131,12 +131,12 @@ const runtime = new FlowRuntime()
 const result = await runtime.run(blueprint, {}, { functionRegistry })
 
 if (result.status === 'awaiting') {
-  // Resume with event data
-  const finalResult = await runtime.resume(
-    blueprint,
-    result.serializedContext,
-    { userId: '123', action: 'approve', timestamp: new Date().toISOString() }
-  )
+	// Resume with event data
+	const finalResult = await runtime.resume(blueprint, result.serializedContext, {
+		userId: '123',
+		action: 'approve',
+		timestamp: new Date().toISOString(),
+	})
 }
 ```
 
@@ -150,26 +150,26 @@ The `createWebhook()` primitive creates a webhook endpoint that external systems
 import { createWebhook } from 'flowcraft/sdk'
 
 interface WebhookPayload {
-  event: string
-  data: any
+	event: string
+	data: any
 }
 
 /** @flow */
 export async function webhookWorkflow() {
-  console.log('Creating webhook endpoint...')
+	console.log('Creating webhook endpoint...')
 
-  // Create webhook
-  const webhook = await createWebhook<WebhookPayload>()
+	// Create webhook
+	const webhook = await createWebhook<WebhookPayload>()
 
-  console.log(`Webhook URL: ${webhook.url}`)
-  console.log(`Event name: ${webhook.event}`)
+	console.log(`Webhook URL: ${webhook.url}`)
+	console.log(`Event name: ${webhook.event}`)
 
-  // Wait for webhook call
-  const { request } = await webhook.request
-  const payload = await request.json()
+	// Wait for webhook call
+	const { request } = await webhook.request
+	const payload = await request.json()
 
-  console.log('Received webhook:', payload)
-  return { payload }
+	console.log('Received webhook:', payload)
+	return { payload }
 }
 ```
 
@@ -188,16 +188,16 @@ The `webhook.request` promise resolves to an object with methods to access the H
 ```typescript
 /** @flow */
 export async function advancedWebhook() {
-  const webhook = await createWebhook()
+	const webhook = await createWebhook()
 
-  const { request } = await webhook.request
+	const { request } = await webhook.request
 
-  // Access request data
-  const jsonData = await request.json()
-  const textData = await request.text()
-  const headers = request.headers
+	// Access request data
+	const jsonData = await request.json()
+	const textData = await request.text()
+	const headers = request.headers
 
-  return { jsonData, textData, headers }
+	return { jsonData, textData, headers }
 }
 ```
 
@@ -228,50 +228,50 @@ Here's a comprehensive example combining all three primitives:
 import { sleep, waitForEvent, createWebhook } from 'flowcraft/sdk'
 
 interface PaymentEvent {
-  orderId: string
-  amount: number
-  status: 'success' | 'failed'
+	orderId: string
+	amount: number
+	status: 'success' | 'failed'
 }
 
 interface WebhookNotification {
-  type: 'payment' | 'refund'
-  orderId: string
-  details: any
+	type: 'payment' | 'refund'
+	orderId: string
+	details: any
 }
 
 /** @flow */
 export async function orderProcessingWorkflow(orderId: string) {
-  console.log(`Processing order ${orderId}`)
+	console.log(`Processing order ${orderId}`)
 
-  // Step 1: Wait for payment event
-  const payment = await waitForEvent<PaymentEvent>('payment_completed')
-  if (payment.status === 'failed') {
-    return { status: 'failed', reason: 'payment failed' }
-  }
+	// Step 1: Wait for payment event
+	const payment = await waitForEvent<PaymentEvent>('payment_completed')
+	if (payment.status === 'failed') {
+		return { status: 'failed', reason: 'payment failed' }
+	}
 
-  // Step 2: Create webhook for external notifications
-  const webhook = await createWebhook<WebhookNotification>()
+	// Step 2: Create webhook for external notifications
+	const webhook = await createWebhook<WebhookNotification>()
 
-  // Send webhook URL to external system
-  await notifyExternalSystem(webhook.url, orderId)
+	// Send webhook URL to external system
+	await notifyExternalSystem(webhook.url, orderId)
 
-  // Step 3: Sleep briefly to allow external processing
-  await sleep('30s')
+	// Step 3: Sleep briefly to allow external processing
+	await sleep('30s')
 
-  // Step 4: Wait for webhook confirmation
-  const { request } = await webhook.request
-  const notification = await request.json()
+	// Step 4: Wait for webhook confirmation
+	const { request } = await webhook.request
+	const notification = await request.json()
 
-  if (notification.type === 'refund') {
-    return { status: 'refunded', notification }
-  }
+	if (notification.type === 'refund') {
+		return { status: 'refunded', notification }
+	}
 
-  return {
-    status: 'completed',
-    orderId,
-    payment,
-    notification
-  }
+	return {
+		status: 'completed',
+		orderId,
+		payment,
+		notification,
+	}
 }
 ```
 

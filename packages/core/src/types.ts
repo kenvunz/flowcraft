@@ -127,7 +127,10 @@ export type NodeClass<
 	TInput = any,
 	TOutput = any,
 	TAction extends string = string,
-> = new (params?: Record<string, any>, nodeId?: string) => BaseNode<TContext, TDependencies, TInput, TOutput, TAction>
+> = new (
+	params?: Record<string, any>,
+	nodeId?: string,
+) => BaseNode<TContext, TDependencies, TInput, TOutput, TAction>
 
 /** A union of all possible node implementation types. */
 export type NodeImplementation = NodeFunction | NodeClass
@@ -140,7 +143,9 @@ export type NodeRegistry = Record<string, NodeImplementation>
 // =================================================================================
 
 /** A discriminated union for all possible context implementations. */
-export type ContextImplementation<T extends Record<string, any>> = ISyncContext<T> | IAsyncContext<T>
+export type ContextImplementation<T extends Record<string, any>> =
+	| ISyncContext<T>
+	| IAsyncContext<T>
 
 /** The synchronous context interface for high-performance, in-memory state. */
 export interface ISyncContext<TContext extends Record<string, any> = Record<string, any>> {
@@ -232,32 +237,91 @@ export interface ILogger {
 export type FlowcraftEvent =
 	| { type: 'workflow:start'; payload: { blueprintId: string; executionId: string } }
 	| { type: 'workflow:resume'; payload: { blueprintId: string; executionId: string } }
-	| { type: 'workflow:stall'; payload: { blueprintId: string; executionId: string; remainingNodes: number } }
+	| {
+			type: 'workflow:stall'
+			payload: { blueprintId: string; executionId: string; remainingNodes: number }
+	  }
 	| { type: 'workflow:pause'; payload: { blueprintId: string; executionId: string } }
 	| {
 			type: 'workflow:finish'
-			payload: { blueprintId: string; executionId: string; status: string; errors?: WorkflowError[] }
+			payload: {
+				blueprintId: string
+				executionId: string
+				status: string
+				errors?: WorkflowError[]
+			}
 	  }
-	| { type: 'node:start'; payload: { nodeId: string; executionId: string; input: any; blueprintId: string } }
-	| { type: 'node:finish'; payload: { nodeId: string; result: NodeResult; executionId: string; blueprintId: string } }
-	| { type: 'node:error'; payload: { nodeId: string; error: FlowcraftError; executionId: string; blueprintId: string } }
-	| { type: 'node:fallback'; payload: { nodeId: string; executionId: string; fallback: string; blueprintId: string } }
-	| { type: 'node:retry'; payload: { nodeId: string; attempt: number; executionId: string; blueprintId: string } }
+	| {
+			type: 'node:start'
+			payload: { nodeId: string; executionId: string; input: any; blueprintId: string }
+	  }
+	| {
+			type: 'node:finish'
+			payload: {
+				nodeId: string
+				result: NodeResult
+				executionId: string
+				blueprintId: string
+			}
+	  }
+	| {
+			type: 'node:error'
+			payload: {
+				nodeId: string
+				error: FlowcraftError
+				executionId: string
+				blueprintId: string
+			}
+	  }
+	| {
+			type: 'node:fallback'
+			payload: { nodeId: string; executionId: string; fallback: string; blueprintId: string }
+	  }
+	| {
+			type: 'node:retry'
+			payload: { nodeId: string; attempt: number; executionId: string; blueprintId: string }
+	  }
 	| {
 			type: 'node:skipped'
-			payload: { nodeId: string; edge: EdgeDefinition; executionId: string; blueprintId: string }
+			payload: {
+				nodeId: string
+				edge: EdgeDefinition
+				executionId: string
+				blueprintId: string
+			}
 	  }
-	| { type: 'edge:evaluate'; payload: { source: string; target: string; condition?: string; result: boolean } }
+	| {
+			type: 'edge:evaluate'
+			payload: { source: string; target: string; condition?: string; result: boolean }
+	  }
 	| {
 			type: 'context:change'
-			payload: { sourceNode: string; key: string; op: 'set' | 'delete'; value?: any; executionId: string }
+			payload: {
+				sourceNode: string
+				key: string
+				op: 'set' | 'delete'
+				value?: any
+				executionId: string
+			}
 	  }
-	| { type: 'job:enqueued'; payload: { runId: string; blueprintId: string; nodeId: string; queueName?: string } }
+	| {
+			type: 'job:enqueued'
+			payload: { runId: string; blueprintId: string; nodeId: string; queueName?: string }
+	  }
 	| {
 			type: 'job:processed'
-			payload: { runId: string; blueprintId: string; nodeId: string; duration: number; success: boolean }
+			payload: {
+				runId: string
+				blueprintId: string
+				nodeId: string
+				duration: number
+				success: boolean
+			}
 	  }
-	| { type: 'job:failed'; payload: { runId: string; blueprintId: string; nodeId: string; error: FlowcraftError } }
+	| {
+			type: 'job:failed'
+			payload: { runId: string; blueprintId: string; nodeId: string; error: FlowcraftError }
+	  }
 	| {
 			type: 'batch:start'
 			payload: { batchId: string; scatterNodeId: string; workerNodeIds: string[] }
@@ -317,6 +381,10 @@ export interface WorkflowResult<TContext = Record<string, any>> {
 
 /** A graph representation of a workflow blueprint. */
 export interface UIGraph {
-	nodes: Array<Partial<NodeDefinition> & { id: string; data?: Record<string, any>; type?: string }>
-	edges: Array<Partial<EdgeDefinition> & { source: string; target: string; data?: Record<string, any> }>
+	nodes: Array<
+		Partial<NodeDefinition> & { id: string; data?: Record<string, any>; type?: string }
+	>
+	edges: Array<
+		Partial<EdgeDefinition> & { source: string; target: string; data?: Record<string, any> }
+	>
 }

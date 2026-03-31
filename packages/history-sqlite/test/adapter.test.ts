@@ -62,12 +62,23 @@ describe('SqliteHistoryAdapter', () => {
 		const executionId = 'test-execution-order'
 		const events: FlowcraftEvent[] = [
 			{ type: 'workflow:start', payload: { blueprintId: 'test', executionId } },
-			{ type: 'node:start', payload: { nodeId: 'node1', executionId, input: null, blueprintId: 'test' } },
+			{
+				type: 'node:start',
+				payload: { nodeId: 'node1', executionId, input: null, blueprintId: 'test' },
+			},
 			{
 				type: 'node:finish',
-				payload: { nodeId: 'node1', result: { output: 'done' }, executionId, blueprintId: 'test' },
+				payload: {
+					nodeId: 'node1',
+					result: { output: 'done' },
+					executionId,
+					blueprintId: 'test',
+				},
 			},
-			{ type: 'workflow:finish', payload: { blueprintId: 'test', executionId, status: 'completed' } },
+			{
+				type: 'workflow:finish',
+				payload: { blueprintId: 'test', executionId, status: 'completed' },
+			},
 		]
 
 		for (const event of events) {

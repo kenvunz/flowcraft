@@ -94,11 +94,13 @@ The CLI connects to your history backend to retrieve workflow events. You can co
 ### 1. Command Line Options
 
 #### SQLite Backend
+
 ```bash
 flowcraft inspect <run-id> --database ./workflow-events.db
 ```
 
 #### PostgreSQL Backend
+
 ```bash
 flowcraft inspect <run-id> \
   --host localhost \
@@ -112,12 +114,14 @@ flowcraft inspect <run-id> \
 ### 2. Environment Variables
 
 #### SQLite
+
 ```bash
 export FLOWCRAFT_HISTORY_TYPE=sqlite
 export FLOWCRAFT_SQLITE_PATH=./workflow-events.db
 ```
 
 #### PostgreSQL
+
 ```bash
 export FLOWCRAFT_HISTORY_TYPE=postgres
 export FLOWCRAFT_POSTGRES_HOST=localhost
@@ -133,31 +137,33 @@ export FLOWCRAFT_POSTGRES_TABLE=workflow_events  # optional
 Create a `.flowcraft.json` file in your project directory or `~/.flowcraft/config.json`:
 
 #### SQLite Configuration
+
 ```json
 {
-  "history": {
-    "type": "sqlite",
-    "sqlite": {
-      "databasePath": "./workflow-events.db"
-    }
-  }
+	"history": {
+		"type": "sqlite",
+		"sqlite": {
+			"databasePath": "./workflow-events.db"
+		}
+	}
 }
 ```
 
 #### PostgreSQL Configuration
+
 ```json
 {
-  "history": {
-    "type": "postgres",
-    "postgres": {
-      "host": "localhost",
-      "port": 5432,
-      "user": "flowcraft",
-      "password": "password",
-      "database": "flowcraft",
-      "tableName": "workflow_events"
-    }
-  }
+	"history": {
+		"type": "postgres",
+		"postgres": {
+			"host": "localhost",
+			"port": 5432,
+			"user": "flowcraft",
+			"password": "password",
+			"database": "flowcraft",
+			"tableName": "workflow_events"
+		}
+	}
 }
 ```
 

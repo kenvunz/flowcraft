@@ -1,5 +1,13 @@
 import { FlowcraftError } from '../errors'
-import type { IEventBus, Middleware, NodeClass, NodeContext, NodeDefinition, NodeFunction, NodeResult } from '../types'
+import type {
+	IEventBus,
+	Middleware,
+	NodeClass,
+	NodeContext,
+	NodeDefinition,
+	NodeFunction,
+	NodeResult,
+} from '../types'
 import type { ExecutionContext } from './execution-context'
 
 async function withRetries<T>(
@@ -163,7 +171,10 @@ export class ClassNodeExecutor implements ExecutionStrategy {
 					context.dependencies.logger.warn(`Recover phase failed`, {
 						nodeId: nodeDef.id,
 						originalError: lastError.message,
-						recoverError: recoverError instanceof Error ? recoverError.message : String(recoverError),
+						recoverError:
+							recoverError instanceof Error
+								? recoverError.message
+								: String(recoverError),
 						executionId,
 					})
 				}
@@ -177,13 +188,19 @@ export type NodeExecutionResult =
 	| { status: 'failed_with_fallback'; fallbackNodeId: string; error: FlowcraftError }
 	| { status: 'failed'; error: FlowcraftError }
 
-export interface NodeExecutorConfig<TContext extends Record<string, any>, TDependencies extends Record<string, any>> {
+export interface NodeExecutorConfig<
+	TContext extends Record<string, any>,
+	TDependencies extends Record<string, any>,
+> {
 	context: ExecutionContext<TContext, TDependencies>
 	nodeDef: NodeDefinition
 	strategy: ExecutionStrategy
 }
 
-export class NodeExecutor<TContext extends Record<string, any>, TDependencies extends Record<string, any>> {
+export class NodeExecutor<
+	TContext extends Record<string, any>,
+	TDependencies extends Record<string, any>,
+> {
 	private context: ExecutionContext<TContext, TDependencies>
 	private nodeDef: NodeDefinition
 	private strategy: ExecutionStrategy
@@ -225,7 +242,12 @@ export class NodeExecutor<TContext extends Record<string, any>, TDependencies ex
 			let error: Error | undefined
 			try {
 				for (const hook of beforeHooks) await hook(nodeContext.context, this.nodeDef.id)
-				result = await this.strategy.execute(this.nodeDef, nodeContext, this.context.executionId, this.context.signal)
+				result = await this.strategy.execute(
+					this.nodeDef,
+					nodeContext,
+					this.context.executionId,
+					this.context.signal,
+				)
 				return { status: 'success', result }
 			} catch (e: any) {
 				error = e instanceof Error ? e : new Error(String(e))
@@ -257,11 +279,16 @@ export class NodeExecutor<TContext extends Record<string, any>, TDependencies ex
 							blueprintId: this.context.blueprint.id,
 						},
 					})
-					return { status: 'failed_with_fallback', fallbackNodeId, error: flowcraftError }
+					return {
+						status: 'failed_with_fallback',
+						fallbackNodeId,
+						error: flowcraftError,
+					}
 				}
 				return { status: 'failed', error: flowcraftError }
 			} finally {
-				for (const hook of afterHooks) await hook(nodeContext.context, this.nodeDef.id, result, error)
+				for (const hook of afterHooks)
+					await hook(nodeContext.context, this.nodeDef.id, result, error)
 			}
 		}
 
@@ -271,13 +298,17 @@ export class NodeExecutor<TContext extends Record<string, any>, TDependencies ex
 			const next = executionChain
 			executionChain = async () => {
 				let capturedResult: NodeExecutionResult | undefined
-				const middlewareResult = await hook(nodeContext.context, this.nodeDef.id, async () => {
-					capturedResult = await next()
-					if (capturedResult.status === 'success') {
-						return capturedResult.result
-					}
-					throw capturedResult.error
-				})
+				const middlewareResult = await hook(
+					nodeContext.context,
+					this.nodeDef.id,
+					async () => {
+						capturedResult = await next()
+						if (capturedResult.status === 'success') {
+							return capturedResult.result
+						}
+						throw capturedResult.error
+					},
+				)
 				if (!capturedResult && middlewareResult) {
 					return { status: 'success', result: middlewareResult }
 				}

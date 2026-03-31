@@ -44,7 +44,7 @@ export class PostgresHistoryAdapter implements IEventStore {
 		try {
 			try {
 				await client.query(`CREATE SEQUENCE IF NOT EXISTS ${this.sequenceName}`)
-			} catch (_error) {}
+			} catch {}
 
 			try {
 				await client.query(`
@@ -57,18 +57,23 @@ export class PostgresHistoryAdapter implements IEventStore {
 						created_at TIMESTAMPTZ DEFAULT NOW()
 					)
 				`)
-			} catch (_error) {}
+			} catch {}
 
 			try {
 				await client.query(
 					`CREATE INDEX IF NOT EXISTS idx_${this.tableName}_execution_id ON ${this.tableName}(execution_id)`,
 				)
-			} catch (_error) {}
+			} catch {}
 			try {
 				await client.query(
 					`CREATE INDEX IF NOT EXISTS idx_${this.tableName}_event_type ON ${this.tableName}(event_type)`,
 				)
-			} catch (_error) {}
+			} catch {}
+			try {
+				await client.query(
+					`CREATE INDEX IF NOT EXISTS idx_${this.tableName}_event_type ON ${this.tableName}(event_type)`,
+				)
+			} catch {}
 
 			this.tablesInitialized = true
 		} finally {
@@ -191,8 +196,12 @@ export class PostgresHistoryAdapter implements IEventStore {
 		const client = await this.pool.connect()
 
 		try {
-			const eventResult = await client.query(`SELECT COUNT(*) as count FROM ${this.tableName}`)
-			const executionResult = await client.query(`SELECT COUNT(DISTINCT execution_id) as count FROM ${this.tableName}`)
+			const eventResult = await client.query(
+				`SELECT COUNT(*) as count FROM ${this.tableName}`,
+			)
+			const executionResult = await client.query(
+				`SELECT COUNT(DISTINCT execution_id) as count FROM ${this.tableName}`,
+			)
 
 			return {
 				totalEvents: parseInt(eventResult.rows[0].count, 10),

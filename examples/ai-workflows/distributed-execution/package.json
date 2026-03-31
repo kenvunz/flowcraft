@@ -1,7 +1,7 @@
 {
 	"name": "@example/declarative-distributed-workflow",
-	"type": "module",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"worker": "tsx --watch src/worker.ts",
 		"client": "tsx src/client.ts",

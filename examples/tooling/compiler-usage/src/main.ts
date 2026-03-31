@@ -1,4 +1,9 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
 import { createCompilerUsageWorkflow } from './workflow.js'
 
 class CompilerMiddleware implements Middleware {

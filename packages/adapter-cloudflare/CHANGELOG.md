@@ -6,4 +6,4 @@
 
 - Upgrade to Typescript 6
 - Updated dependencies
-  - flowcraft@2.8.1
+    - flowcraft@2.8.1

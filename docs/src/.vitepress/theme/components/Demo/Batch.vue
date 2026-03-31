@@ -3,13 +3,13 @@ import { createFlow } from 'flowcraft'
 
 const batchFlow = createFlow('batch-example')
 	.node('start', async () => {
-		await new Promise(r => setTimeout(r, 1000))
+		await new Promise((r) => setTimeout(r, 1000))
 		return { output: [10, 20, 30] }
 	})
 	.batch(
 		'double-items',
 		async ({ input }) => {
-			await new Promise(r => setTimeout(r, 1000))
+			await new Promise((r) => setTimeout(r, 1000))
 			return { output: input * 2 }
 		},
 		{
@@ -20,7 +20,7 @@ const batchFlow = createFlow('batch-example')
 	.node(
 		'sum-results',
 		async ({ input }) => {
-			await new Promise(r => setTimeout(r, 1000))
+			await new Promise((r) => setTimeout(r, 1000))
 			return { output: input.reduce((acc, val) => acc + val, 0) }
 		},
 		{ inputs: 'doubled' },
@@ -29,12 +29,12 @@ const batchFlow = createFlow('batch-example')
 	.edge('double-items', 'sum-results')
 
 const positionsMap = {
-	'start': { x: 100, y: 100 },
+	start: { x: 100, y: 100 },
 	'double-items': { x: 350, y: 100 },
 	'sum-results': { x: 600, y: 100 },
 }
 const typesMap = {
-	'start': 'input',
+	start: 'input',
 	'double-items': 'default',
 	'sum-results': 'output',
 }

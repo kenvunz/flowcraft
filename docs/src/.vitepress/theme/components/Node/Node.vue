@@ -33,35 +33,39 @@ const hasBatchProgress = computed(() => props.batchProgress && props.batchProgre
 			</div>
 
 			<div v-if="hasInputs" class="text-xs">
-				<div class="font-medium text-gray-500 mb-1">
-					Inputs:
-				</div>
+				<div class="font-medium text-gray-500 mb-1">Inputs:</div>
 				<div class="bg-muted p-2 rounded text-xs">
-					<pre class="max-h-80 overflow-auto nowheel nodrag cursor-text select-text">{{ JSON.stringify(nodeData.inputs) }}</pre>
+					<pre class="max-h-80 overflow-auto nowheel nodrag cursor-text select-text">{{
+						JSON.stringify(nodeData.inputs)
+					}}</pre>
 				</div>
 			</div>
 
 			<div v-if="hasOutputs" class="text-xs">
-				<div class="font-medium text-gray-500 mb-1">
-					Outputs:
-				</div>
+				<div class="font-medium text-gray-500 mb-1">Outputs:</div>
 				<div class="bg-muted p-2 rounded text-xs">
-					<pre class="max-h-80 overflow-auto nowheel nodrag cursor-text select-text">{{ JSON.stringify(nodeData.outputs) }}</pre>
+					<pre class="max-h-80 overflow-auto nowheel nodrag cursor-text select-text">{{
+						JSON.stringify(nodeData.outputs)
+					}}</pre>
 				</div>
 			</div>
 
 			<div v-if="hasBatchProgress" class="text-xs">
-				<div class="font-medium text-gray-500 mb-1">
-					Progress:
-				</div>
+				<div class="font-medium text-gray-500 mb-1">Progress:</div>
 				<div class="bg-muted p-2 rounded text-xs space-y-2">
 					<div v-for="(item, index) in batchProgress" :key="index">
-						<pre class="max-h-80 overflow-auto nowheel nodrag cursor-text select-text">{{ JSON.stringify(item) }}</pre>
+						<pre
+							class="max-h-80 overflow-auto nowheel nodrag cursor-text select-text"
+							>{{ JSON.stringify(item) }}</pre
+						>
 					</div>
 				</div>
 			</div>
 
-			<div v-if="!hasInputs && !hasOutputs && !hasBatchProgress" class="text-xs text-gray-500">
+			<div
+				v-if="!hasInputs && !hasOutputs && !hasBatchProgress"
+				class="text-xs text-gray-500"
+			>
 				Waiting for data...
 			</div>
 		</div>

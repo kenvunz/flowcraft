@@ -45,23 +45,22 @@ wrangler queues create "flowcraft-jobs"
 
 ```typescript
 // wrangler.toml
-name = "flowcraft-worker"
-main = "src/index.ts"
-compatibility_date = "2024-01-01"
-
-[[kv_namespaces]]
-binding = "STATUS"
-id = "your-status-namespace-id"
-
-[[queues]]
-binding = "JOBS"
-queue = "flowcraft-jobs"
+name = 'flowcraft-worker'
+main = 'src/index.ts'
+compatibility_date = '2024-01-01'[[kv_namespaces]]
+binding = 'STATUS'
+id = 'your-status-namespace-id'[[queues]]
+binding = 'JOBS'
+queue = 'flowcraft-jobs'
 ```
 
 ### 3. Create the adapter
 
 ```typescript
-import { CloudflareQueueAdapter, DurableObjectCoordinationStore } from '@flowcraft/cloudflare-adapter'
+import {
+	CloudflareQueueAdapter,
+	DurableObjectCoordinationStore,
+} from '@flowcraft/cloudflare-adapter'
 
 export interface Env {
 	STATUS: KVNamespace
@@ -69,7 +68,9 @@ export interface Env {
 }
 
 // Note: In a real Worker, you'd get the Durable Object stub from env
-const mockStorage = { /* your Durable Object storage */ }
+const mockStorage = {
+	/* your Durable Object storage */
+}
 
 // Use DurableObjectCoordinationStore for atomic fan-in joins
 const coordinationStore = new DurableObjectCoordinationStore({
@@ -138,9 +139,9 @@ The reconciler returns detailed statistics:
 
 ```typescript
 interface ReconciliationStats {
-	stalledRuns: number    // Number of workflows identified as stalled
+	stalledRuns: number // Number of workflows identified as stalled
 	reconciledRuns: number // Number of workflows successfully resumed
-	failedRuns: number     // Number of reconciliation attempts that failed
+	failedRuns: number // Number of reconciliation attempts that failed
 }
 ```
 
@@ -199,12 +200,14 @@ Uses Durable Objects for context storage. Each workflow run has its own Durable 
 ### Coordination
 
 Uses Durable Objects for atomic distributed coordination:
+
 - Atomic fan-in join counting
 - Atomic distributed locking for "any" joins
 
 ### Status Tracking
 
 Uses a separate KV namespace to track workflow status, including:
+
 - Current status (running, completed, failed)
 - Last updated timestamp
 - Final result when complete

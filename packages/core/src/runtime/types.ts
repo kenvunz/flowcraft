@@ -15,7 +15,9 @@ import type { NodeExecutionResult, NodeExecutor } from './executors'
 import type { WorkflowState } from './state'
 import type { GraphTraverser } from './traverser'
 
-export type NodeExecutorFactory = (context: ExecutionContext<any, any>) => (nodeId: string) => NodeExecutor<any, any>
+export type NodeExecutorFactory = (
+	context: ExecutionContext<any, any>,
+) => (nodeId: string) => NodeExecutor<any, any>
 
 export interface ExecutionServices {
 	determineNextNodes: (
@@ -37,7 +39,10 @@ export interface ExecutionServices {
 }
 
 export interface IOrchestrator {
-	run(context: ExecutionContext<any, any>, traverser: GraphTraverser): Promise<WorkflowResult<any>>
+	run(
+		context: ExecutionContext<any, any>,
+		traverser: GraphTraverser,
+	): Promise<WorkflowResult<any>>
 }
 
 export type { NodeExecutionResult, NodeExecutor }

@@ -21,7 +21,9 @@ export function handleIfStatement(analyzer: FlowAnalyzer, node: ts.IfStatement):
 	const nodesBeforeIf = analyzer.state.getNodes().length
 	const lastInIf = analyzer.traverse(node.thenStatement)
 	const firstInIf =
-		analyzer.state.getNodes().length > nodesBeforeIf ? analyzer.state.getNodes()[nodesBeforeIf].id : null
+		analyzer.state.getNodes().length > nodesBeforeIf
+			? analyzer.state.getNodes()[nodesBeforeIf].id
+			: null
 	analyzer.state.setCursor(prevCursor)
 
 	analyzer.state.popScope()
@@ -44,7 +46,9 @@ export function handleIfStatement(analyzer: FlowAnalyzer, node: ts.IfStatement):
 		const nodesBeforeElse = analyzer.state.getNodes().length
 		lastInElse = analyzer.traverse(node.elseStatement)
 		firstInElse =
-			analyzer.state.getNodes().length > nodesBeforeElse ? analyzer.state.getNodes()[nodesBeforeElse].id : null
+			analyzer.state.getNodes().length > nodesBeforeElse
+				? analyzer.state.getNodes()[nodesBeforeElse].id
+				: null
 		analyzer.state.setCursor(prevCursor)
 
 		analyzer.state.popScope()

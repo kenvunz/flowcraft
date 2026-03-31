@@ -10,15 +10,15 @@ Flowcraft offers two primary ways to author workflows: the battle-tested **Fluen
 
 ## Key Features
 
--   **Zero Dependencies**: Lightweight and dependency-free, runs in any environment.
--   **Declarative Workflows**: Simple [serializable objects](/guide/core-concepts#workflow-blueprint) with [nodes and edges](/guide/core-concepts#nodes-edges).
--   **Unopinionated Logic**: Nodes can be simple [functions](/guide/core-concepts#function-based-nodes) or structured [classes](/guide/core-concepts#class-based-nodes).
--   **Progressive Scalability**: Run [in-memory](/guide/fluent) or scale to [distributed systems](/guide/distributed-execution).
--   **Resilient Execution**: [Retries](/guide/error-handling#retries), [fallbacks](/guide/error-handling#fallbacks), [timeouts](/guide/core-concepts#config), and [cancellation](/guide/core-concepts#cancellation).
--   **Advanced Patterns**: Includes [batches](/guide/batches), [loops](/guide/loops), [subflows](/guide/subflows), and [HITL](/guide/hitl) constructs.
--   **Extensibility**: Pluggable [loggers](/guide/loggers), [evaluators](/guide/evaluators), [serializers](/guide/serializers), and [middleware](/guide/middleware).
--   **Static Analysis**: [Detect cycles](/guide/static-analysis#detecting-cycles), [validate blueprints](/guide/static-analysis#linting-a-blueprint), and [generate diagrams](/guide/visualizing-workflows#generatemermaid).
--   **Type-Safe API**: [Fully typed](/guide/core-concepts#context) with TypeScript for a robust developer experience.
+- **Zero Dependencies**: Lightweight and dependency-free, runs in any environment.
+- **Declarative Workflows**: Simple [serializable objects](/guide/core-concepts#workflow-blueprint) with [nodes and edges](/guide/core-concepts#nodes-edges).
+- **Unopinionated Logic**: Nodes can be simple [functions](/guide/core-concepts#function-based-nodes) or structured [classes](/guide/core-concepts#class-based-nodes).
+- **Progressive Scalability**: Run [in-memory](/guide/fluent) or scale to [distributed systems](/guide/distributed-execution).
+- **Resilient Execution**: [Retries](/guide/error-handling#retries), [fallbacks](/guide/error-handling#fallbacks), [timeouts](/guide/core-concepts#config), and [cancellation](/guide/core-concepts#cancellation).
+- **Advanced Patterns**: Includes [batches](/guide/batches), [loops](/guide/loops), [subflows](/guide/subflows), and [HITL](/guide/hitl) constructs.
+- **Extensibility**: Pluggable [loggers](/guide/loggers), [evaluators](/guide/evaluators), [serializers](/guide/serializers), and [middleware](/guide/middleware).
+- **Static Analysis**: [Detect cycles](/guide/static-analysis#detecting-cycles), [validate blueprints](/guide/static-analysis#linting-a-blueprint), and [generate diagrams](/guide/visualizing-workflows#generatemermaid).
+- **Type-Safe API**: [Fully typed](/guide/core-concepts#context) with TypeScript for a robust developer experience.
 
 ## Use Cases
 

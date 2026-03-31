@@ -5,6 +5,7 @@ This example demonstrates database transaction management with automatic rollbac
 ## Overview
 
 The example shows two scenarios:
+
 1. **Successful Transaction**: Complete user insert/update with commit
 2. **Failing Transaction**: Simulates database error with automatic rollback
 
@@ -27,12 +28,14 @@ pnpm start
 ## Expected Output
 
 **Successful Transaction:**
+
 - Begins transaction with unique ID
 - Inserts user data
 - Updates user data
 - Commits transaction successfully
 
 **Failing Transaction:**
+
 - Begins transaction
 - Inserts user data
 - Simulates database constraint violation

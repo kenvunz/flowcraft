@@ -5,6 +5,7 @@ This example demonstrates an interactive human-in-the-loop workflow where human 
 ## Overview
 
 The workflow implements a customer refund approval process that requires interactive human review:
+
 1. Prepares a refund task
 2. Prompts the user for approval/rejection via terminal input
 3. Executes approved tasks or handles rejections based on user decision

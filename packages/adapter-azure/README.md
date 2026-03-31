@@ -24,6 +24,7 @@ npm install flowcraft @flowcraft/azure-adapter @azure/storage-queue @azure/cosmo
 ## Prerequisites
 
 To use this adapter, you must have the following Azure and Redis resources provisioned:
+
 - An Azure Storage Account with a Queue created.
 - An Azure Cosmos DB account (Core SQL API) with a database and two containers: one for context and one for final status.
 - A Redis instance (e.g., Azure Cache for Redis) accessible by your workers.
@@ -40,8 +41,12 @@ import { FlowRuntime } from 'flowcraft'
 import Redis from 'ioredis'
 
 // 1. Define your workflow blueprints and registry
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize service clients
 const queueClient = new QueueClient('YOUR_AZURE_STORAGE_CONNECTION_STRING', 'your-queue-name')
@@ -93,11 +98,11 @@ import { createAzureReconciler } from '@flowcraft/azure-adapter'
 
 // Create a reconciler instance
 const reconciler = createAzureReconciler({
-  adapter: myAzureAdapter,
-  cosmosClient: myCosmosClient,
-  cosmosDatabaseName: 'my-database',
-  statusContainerName: 'workflow-statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter: myAzureAdapter,
+	cosmosClient: myCosmosClient,
+	cosmosDatabaseName: 'my-database',
+	statusContainerName: 'workflow-statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run reconciliation
@@ -111,9 +116,9 @@ The reconciler returns detailed statistics:
 
 ```typescript
 interface ReconciliationStats {
-  stalledRuns: number    // Number of workflows identified as stalled
-  reconciledRuns: number // Number of workflows successfully resumed
-  failedRuns: number     // Number of reconciliation attempts that failed
+	stalledRuns: number // Number of workflows identified as stalled
+	reconciledRuns: number // Number of workflows successfully resumed
+	failedRuns: number // Number of reconciliation attempts that failed
 }
 ```
 

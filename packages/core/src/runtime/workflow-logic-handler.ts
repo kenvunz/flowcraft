@@ -27,9 +27,13 @@ export class WorkflowLogicHandler {
 
 		const effectiveSourceNodeId = completedNodeId
 
-		const directOutgoingEdges = blueprint.edges.filter((edge) => edge.source === effectiveSourceNodeId)
+		const directOutgoingEdges = blueprint.edges.filter(
+			(edge) => edge.source === effectiveSourceNodeId,
+		)
 
-		const nodesThisIsAFallbackFor = blueprint.nodes.filter((n) => n.config?.fallback === completedNodeId)
+		const nodesThisIsAFallbackFor = blueprint.nodes.filter(
+			(n) => n.config?.fallback === completedNodeId,
+		)
 		const inheritedOutgoingEdges = nodesThisIsAFallbackFor.flatMap((originalNode) =>
 			blueprint.edges.filter((edge) => edge.source === originalNode.id),
 		)
@@ -53,7 +57,12 @@ export class WorkflowLogicHandler {
 			})
 			await this.eventBus.emit({
 				type: 'edge:evaluate',
-				payload: { source: edge.source, target: edge.target, condition: edge.condition, result: evaluationResult },
+				payload: {
+					source: edge.source,
+					target: edge.target,
+					condition: edge.condition,
+					result: evaluationResult,
+				},
 			})
 			return evaluationResult
 		}
@@ -70,7 +79,12 @@ export class WorkflowLogicHandler {
 				} else {
 					await this.eventBus.emit({
 						type: 'node:skipped',
-						payload: { nodeId: completedNodeId, edge, executionId: executionId || '', blueprintId: blueprint.id },
+						payload: {
+							nodeId: completedNodeId,
+							edge,
+							executionId: executionId || '',
+							blueprintId: blueprint.id,
+						},
 					})
 				}
 			}
@@ -88,7 +102,12 @@ export class WorkflowLogicHandler {
 				} else {
 					await this.eventBus.emit({
 						type: 'node:skipped',
-						payload: { nodeId: completedNodeId, edge, executionId: executionId || '', blueprintId: blueprint.id },
+						payload: {
+							nodeId: completedNodeId,
+							edge,
+							executionId: executionId || '',
+							blueprintId: blueprint.id,
+						},
 					})
 				}
 			}
@@ -103,7 +122,12 @@ export class WorkflowLogicHandler {
 				} else {
 					await this.eventBus.emit({
 						type: 'node:skipped',
-						payload: { nodeId: completedNodeId, edge, executionId: executionId || '', blueprintId: blueprint.id },
+						payload: {
+							nodeId: completedNodeId,
+							edge,
+							executionId: executionId || '',
+							blueprintId: blueprint.id,
+						},
 					})
 				}
 			}

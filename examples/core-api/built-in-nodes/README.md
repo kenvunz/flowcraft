@@ -31,12 +31,13 @@ The `.batch()` method automatically creates scatter-gather nodes for parallel pr
 
 ```typescript
 flow.batch('processItems', processBatchItem, {
-  inputKey: 'batchItems',    // Array to process
-  outputKey: 'processedItems', // Results array
+	inputKey: 'batchItems', // Array to process
+	outputKey: 'processedItems', // Results array
 })
 ```
 
 **Key Features:**
+
 - Automatic parallel execution of worker nodes
 - Built-in error handling and aggregation
 - Context key mapping for input/output
@@ -47,13 +48,14 @@ The `.loop()` method creates conditional iteration:
 
 ```typescript
 flow.loop('counterLoop', {
-  startNodeId: 'executeIteration',
-  endNodeId: 'executeIteration',
-  condition: 'loopData.counter < loopData.maxIterations',
+	startNodeId: 'executeIteration',
+	endNodeId: 'executeIteration',
+	condition: 'loopData.counter < loopData.maxIterations',
 })
 ```
 
 **Key Features:**
+
 - Automatic loop controller node generation
 - Expression-based conditions (requires `UnsafeEvaluator`)
 - Clean separation of loop logic and iteration body
@@ -67,6 +69,7 @@ flow.sleep('wait5Seconds', { duration: '5s' })
 ```
 
 **Key Features:**
+
 - Multiple duration formats (`'5s'`, `'1m'`, `'2h'`, `'1d'`, or milliseconds)
 - Automatic resumption when timer expires
 - Durable timers that persist across restarts
@@ -80,6 +83,7 @@ flow.wait('wait-for-approval')
 ```
 
 **Key Features:**
+
 - Human-in-the-Loop (HITL) workflows
 - External input via `runtime.resume()`
 - Action-based conditional branching
@@ -94,17 +98,18 @@ const validationBlueprint = createValidationSubflow().toBlueprint()
 
 // Add subflow node manually
 blueprint.nodes?.push({
-  id: 'validationSubflow',
-  uses: 'subflow',
-  params: {
-    blueprintId: validationBlueprint.id,
-    inputs: { inputData: 'inputData' },
-    outputs: { validationResults: 'checkCompleteness' },
-  },
+	id: 'validationSubflow',
+	uses: 'subflow',
+	params: {
+		blueprintId: validationBlueprint.id,
+		inputs: { inputData: 'inputData' },
+		outputs: { validationResults: 'checkCompleteness' },
+	},
 })
 ```
 
 **Key Features:**
+
 - Modular workflow composition
 - Input/output mapping between parent and subflow
 - Error propagation and debugging
@@ -225,13 +230,14 @@ The loop condition uses comparison operators (`<`), which requires `UnsafeEvalua
 import { FlowRuntime, UnsafeEvaluator } from 'flowcraft'
 
 const runtime = new FlowRuntime({
-  evaluator: new UnsafeEvaluator(), // Only for trusted environments
+	evaluator: new UnsafeEvaluator(), // Only for trusted environments
 })
 ```
 
 ## Next Steps
 
 After understanding built-in nodes, explore:
+
 - `context-state-management` - Advanced context manipulation patterns
 - `function-class-nodes` - Different ways to implement node logic
 - `middleware` - Adding cross-cutting concerns to workflows

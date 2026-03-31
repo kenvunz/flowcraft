@@ -25,7 +25,7 @@ export async function callLLM(prompt: string): Promise<string> {
 		return result
 	} catch (error: any) {
 		console.error('Error calling OpenAI API for generation:', error)
-		throw new Error(`OpenAI API call failed: ${error.message}`)
+		throw new Error(`OpenAI API call failed: ${error.message}`, { cause: error })
 	}
 }
 
@@ -42,7 +42,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
 		return response.data[0].embedding
 	} catch (error: any) {
 		console.error('Error calling OpenAI Embeddings API:', error)
-		throw new Error(`OpenAI Embeddings API call failed: ${error.message}`)
+		throw new Error(`OpenAI Embeddings API call failed: ${error.message}`, { cause: error })
 	}
 }
 

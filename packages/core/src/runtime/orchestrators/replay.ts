@@ -29,7 +29,10 @@ export class ReplayOrchestrator implements IOrchestrator {
 	 * @param _traverser - Graph traverser (unused in replay mode)
 	 * @returns Promise resolving to the reconstructed workflow result
 	 */
-	async run(context: ExecutionContext<any, any>, _traverser: GraphTraverser): Promise<WorkflowResult<any>> {
+	async run(
+		context: ExecutionContext<any, any>,
+		_traverser: GraphTraverser,
+	): Promise<WorkflowResult<any>> {
 		const executionEvents = this.events.filter((event) => {
 			if ('executionId' in event.payload) {
 				return event.payload.executionId === context.executionId

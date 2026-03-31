@@ -26,7 +26,13 @@ export interface ReconciliationStats {
  * It queries PostgreSQL for stalled runs and attempts to resume them.
  */
 export function createRabbitMqReconciler(options: RabbitMqReconcilerOptions) {
-	const { adapter, pgClient, statusTableName, stalledThresholdSeconds, logger = (adapter as any).logger } = options
+	const {
+		adapter,
+		pgClient,
+		statusTableName,
+		stalledThresholdSeconds,
+		logger = (adapter as any).logger,
+	} = options
 
 	return {
 		async run(): Promise<ReconciliationStats> {
@@ -55,7 +61,9 @@ export function createRabbitMqReconciler(options: RabbitMqReconcilerOptions) {
 					const enqueued = await (adapter as any).reconcile(runId)
 					if (enqueued.size > 0) {
 						stats.reconciledRuns++
-						logger.info(`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`)
+						logger.info(
+							`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`,
+						)
 					}
 				} catch (error) {
 					stats.failedRuns++

@@ -101,7 +101,11 @@ export class FlowAnalyzer {
 					_sourceLocation: this.getSourceLocation(node),
 				})
 			} else {
-				this.addDiagnostic(node, 'error', `continue statement can only be used inside a loop.`)
+				this.addDiagnostic(
+					node,
+					'error',
+					`continue statement can only be used inside a loop.`,
+				)
 			}
 			this.state.setCursor(null)
 			return null
@@ -138,7 +142,9 @@ export class FlowAnalyzer {
 	/**
 	 * Checks if a call expression is calling a durable primitive from 'flowcraft/sdk'
 	 */
-	private isDurablePrimitiveCall(callExpression: ts.CallExpression): { primitiveName: string } | null {
+	private isDurablePrimitiveCall(
+		callExpression: ts.CallExpression,
+	): { primitiveName: string } | null {
 		const callee = callExpression.expression
 		if (!ts.isIdentifier(callee)) {
 			return null
@@ -149,7 +155,8 @@ export class FlowAnalyzer {
 			return null
 		}
 
-		const originalSymbol = symbol.flags & ts.SymbolFlags.Alias ? this.typeChecker.getAliasedSymbol(symbol) : symbol
+		const originalSymbol =
+			symbol.flags & ts.SymbolFlags.Alias ? this.typeChecker.getAliasedSymbol(symbol) : symbol
 
 		const declarations = originalSymbol.getDeclarations()
 		if (!declarations || declarations.length === 0) {
@@ -159,7 +166,10 @@ export class FlowAnalyzer {
 		for (const declaration of declarations) {
 			if (ts.isImportSpecifier(declaration)) {
 				const importDeclaration = declaration.parent.parent.parent
-				if (ts.isImportDeclaration(importDeclaration) && ts.isStringLiteral(importDeclaration.moduleSpecifier)) {
+				if (
+					ts.isImportDeclaration(importDeclaration) &&
+					ts.isStringLiteral(importDeclaration.moduleSpecifier)
+				) {
 					const moduleSpecifier = importDeclaration.moduleSpecifier.text
 					if (moduleSpecifier === 'flowcraft/sdk') {
 						const primitiveName = declaration.name.text
@@ -199,7 +209,10 @@ export class FlowAnalyzer {
 			const arg = args[i]
 
 			if (!param.valueDeclaration) continue
-			const paramType = this.typeChecker.getTypeOfSymbolAtLocation(param, param.valueDeclaration)
+			const paramType = this.typeChecker.getTypeOfSymbolAtLocation(
+				param,
+				param.valueDeclaration,
+			)
 			if (!paramType) continue
 
 			const argType = this.typeChecker.getTypeAtLocation(arg)

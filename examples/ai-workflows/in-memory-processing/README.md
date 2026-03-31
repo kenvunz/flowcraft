@@ -12,6 +12,7 @@ This example demonstrates how to execute the declarative AI agent workflows from
 
 1.  **Install dependencies**:
     From the root of the `flowcraft` project, run:
+
     ```bash
     npm install
     ```
@@ -28,7 +29,7 @@ This example demonstrates how to execute the declarative AI agent workflows from
 
     ```typescript
     // src/main.ts
-    const ACTIVE_USE_CASE: UseCase = '4.content-moderation';
+    const ACTIVE_USE_CASE: UseCase = '4.content-moderation'
     ```
 
 4.  **Run the application**:

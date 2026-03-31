@@ -14,12 +14,12 @@ Add the module to your `nuxt.config.ts`:
 
 ```ts
 export default defineNuxtConfig({
-  modules: ['@flowcraft/nuxt-module'],
-  flowcraft: {
-    // Flowcraft compiler options (optional)
-    srcDir: './flows',
-    outDir: './.flowcraft'
-  }
+	modules: ['@flowcraft/nuxt-module'],
+	flowcraft: {
+		// Flowcraft compiler options (optional)
+		srcDir: './flows',
+		outDir: './.flowcraft',
+	},
 })
 ```
 

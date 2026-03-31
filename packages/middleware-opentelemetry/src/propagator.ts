@@ -1,4 +1,11 @@
-import { context, propagation, type Span, type TextMapGetter, type TextMapSetter, trace } from '@opentelemetry/api'
+import {
+	context,
+	propagation,
+	type Span,
+	type TextMapGetter,
+	type TextMapSetter,
+	trace,
+} from '@opentelemetry/api'
 import type { ContextImplementation } from 'flowcraft'
 
 const TRACE_CONTEXT_KEY_PREFIX = '_traceContext_'

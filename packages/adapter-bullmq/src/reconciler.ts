@@ -51,7 +51,13 @@ export function createBullMQReconciler(options: BullMQReconcilerOptions) {
 
 			let cursor = 0
 			do {
-				const result = await redis.scan(cursor, 'MATCH', `${keyPrefix}*`, 'COUNT', scanCount)
+				const result = await redis.scan(
+					cursor,
+					'MATCH',
+					`${keyPrefix}*`,
+					'COUNT',
+					scanCount,
+				)
 				cursor = Number(result[0])
 				const keys = result[1]
 
@@ -60,13 +66,19 @@ export function createBullMQReconciler(options: BullMQReconcilerOptions) {
 					const runId = key.replace(keyPrefix, '')
 					const idleTime = await redis.object('IDLETIME', key)
 
-					if (idleTime !== null && idleTime !== undefined && Number(idleTime) > stalledThresholdSeconds) {
+					if (
+						idleTime !== null &&
+						idleTime !== undefined &&
+						Number(idleTime) > stalledThresholdSeconds
+					) {
 						stats.stalledRuns++
 						try {
 							const enqueued = await (adapter as any).reconcile(runId)
 							if (enqueued.size > 0) {
 								stats.reconciledRuns++
-								logger.info(`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`)
+								logger.info(
+									`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`,
+								)
 							}
 						} catch (error) {
 							stats.failedRuns++

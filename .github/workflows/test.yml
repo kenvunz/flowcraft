@@ -1,29 +1,29 @@
 name: Coverage
 
 on:
-  push:
-    tags:
-      - 'flowcraft*'
-  workflow_dispatch:
+    push:
+        tags:
+            - 'flowcraft*'
+    workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install
-      - name: Run tests and create coverage report
-        run: pnpm --filter flowcraft test:coverage
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/core/coverage/lcov.info
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+            - name: Install dependencies
+              run: pnpm install
+            - name: Run tests and create coverage report
+              run: pnpm --filter flowcraft test:coverage
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: ./packages/core/coverage/lcov.info

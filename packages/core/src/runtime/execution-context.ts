@@ -16,7 +16,10 @@ import { WorkflowState } from './state'
  * A container for all state and dependencies of a single workflow execution.
  * This object is created once per `run` and passed through the execution stack.
  */
-export class ExecutionContext<TContext extends Record<string, any>, TDependencies extends RuntimeDependencies> {
+export class ExecutionContext<
+	TContext extends Record<string, any>,
+	TDependencies extends RuntimeDependencies,
+> {
 	constructor(
 		public readonly blueprint: WorkflowBlueprint,
 		public readonly state: WorkflowState<TContext>,

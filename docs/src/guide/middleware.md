@@ -2,10 +2,10 @@
 
 Middleware allows you to add cross-cutting concerns to your workflows by wrapping the execution of nodes. This is a powerful pattern for implementing logic that isn't part of any single node's business logic, such as:
 
--   Database transactions
--   Performance monitoring and tracing
--   Custom caching
--   Schema validation for node inputs/outputs
+- Database transactions
+- Performance monitoring and tracing
+- Custom caching
+- Schema validation for node inputs/outputs
 
 ## The `Middleware` Interface
 
@@ -51,8 +51,7 @@ const transactionMiddleware: Middleware = {
 			console.log(`[TX] Committing transaction for node: ${nodeId}`)
 			await db.query('COMMIT')
 			return result
-		}
-		catch (e) {
+		} catch (e) {
 			// This code runs ONLY if `next()` throws an error.
 			console.log(`[TX] Rolling back transaction for node: ${nodeId}`)
 			await db.query('ROLLBACK')
@@ -87,11 +86,14 @@ const performanceMiddleware: Middleware = {
 		const startTime = this._startTimes.get(context)
 		if (startTime) {
 			const duration = Date.now() - startTime
-			console.log(`Node ${nodeId} finished in ${duration}ms. Status: ${error ? 'failed' : 'success'}`)
+			console.log(
+				`Node ${nodeId} finished in ${duration}ms. Status: ${error ? 'failed' : 'success'}`,
+			)
 		}
-	}
+	},
 }
 ```
+
 ## Example: OpenTelemetry Observability
 
 For [distributed](/guide/distributed-execution) tracing and observability, you can use the [`@flowcraft/opentelemetry-middleware`](https://npmjs.com/package/@flowcraft/opentelemetry-middleware) package. This middleware integrates with [OpenTelemetry](https://opentelemetry.io/) to provide end-to-end visibility into workflow executions.
@@ -103,7 +105,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 // Set up OpenTelemetry SDK (standard OTel setup)
 const sdk = new NodeSDK({
-  traceExporter: new OTLPTraceExporter(), // Point to Jaeger, Datadog, etc.
+	traceExporter: new OTLPTraceExporter(), // Point to Jaeger, Datadog, etc.
 })
 sdk.start()
 
@@ -112,7 +114,7 @@ const otelMiddleware = new OpenTelemetryMiddleware('flowcraft-worker')
 
 // Add to runtime
 const runtime = new FlowRuntime({
-  middleware: [otelMiddleware],
+	middleware: [otelMiddleware],
 })
 ```
 
@@ -130,30 +132,30 @@ In [`aroundNode`](/api/middleware#aroundnode), after calling `next()`, you recei
 import { Middleware, NodeResult } from 'flowcraft'
 
 const resultEnrichmentMiddleware: Middleware = {
-  aroundNode: async (ctx, nodeId, next) => {
-    const result = await next()
+	aroundNode: async (ctx, nodeId, next) => {
+		const result = await next()
 
-    // Modify the result by adding custom metadata
-    if (result.data) {
-      result.data = {
-        ...result.data,
-        enrichedAt: new Date().toISOString(),
-        nodeId: nodeId,
-        // Add any other custom fields
-      }
-    }
+		// Modify the result by adding custom metadata
+		if (result.data) {
+			result.data = {
+				...result.data,
+				enrichedAt: new Date().toISOString(),
+				nodeId: nodeId,
+				// Add any other custom fields
+			}
+		}
 
-    // Alternatively, return a completely new NodeResult
-    // For example, to mask errors in production:
-    if (result.error && process.env.NODE_ENV === 'production') {
-      return new NodeResult({
-        data: null,
-        error: new Error('An internal error occurred'), // Generic error
-      })
-    }
+		// Alternatively, return a completely new NodeResult
+		// For example, to mask errors in production:
+		if (result.error && process.env.NODE_ENV === 'production') {
+			return new NodeResult({
+				data: null,
+				error: new Error('An internal error occurred'), // Generic error
+			})
+		}
 
-    return result
-  },
+		return result
+	},
 }
 ```
 
@@ -163,27 +165,27 @@ The `ctx` object provides access to the workflow's shared state. You can read fr
 
 ```typescript
 const contextMutationMiddleware: Middleware = {
-  aroundNode: async (ctx, nodeId, next) => {
-    // Read existing context values
-    const previousCount = ctx.get('executionCount') || 0
+	aroundNode: async (ctx, nodeId, next) => {
+		// Read existing context values
+		const previousCount = ctx.get('executionCount') || 0
 
-    // Mutate the context before node execution
-    ctx.set('executionCount', previousCount + 1)
-    ctx.set('lastNodeId', nodeId)
+		// Mutate the context before node execution
+		ctx.set('executionCount', previousCount + 1)
+		ctx.set('lastNodeId', nodeId)
 
-    // You can also store node-specific data for later use
-    const startTime = Date.now()
-    ctx.set(`startTime_${nodeId}`, startTime)
+		// You can also store node-specific data for later use
+		const startTime = Date.now()
+		ctx.set(`startTime_${nodeId}`, startTime)
 
-    const result = await next()
+		const result = await next()
 
-    // Update context after node execution
-    const endTime = Date.now()
-    ctx.set(`endTime_${nodeId}`, endTime)
-    ctx.set(`duration_${nodeId}`, endTime - startTime)
+		// Update context after node execution
+		const endTime = Date.now()
+		ctx.set(`endTime_${nodeId}`, endTime)
+		ctx.set(`duration_${nodeId}`, endTime - startTime)
 
-    return result
-  },
+		return result
+	},
 }
 ```
 

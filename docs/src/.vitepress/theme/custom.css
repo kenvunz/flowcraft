@@ -1,8 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @font-face {
-	font-family: "DepartureMono";
-	src: url("/DepartureMono-Regular.woff2") format("woff2");
+	font-family: 'DepartureMono';
+	src: url('/DepartureMono-Regular.woff2') format('woff2');
 	font-weight: normal;
 	font-style: normal;
 	font-display: swap;
@@ -101,10 +101,10 @@
 
 :root {
 	--vp-font-family-base:
-		"Geist Mono", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-		"Noto Color Emoji";
+		'Geist Mono', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+		'Segoe UI Symbol', 'Noto Color Emoji';
 	--vp-font-family-mono:
-		ui-monospace, "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace;
+		ui-monospace, 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 }
 
 body {
@@ -114,7 +114,7 @@ body {
 header,
 .tagline,
 h1 {
-	font-family: "DepartureMono";
+	font-family: 'DepartureMono';
 }
 
 .VPHero {
@@ -190,4 +190,3 @@ h1 {
 ::-webkit-scrollbar-corner {
 	display: none;
 }
-

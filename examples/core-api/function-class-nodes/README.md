@@ -5,6 +5,7 @@ This example demonstrates the two primary ways to define workflow nodes in Flowc
 ## Overview
 
 The example processes a user through a workflow that:
+
 1. **Validates** email using a function-based node
 2. **Calculates** user score using a function-based node
 3. **Enriches** profile using a class-based node
@@ -23,6 +24,7 @@ pnpm start
 ## Function-Based Nodes
 
 ### Simple Function Node
+
 ```typescript
 async function validateEmail({ context }: any) {
   const user = await context.get('user')
@@ -35,25 +37,28 @@ async function validateEmail({ context }: any) {
 ```
 
 **Characteristics:**
+
 - ✅ **Stateless**: Fresh execution context each time
 - ✅ **Simple**: Just a function with async logic
 - ✅ **Testable**: Easy to unit test in isolation
 - ✅ **Pure**: No side effects between executions
 
 ### Complex Function Node
+
 ```typescript
 async function calculateUserScore({ context }: any) {
-  const user = await context.get('user')
-  let score = 0
-  // Complex scoring logic...
-  await context.set('userScore', score)
-  return { output: `Score: ${score}` }
+	const user = await context.get('user')
+	let score = 0
+	// Complex scoring logic...
+	await context.set('userScore', score)
+	return { output: `Score: ${score}` }
 }
 ```
 
 ## Class-Based Nodes
 
 ### Basic Class Node
+
 ```typescript
 import { BaseNode } from 'flowcraft'
 
@@ -71,28 +76,30 @@ class UserProfileEnricher extends BaseNode {
 ```
 
 ### Class Node with Lifecycle Methods
+
 ```typescript
 class NotificationSender extends BaseNode {
-  private sentNotifications: string[] = []
+	private sentNotifications: string[] = []
 
-  async beforeExecute({ context }: any) {
-    // Setup logic (connections, initialization)
-    this.sentNotifications = []
-  }
+	async beforeExecute({ context }: any) {
+		// Setup logic (connections, initialization)
+		this.sentNotifications = []
+	}
 
-  async execute({ context }: any) {
-    // Main business logic
-    // Send notifications...
-  }
+	async execute({ context }: any) {
+		// Main business logic
+		// Send notifications...
+	}
 
-  async afterExecute({ context }: any) {
-    // Cleanup logic (close connections, logging)
-    console.log(`Sent ${this.sentNotifications.length} notifications`)
-  }
+	async afterExecute({ context }: any) {
+		// Cleanup logic (close connections, logging)
+		console.log(`Sent ${this.sentNotifications.length} notifications`)
+	}
 }
 ```
 
 **Characteristics:**
+
 - ✅ **Stateful**: Can maintain state across executions
 - ✅ **Lifecycle**: `beforeExecute()` and `afterExecute()` hooks
 - ✅ **Complex**: Better for nodes needing setup/teardown
@@ -145,12 +152,14 @@ class NotificationSender extends BaseNode {
 ## Key Concepts Demonstrated
 
 ### Function-Based Nodes
+
 - **Simplicity**: Pure functions with clear inputs/outputs
 - **Statelessness**: No persistent state between executions
 - **Testability**: Easy to test with mock contexts
 - **Performance**: Lightweight with minimal overhead
 
 ### Class-Based Nodes
+
 - **State Management**: Can maintain instance variables
 - **Lifecycle Control**: Setup and cleanup operations
 - **Complex Logic**: Better for nodes with dependencies
@@ -158,13 +167,13 @@ class NotificationSender extends BaseNode {
 
 ### When to Use Each Approach
 
-| Use Functions When: | Use Classes When: |
-|---------------------|-------------------|
-| Simple, pure logic | Stateful operations |
-| No setup/teardown needed | Database connections |
-| Easy to test | External API clients |
-| Single execution step | Complex initialization |
-| Stateless operations | Lifecycle management |
+| Use Functions When:      | Use Classes When:      |
+| ------------------------ | ---------------------- |
+| Simple, pure logic       | Stateful operations    |
+| No setup/teardown needed | Database connections   |
+| Easy to test             | External API clients   |
+| Single execution step    | Complex initialization |
+| Stateless operations     | Lifecycle management   |
 
 ## Files
 
@@ -176,6 +185,7 @@ class NotificationSender extends BaseNode {
 ## Next Steps
 
 After understanding node types, explore:
+
 - `context-state-management` - Advanced context manipulation
 - `built-in-nodes` - Flowcraft's built-in node types
 - `error-handling` - Error handling patterns

@@ -11,6 +11,11 @@ class TestNodeForIsNodeClass extends BaseNode {
 	}
 }
 
+const noOpFunc = () => {}
+
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+class NoExecNode {}
+
 class MockSyncContext implements ISyncContext {
 	readonly type = 'sync' as const
 	private data = new Map<string, any>()
@@ -39,14 +44,21 @@ class MockSyncContext implements ISyncContext {
 describe('BaseNode', () => {
 	const mockRuntime = {} as any
 	const mockWorkflowState = new WorkflowState({})
-	const mockExecutionContext = new ExecutionContext({} as any, mockWorkflowState, new Map(), 'test-id', mockRuntime, {
-		logger: {} as any,
-		eventBus: {} as any,
-		serializer: {} as any,
-		evaluator: {} as any,
-		middleware: [],
-		dependencies: {} as any,
-	})
+	const mockExecutionContext = new ExecutionContext(
+		{} as any,
+		mockWorkflowState,
+		new Map(),
+		'test-id',
+		mockRuntime,
+		{
+			logger: {} as any,
+			eventBus: {} as any,
+			serializer: {} as any,
+			evaluator: {} as any,
+			middleware: [],
+			dependencies: {} as any,
+		},
+	)
 
 	class TestNode extends BaseNode {
 		prepCalled = false
@@ -64,7 +76,10 @@ describe('BaseNode', () => {
 			return { output: 'execResult' }
 		}
 
-		async post(_execResult: Omit<NodeResult, 'error'>, _context: NodeContext): Promise<NodeResult> {
+		async post(
+			_execResult: Omit<NodeResult, 'error'>,
+			_context: NodeContext,
+		): Promise<NodeResult> {
 			this.postCalled = true
 			return _execResult
 		}
@@ -86,7 +101,10 @@ describe('BaseNode', () => {
 			return { output: 'exec' }
 		}
 
-		async post(_execResult: Omit<NodeResult, 'error'>, _context: NodeContext): Promise<NodeResult> {
+		async post(
+			_execResult: Omit<NodeResult, 'error'>,
+			_context: NodeContext,
+		): Promise<NodeResult> {
 			this.postCalled = true
 			throw new Error('Should not be called')
 		}
@@ -103,7 +121,10 @@ describe('BaseNode', () => {
 			throw new Error('Exec failed')
 		}
 
-		async post(_execResult: Omit<NodeResult, 'error'>, _context: NodeContext): Promise<NodeResult> {
+		async post(
+			_execResult: Omit<NodeResult, 'error'>,
+			_context: NodeContext,
+		): Promise<NodeResult> {
 			this.postCalled = true
 			throw new Error('Should not be called')
 		}
@@ -120,7 +141,10 @@ describe('BaseNode', () => {
 			throw new Error('Exec failed')
 		}
 
-		async post(_execResult: Omit<NodeResult, 'error'>, _context: NodeContext): Promise<NodeResult> {
+		async post(
+			_execResult: Omit<NodeResult, 'error'>,
+			_context: NodeContext,
+		): Promise<NodeResult> {
 			return _execResult
 		}
 
@@ -222,7 +246,9 @@ describe('BaseNode', () => {
 		}
 		const prepResult = await node.prep(context)
 		await expect(node.exec(prepResult, context)).rejects.toThrow('Exec failed')
-		await expect(node.fallback(new Error('Exec failed'), context)).rejects.toThrow('Exec failed')
+		await expect(node.fallback(new Error('Exec failed'), context)).rejects.toThrow(
+			'Exec failed',
+		)
 	})
 
 	it('should call constructor with params', () => {
@@ -243,14 +269,10 @@ describe('isNodeClass', () => {
 	})
 
 	it('should return false for a function without prototype.exec', () => {
-		const func = () => {}
-		expect(isNodeClass(func)).toBe(false)
+		expect(isNodeClass(noOpFunc)).toBe(false)
 	})
 
 	it('should return false for a class without prototype.exec', () => {
-		class NoExecNode {
-			// No exec method
-		}
 		expect(isNodeClass(NoExecNode)).toBe(false)
 	})
 

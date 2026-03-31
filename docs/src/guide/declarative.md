@@ -8,18 +8,18 @@ First, create a registry of reusable node functions.
 
 ```typescript
 const nodeRegistry = {
-  takeOrderFn: async ({ context }) => {
-    const order = { item: 'Coffee', size: 'Medium' }
-    await context.set('order', order)
-    return { output: order }
-  },
-  makeDrinkFn: async ({ input, context }) => {
-    const order = input as { item: string; size: string }
-    return { output: `Made ${order.size} ${order.item}` }
-  },
-  serveCustomerFn: async ({ input }) => {
-    return { output: `Served: ${input}` }
-  }
+	takeOrderFn: async ({ context }) => {
+		const order = { item: 'Coffee', size: 'Medium' }
+		await context.set('order', order)
+		return { output: order }
+	},
+	makeDrinkFn: async ({ input, context }) => {
+		const order = input as { item: string; size: string }
+		return { output: `Made ${order.size} ${order.item}` }
+	},
+	serveCustomerFn: async ({ input }) => {
+		return { output: `Served: ${input}` }
+	},
 }
 ```
 
@@ -29,33 +29,33 @@ Define the workflow as a JSON object.
 
 ```json
 {
-  "id": "coffee-shop-order",
-  "nodes": [
-    {
-      "id": "take-order",
-      "uses": "takeOrderFn",
-    },
-    {
-      "id": "make-drink",
-      "uses": "makeDrinkFn",
-      "inputs": "take-order"
-    },
-    {
-      "id": "serve-customer",
-      "uses": "serveCustomerFn",
-      "inputs": "make-drink"
-    }
-  ],
-  "edges": [
-    {
-      "source": "take-order",
-      "target": "make-drink"
-    },
-    {
-      "source": "make-drink",
-      "target": "serve-customer"
-    }
-  ]
+	"id": "coffee-shop-order",
+	"nodes": [
+		{
+			"id": "take-order",
+			"uses": "takeOrderFn"
+		},
+		{
+			"id": "make-drink",
+			"uses": "makeDrinkFn",
+			"inputs": "take-order"
+		},
+		{
+			"id": "serve-customer",
+			"uses": "serveCustomerFn",
+			"inputs": "make-drink"
+		}
+	],
+	"edges": [
+		{
+			"source": "take-order",
+			"target": "make-drink"
+		},
+		{
+			"source": "make-drink",
+			"target": "serve-customer"
+		}
+	]
 }
 ```
 
@@ -69,8 +69,10 @@ import { FlowRuntime } from 'flowcraft'
 const runtime = new FlowRuntime({ registry: nodeRegistry })
 const result = await runtime.run(
 	blueprint,
-	{ /* Initial context */ },
-	{ functionRegistry: nodeRegistry }
+	{
+		/* Initial context */
+	},
+	{ functionRegistry: nodeRegistry },
 )
 ```
 

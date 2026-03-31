@@ -16,7 +16,7 @@ This package provides a distributed adapter for [Flowcraft](https://www.npmjs.co
 
 You need to install the core `flowcraft` package along with this adapter and the required AWS SDK v3 modules.
 
-```bash
+````bash
 npm install flowcraft @flowcraft/sqs-adapter @aws-sdk/client-sqs @aws-sdk/client-dynamodb @aws-sdk/util-dynamodb```
 
 ## Prerequisites
@@ -75,7 +75,7 @@ const adapter = new SqsAdapter({
 adapter.start();
 
 console.log('Flowcraft worker with SQS adapter is running...');
-```
+````
 
 ## Components
 
@@ -99,15 +99,17 @@ import { createSqsReconciler } from '@flowcraft/sqs-adapter'
 
 // Create a reconciler instance
 const reconciler = createSqsReconciler({
-  adapter: mySqsAdapter,
-  dynamoDbClient: myDynamoClient,
-  statusTableName: 'flowcraft-statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter: mySqsAdapter,
+	dynamoDbClient: myDynamoClient,
+	statusTableName: 'flowcraft-statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run reconciliation
 const stats = await reconciler.run()
-console.log(`Scanned ${stats.scannedItems} items, found ${stats.stalledRuns} stalled runs, reconciled ${stats.reconciledRuns} runs`)
+console.log(
+	`Scanned ${stats.scannedItems} items, found ${stats.stalledRuns} stalled runs, reconciled ${stats.reconciledRuns} runs`,
+)
 ```
 
 ### Reconciliation Stats
@@ -116,10 +118,10 @@ The reconciler returns detailed statistics:
 
 ```typescript
 interface ReconciliationStats {
-  scannedItems: number   // Number of DynamoDB items scanned
-  stalledRuns: number    // Number of workflows identified as stalled
-  reconciledRuns: number // Number of workflows successfully resumed
-  failedRuns: number     // Number of reconciliation attempts that failed
+	scannedItems: number // Number of DynamoDB items scanned
+	stalledRuns: number // Number of workflows identified as stalled
+	reconciledRuns: number // Number of workflows successfully resumed
+	failedRuns: number // Number of reconciliation attempts that failed
 }
 ```
 

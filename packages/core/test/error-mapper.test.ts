@@ -49,7 +49,9 @@ describe('createErrorMapper', () => {
 
 		const mappedError = mapError(originalError)
 
-		expect(mappedError.message).toBe('Workflow error at /app/src/test.ts:10:5. Original error: Node execution failed')
+		expect(mappedError.message).toBe(
+			'Workflow error at /app/src/test.ts:10:5. Original error: Node execution failed',
+		)
 	})
 
 	it('should extract nodeId from error message using regex', () => {

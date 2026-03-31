@@ -31,8 +31,8 @@ const runtime = new FlowRuntime({ eventBus })
 import { SqliteHistoryAdapter } from '@flowcraft/sqlite-history'
 
 const eventStore = new SqliteHistoryAdapter({
-  databasePath: './workflow-events.db',
-  walMode: true // Enable WAL for concurrent access
+	databasePath: './workflow-events.db',
+	walMode: true, // Enable WAL for concurrent access
 })
 const eventBus = new PersistentEventBusAdapter(eventStore)
 const runtime = new FlowRuntime({ eventBus })
@@ -44,12 +44,12 @@ const runtime = new FlowRuntime({ eventBus })
 import { PostgresHistoryAdapter } from '@flowcraft/postgres-history'
 
 const eventStore = new PostgresHistoryAdapter({
-  host: 'localhost',
-  port: 5432,
-  database: 'flowcraft',
-  user: 'flowcraft',
-  password: 'password',
-  tableName: 'workflow_events'
+	host: 'localhost',
+	port: 5432,
+	database: 'flowcraft',
+	user: 'flowcraft',
+	password: 'password',
+	tableName: 'workflow_events',
 })
 const eventBus = new PersistentEventBusAdapter(eventStore)
 const runtime = new FlowRuntime({ eventBus })
@@ -64,11 +64,12 @@ const runtime = new FlowRuntime({ eventBus })
 
 // All executions are now recorded
 const result = await runtime.run(blueprint, initialContext, {
-  functionRegistry: registry
+	functionRegistry: registry,
 })
 ```
 
 Events recorded include:
+
 - `workflow:start` - Workflow execution begins
 - `workflow:resume` - Workflow resumes from pause/stall
 - `node:start` - Node execution begins
@@ -118,8 +119,8 @@ const eventsMap = await eventStore.retrieveMultiple(executionIds)
 
 // Replay each execution
 for (const [execId, events] of eventsMap) {
-  const replayResult = await runtime.replay(blueprint, events, execId)
-  console.log(`Execution ${execId} final state:`, replayResult.context)
+	const replayResult = await runtime.replay(blueprint, events, execId)
+	console.log(`Execution ${execId} final state:`, replayResult.context)
 }
 ```
 
@@ -130,10 +131,13 @@ for (const [execId, events] of eventsMap) {
 const events = await eventStore.retrieve(executionId)
 
 // Count different event types
-const eventCounts = events.reduce((counts, event) => {
-  counts[event.type] = (counts[event.type] || 0) + 1
-  return counts
-}, {} as Record<string, number>)
+const eventCounts = events.reduce(
+	(counts, event) => {
+		counts[event.type] = (counts[event.type] || 0) + 1
+		return counts
+	},
+	{} as Record<string, number>,
+)
 
 console.log('Event breakdown:', eventCounts)
 ```
@@ -143,17 +147,20 @@ console.log('Event breakdown:', eventCounts)
 ```typescript
 // Extract timing information
 const nodeTimings = events
-  .filter(e => e.type === 'node:start' || e.type === 'node:finish')
-  .reduce((timings, event) => {
-    const nodeId = event.payload.nodeId
-    if (event.type === 'node:start') {
-      timings[nodeId] = { start: event.timestamp }
-    } else if (timings[nodeId]) {
-      timings[nodeId].end = event.timestamp
-      timings[nodeId].duration = event.timestamp - timings[nodeId].start
-    }
-    return timings
-  }, {} as Record<string, any>)
+	.filter((e) => e.type === 'node:start' || e.type === 'node:finish')
+	.reduce(
+		(timings, event) => {
+			const nodeId = event.payload.nodeId
+			if (event.type === 'node:start') {
+				timings[nodeId] = { start: event.timestamp }
+			} else if (timings[nodeId]) {
+				timings[nodeId].end = event.timestamp
+				timings[nodeId].duration = event.timestamp - timings[nodeId].start
+			}
+			return timings
+		},
+		{} as Record<string, any>,
+	)
 
 console.log('Node execution times:', nodeTimings)
 ```
@@ -170,10 +177,10 @@ const stepper = await createStepper(runtime, blueprint, registry)
 
 // Step through execution while events are recorded
 while (!stepper.isDone()) {
-  const result = await stepper.next()
-  console.log('Current state:', await stepper.state.getContext().getAll())
+	const result = await stepper.next()
+	console.log('Current state:', await stepper.state.getContext().getAll())
 
-  // Events are automatically stored for later replay
+	// Events are automatically stored for later replay
 }
 ```
 
@@ -210,19 +217,19 @@ Implement the `IEventStore` interface for custom storage backends:
 import type { FlowcraftEvent, IEventStore } from 'flowcraft'
 
 class CustomEventStore implements IEventStore {
-  async store(event: FlowcraftEvent, executionId: string): Promise<void> {
-    // Implement storage logic
-  }
+	async store(event: FlowcraftEvent, executionId: string): Promise<void> {
+		// Implement storage logic
+	}
 
-  async retrieve(executionId: string): Promise<FlowcraftEvent[]> {
-    // Implement retrieval logic
-    return []
-  }
+	async retrieve(executionId: string): Promise<FlowcraftEvent[]> {
+		// Implement retrieval logic
+		return []
+	}
 
-  async retrieveMultiple(executionIds: string[]): Promise<Map<string, FlowcraftEvent[]>> {
-    // Implement bulk retrieval
-    return new Map()
-  }
+	async retrieveMultiple(executionIds: string[]): Promise<Map<string, FlowcraftEvent[]>> {
+		// Implement bulk retrieval
+		return new Map()
+	}
 }
 ```
 

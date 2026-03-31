@@ -15,13 +15,20 @@ export class SubflowNode extends BaseNode {
 		const { runtime, workflowState } = context.dependencies
 
 		if (!blueprintId) {
-			throw new FlowcraftError(`Subflow node '${this.nodeId}' is missing 'blueprintId' parameter.`, { isFatal: true })
+			throw new FlowcraftError(
+				`Subflow node '${this.nodeId}' is missing 'blueprintId' parameter.`,
+				{ isFatal: true },
+			)
 		}
 
 		const subBlueprint =
-			(runtime as any).blueprints?.[blueprintId] || (runtime as any).runtime?.blueprints?.[blueprintId]
+			(runtime as any).blueprints?.[blueprintId] ||
+			(runtime as any).runtime?.blueprints?.[blueprintId]
 		if (!subBlueprint) {
-			throw new FlowcraftError(`Sub-blueprint '${blueprintId}' not found in runtime registry.`, { isFatal: true })
+			throw new FlowcraftError(
+				`Sub-blueprint '${blueprintId}' not found in runtime registry.`,
+				{ isFatal: true },
+			)
 		}
 
 		const subflowInitialContext: Record<string, any> = {}
@@ -57,7 +64,10 @@ export class SubflowNode extends BaseNode {
 		)
 		const subflowTraverser = new GraphTraverser(subBlueprint)
 
-		const subflowResult = await runtime.runtime.orchestrator.run(subflowExecContext, subflowTraverser)
+		const subflowResult = await runtime.runtime.orchestrator.run(
+			subflowExecContext,
+			subflowTraverser,
+		)
 
 		if (subflowResult.status === 'awaiting') {
 			await workflowState.markAsAwaiting(this.nodeId ?? '')
@@ -83,7 +93,8 @@ export class SubflowNode extends BaseNode {
 
 		if (outputs) {
 			for (const [parentKey, subKey] of Object.entries(outputs as Record<string, string>)) {
-				const value = subflowFinalContext[`_outputs.${subKey}`] ?? subflowFinalContext[subKey]
+				const value =
+					subflowFinalContext[`_outputs.${subKey}`] ?? subflowFinalContext[subKey]
 				await context.context.set(parentKey as any, value)
 			}
 			return { output: subflowFinalContext }

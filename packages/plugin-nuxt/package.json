@@ -1,32 +1,32 @@
 {
 	"name": "@flowcraft/nuxt-module",
-	"type": "commonjs",
 	"version": "1.0.0-alpha.2",
 	"description": "Nuxt module for Flowcraft compiler integration",
-	"license": "MIT",
+	"keywords": [
+		"build",
+		"flowcraft",
+		"module",
+		"nuxt",
+		"nuxtjs",
+		"workflow"
+	],
 	"homepage": "https://flowcraft.js.org",
+	"bugs": "https://github.com/gorango/flowcraft/issues",
+	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/gorango/flowcraft.git"
 	},
-	"bugs": "https://github.com/gorango/flowcraft/issues",
-	"keywords": [
-		"flowcraft",
-		"nuxt",
-		"nuxtjs",
-		"module",
-		"build",
-		"workflow"
+	"files": [
+		"dist"
 	],
+	"type": "commonjs",
+	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
 			"require": "./dist/index.cjs"
 		}
 	},
-	"types": "./dist/index.d.ts",
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"dev": "tsdown --watch --config-loader unrun",
 		"build": "tsdown --config-loader unrun",

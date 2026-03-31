@@ -53,12 +53,18 @@ async function backupOperation(ctx: NodeContext<WorkflowContext>) {
 
 /** Creates a workflow demonstrating fixed delay retry */
 export function createFixedDelayRetryWorkflow() {
-	return createFlow<WorkflowContext>('fixed-delay-retry-workflow').node('unreliableOperation', unreliableOperation)
+	return createFlow<WorkflowContext>('fixed-delay-retry-workflow').node(
+		'unreliableOperation',
+		unreliableOperation,
+	)
 }
 
 /** Creates a workflow demonstrating exponential backoff retry */
 export function createExponentialBackoffRetryWorkflow() {
-	return createFlow<WorkflowContext>('exponential-backoff-retry-workflow').node('criticalTask', criticalTask)
+	return createFlow<WorkflowContext>('exponential-backoff-retry-workflow').node(
+		'criticalTask',
+		criticalTask,
+	)
 }
 
 /** Creates a workflow demonstrating circuit breaker pattern */

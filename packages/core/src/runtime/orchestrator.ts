@@ -6,10 +6,15 @@ import type { GraphTraverser } from './traverser'
 import type { IOrchestrator } from './types'
 
 export class DefaultOrchestrator implements IOrchestrator {
-	async run(context: ExecutionContext<any, any>, traverser: GraphTraverser): Promise<WorkflowResult<any>> {
+	async run(
+		context: ExecutionContext<any, any>,
+		traverser: GraphTraverser,
+	): Promise<WorkflowResult<any>> {
 		const hardwareConcurrency = globalThis.navigator?.hardwareConcurrency || 4
 		const maxConcurrency =
-			context.concurrency != null && context.concurrency > 0 ? context.concurrency : Math.min(hardwareConcurrency, 10)
+			context.concurrency != null && context.concurrency > 0
+				? context.concurrency
+				: Math.min(hardwareConcurrency, 10)
 
 		try {
 			context.signal?.throwIfAborted()
@@ -74,7 +79,10 @@ export class DefaultOrchestrator implements IOrchestrator {
 
 		const isTraversalComplete = !traverser.hasMoreWork()
 		const status = context.state.getStatus(isTraversalComplete)
-		const result = await context.state.toResult(context.services.serializer, context.executionId)
+		const result = await context.state.toResult(
+			context.services.serializer,
+			context.executionId,
+		)
 		result.status = status
 		return result
 	}

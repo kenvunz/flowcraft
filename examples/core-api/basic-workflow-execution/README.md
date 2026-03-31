@@ -5,11 +5,13 @@ This example demonstrates the fundamental concepts of creating and executing wor
 ## Overview
 
 The example creates a user processing workflow that:
+
 1. **Validates** user input data
 2. **Processes** the user information
 3. **Sends** a welcome notification
 
 This demonstrates the core Flowcraft concepts:
+
 - Creating workflows with `createFlow()`
 - Defining nodes with business logic
 - Connecting nodes with edges
@@ -29,17 +31,19 @@ pnpm start
 ## What You'll Learn
 
 ### 1. Workflow Creation
+
 ```typescript
 import { createFlow } from 'flowcraft'
 
 const workflow = createFlow('user-processing-workflow')
-  .node('validateUser', async ({ context }) => {
-    // Node logic here
-  })
-  .edge('validateUser', 'processUser')
+	.node('validateUser', async ({ context }) => {
+		// Node logic here
+	})
+	.edge('validateUser', 'processUser')
 ```
 
 ### 2. Node Definition
+
 Nodes are asynchronous functions that receive context and return results:
 
 ```typescript
@@ -51,6 +55,7 @@ Nodes are asynchronous functions that receive context and return results:
 ```
 
 ### 3. Context Management
+
 Context stores workflow data and persists across node executions:
 
 ```typescript
@@ -62,9 +67,10 @@ await context.set('processedUser', processedData)
 ```
 
 ### 4. Runtime Execution
+
 ```typescript
 const runtime = new FlowRuntime({
-  logger: new ConsoleLogger(),
+	logger: new ConsoleLogger(),
 })
 
 const result = await workflow.run(runtime, initialContext)
@@ -137,6 +143,7 @@ const result = await workflow.run(runtime, initialContext)
 ## Next Steps
 
 After understanding this basic example, explore:
+
 - `function-class-nodes` - Different ways to define node logic
 - `context-state-management` - Advanced context manipulation
 - `built-in-nodes` - Flowcraft's built-in node types

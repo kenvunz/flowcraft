@@ -50,7 +50,11 @@ export class KafkaAdapter extends BaseDistributedAdapter {
 		})
 	}
 
-	protected async onJobStart(_runId: string, _blueprintId: string, _nodeId: string): Promise<void> {
+	protected async onJobStart(
+		_runId: string,
+		_blueprintId: string,
+		_nodeId: string,
+	): Promise<void> {
 		// Touch the status table to update the 'updated_at' timestamp.
 		try {
 			// Using an INSERT as an UPSERT. This only sets status if it's the first touch.
@@ -63,7 +67,10 @@ export class KafkaAdapter extends BaseDistributedAdapter {
 				await this.cassandra.execute(updateQuery, [_runId], { prepare: true })
 			}
 		} catch (error) {
-			console.error(`[KafkaAdapter] Failed to update updated_at timestamp for Run ID ${_runId}`, error)
+			console.error(
+				`[KafkaAdapter] Failed to update updated_at timestamp for Run ID ${_runId}`,
+				error,
+			)
 		}
 	}
 
@@ -78,7 +85,10 @@ export class KafkaAdapter extends BaseDistributedAdapter {
 		this.logger.info(`[KafkaAdapter] Published final result for Run ID ${runId}.`)
 	}
 
-	public async registerWebhookEndpoint(_runId: string, _nodeId: string): Promise<{ url: string; event: string }> {
+	public async registerWebhookEndpoint(
+		_runId: string,
+		_nodeId: string,
+	): Promise<{ url: string; event: string }> {
 		// TODO: Implement webhook endpoint registration for Kafka adapter
 		// This would typically involve setting up a REST endpoint that publishes to Kafka
 		throw new Error('registerWebhookEndpoint not implemented for KafkaAdapter')
@@ -114,7 +124,9 @@ export class KafkaAdapter extends BaseDistributedAdapter {
 			})
 			this.isRunning = true
 
-			this.logger.info(`[KafkaAdapter] Worker (Group: ${this.groupId}) listening on topic: "${this.topicName}"`)
+			this.logger.info(
+				`[KafkaAdapter] Worker (Group: ${this.groupId}) listening on topic: "${this.topicName}"`,
+			)
 
 			await this.consumer.run({
 				partitionsConsumedConcurrently: 1,
@@ -128,7 +140,10 @@ export class KafkaAdapter extends BaseDistributedAdapter {
 							await handler(job)
 							// kafka handles offsets automatically on success
 						} catch (error) {
-							this.logger.error(`[KafkaAdapter] Error processing message on topic ${topic}:`, { error })
+							this.logger.error(
+								`[KafkaAdapter] Error processing message on topic ${topic}:`,
+								{ error },
+							)
 							// throwing - kafka will not commit the offset and the message will be re-consumed based on policy
 							throw error
 						}

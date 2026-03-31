@@ -8,7 +8,10 @@ import { ClassNodeExecutor, FunctionNodeExecutor, NodeExecutor } from './executo
 export class NodeExecutorFactory {
 	constructor(private readonly eventBus: IEventBus) {}
 
-	public createExecutorForNode(nodeId: string, context: ExecutionContext<any, any>): NodeExecutor<any, any> {
+	public createExecutorForNode(
+		nodeId: string,
+		context: ExecutionContext<any, any>,
+	): NodeExecutor<any, any> {
 		const nodeDef = context.blueprint.nodes.find((n) => n.id === nodeId)
 		if (!nodeDef) {
 			throw new FlowcraftError(`Node '${nodeId}' not found in blueprint.`, {

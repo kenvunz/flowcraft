@@ -62,12 +62,16 @@ describe('DurableObjectCoordinationStore', () => {
 			const result = await store.setIfNotExist('new-key', 'new-value', 3600)
 
 			expect(result).toBe(true)
-			expect(mockStorage.put).toHaveBeenCalledWith('new-key', 'new-value', { onlyIf: { equals: undefined } })
+			expect(mockStorage.put).toHaveBeenCalledWith('new-key', 'new-value', {
+				onlyIf: { equals: undefined },
+			})
 		})
 
 		it('should return false when put throws (key already existed)', async () => {
 			vi.mocked(mockStorage.get).mockResolvedValue(undefined)
-			vi.mocked(mockStorage.put).mockRejectedValue(new Error('ConditionalCheckFailedException'))
+			vi.mocked(mockStorage.put).mockRejectedValue(
+				new Error('ConditionalCheckFailedException'),
+			)
 
 			const result = await store.setIfNotExist('new-key', 'new-value', 3600)
 

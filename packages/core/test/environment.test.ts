@@ -86,11 +86,31 @@ const mockBrowserAPIs = () => {
 	} as any
 
 	// Use Object.defineProperty to mock globals safely
-	Object.defineProperty(global, 'window', { value: mockWindow, writable: true, configurable: true })
-	Object.defineProperty(global, 'document', { value: mockDocument, writable: true, configurable: true })
-	Object.defineProperty(global, 'navigator', { value: mockWindow.navigator, writable: true, configurable: true })
-	Object.defineProperty(global, 'location', { value: mockWindow.location, writable: true, configurable: true })
-	Object.defineProperty(global, 'localStorage', { value: mockWindow.localStorage, writable: true, configurable: true })
+	Object.defineProperty(global, 'window', {
+		value: mockWindow,
+		writable: true,
+		configurable: true,
+	})
+	Object.defineProperty(global, 'document', {
+		value: mockDocument,
+		writable: true,
+		configurable: true,
+	})
+	Object.defineProperty(global, 'navigator', {
+		value: mockWindow.navigator,
+		writable: true,
+		configurable: true,
+	})
+	Object.defineProperty(global, 'location', {
+		value: mockWindow.location,
+		writable: true,
+		configurable: true,
+	})
+	Object.defineProperty(global, 'localStorage', {
+		value: mockWindow.localStorage,
+		writable: true,
+		configurable: true,
+	})
 	Object.defineProperty(global, 'sessionStorage', {
 		value: mockWindow.sessionStorage,
 		writable: true,
@@ -106,7 +126,15 @@ const mockBrowserAPIs = () => {
 		configurable: true,
 	})
 
-	mockedProperties = ['window', 'document', 'navigator', 'location', 'localStorage', 'sessionStorage', 'fetch']
+	mockedProperties = [
+		'window',
+		'document',
+		'navigator',
+		'location',
+		'localStorage',
+		'sessionStorage',
+		'fetch',
+	]
 }
 
 const restoreNodeAPIs = () => {
@@ -115,7 +143,11 @@ const restoreNodeAPIs = () => {
 		if (originalGlobals[key] === undefined) {
 			delete (global as any)[key]
 		} else {
-			Object.defineProperty(global, key, { value: originalGlobals[key], writable: true, configurable: true })
+			Object.defineProperty(global, key, {
+				value: originalGlobals[key],
+				writable: true,
+				configurable: true,
+			})
 		}
 	})
 	originalGlobals = {}
@@ -155,7 +187,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.browser-node'].environment).toBe('browser')
@@ -176,7 +212,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.timing-test'].usedSetTimeout).toBe(true)
@@ -191,11 +231,17 @@ describe('Cross-Environment Compatibility Testing', () => {
 					const data = await response.json()
 					return { output: { fetched: true, data, reason: undefined } }
 				}
-				return { output: { fetched: false, data: undefined, reason: 'fetch not available' } }
+				return {
+					output: { fetched: false, data: undefined, reason: 'fetch not available' },
+				}
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.fetch-test'].fetched).toBe(true)
@@ -228,7 +274,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.storage-test'].localStorage).toBe(true)
@@ -258,7 +308,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.node-node'].environment).toBe('node')
@@ -309,7 +363,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.module-test'].hasRequire).toBe(true)
@@ -321,8 +379,15 @@ describe('Cross-Environment Compatibility Testing', () => {
 			const flow = createFlow('env-detection')
 			flow.node('env-detector', async () => {
 				const isBrowser = typeof window !== 'undefined'
-				const isNode = !!(typeof process !== 'undefined' && process.versions && process.versions.node)
-				const isWebWorker = typeof self !== 'undefined' && typeof self.postMessage === 'function' && !isBrowser
+				const isNode = !!(
+					typeof process !== 'undefined' &&
+					process.versions &&
+					process.versions.node
+				)
+				const isWebWorker =
+					typeof self !== 'undefined' &&
+					typeof self.postMessage === 'function' &&
+					!isBrowser
 				const isDeno = typeof Deno !== 'undefined'
 
 				let environment = 'unknown'
@@ -344,7 +409,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.env-detector'].environment).toBe('node')
@@ -375,7 +444,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			const utils = result.context['_outputs.env-utils-test']
@@ -419,7 +492,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.module-test'].hasRequire).toBe(true)
@@ -434,7 +511,9 @@ describe('Cross-Environment Compatibility Testing', () => {
 					esm: typeof import.meta !== 'undefined',
 
 					// Check if we're in a module context
-					isModule: (typeof module !== 'undefined' && module) || typeof import.meta !== 'undefined',
+					isModule:
+						(typeof module !== 'undefined' && module) ||
+						typeof import.meta !== 'undefined',
 
 					// Check for __dirname/__filename (CommonJS)
 					hasDirname: typeof __dirname !== 'undefined',
@@ -445,7 +524,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			const format = result.context['_outputs.module-format-test']
@@ -466,7 +549,9 @@ describe('Cross-Environment Compatibility Testing', () => {
 					// Check if globalThis points to the right global
 					globalThisIsGlobal: typeof globalThis !== 'undefined' && globalThis === global,
 					globalThisIsWindow:
-						typeof globalThis !== 'undefined' && typeof window !== 'undefined' && globalThis === window,
+						typeof globalThis !== 'undefined' &&
+						typeof window !== 'undefined' &&
+						globalThis === window,
 
 					// Common global properties
 					hasSetTimeout: typeof setTimeout !== 'function',
@@ -478,7 +563,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			const globals = result.context['_outputs.global-test']
@@ -501,7 +590,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.globalthis-node'].platform).toBeDefined()
@@ -531,10 +624,18 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
-			expect(result.context['_outputs.async-test'].executionOrder).toEqual(['sync', 'microtask', 'macrotask'])
+			expect(result.context['_outputs.async-test'].executionOrder).toEqual([
+				'sync',
+				'microtask',
+				'macrotask',
+			])
 		})
 
 		it('should handle environment-specific async patterns', async () => {
@@ -563,7 +664,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.pattern-test'].hasPromise).toBe(true)
@@ -593,7 +698,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.polyfill-node'].polyfilled).toBe(true)
@@ -629,7 +738,11 @@ describe('Cross-Environment Compatibility Testing', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.missing-api-node'].fetchResult).toBe('available')

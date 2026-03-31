@@ -1,31 +1,31 @@
 {
 	"name": "@flowcraft/vite-plugin",
-	"type": "module",
 	"version": "1.0.0-alpha.2",
 	"description": "Vite plugin for Flowcraft compiler integration",
-	"license": "MIT",
+	"keywords": [
+		"build",
+		"flowcraft",
+		"plugin",
+		"vite",
+		"workflow"
+	],
 	"homepage": "https://flowcraft.js.org",
+	"bugs": "https://github.com/gorango/flowcraft/issues",
+	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/gorango/flowcraft.git"
 	},
-	"bugs": "https://github.com/gorango/flowcraft/issues",
-	"keywords": [
-		"flowcraft",
-		"vite",
-		"plugin",
-		"build",
-		"workflow"
+	"files": [
+		"dist"
 	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",
 			"import": "./dist/index.mjs"
 		}
 	},
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"dev": "tsdown --watch",
 		"build": "tsdown",

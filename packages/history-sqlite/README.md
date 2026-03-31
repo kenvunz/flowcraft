@@ -16,8 +16,8 @@ import { PersistentEventBusAdapter } from 'flowcraft'
 
 // Create SQLite event store
 const eventStore = new SqliteHistoryAdapter({
-  databasePath: './workflow-events.db',
-  walMode: true, // Enable WAL mode for better concurrent access
+	databasePath: './workflow-events.db',
+	walMode: true, // Enable WAL mode for better concurrent access
 })
 
 // Create persistent event bus

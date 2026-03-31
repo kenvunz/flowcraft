@@ -5,8 +5,7 @@ const hitlFlow = createFlow('hitl-workflow')
 	.node('start-approval', async () => ({ output: { user: 'Alice', amount: 1500 } }))
 	.wait('wait-for-approval')
 	.node('process-decision', async ({ input }) => {
-		if (input?.approved)
-			return { output: 'Request was approved.' }
+		if (input?.approved) return { output: 'Request was approved.' }
 		return { output: 'Request was denied.' }
 	})
 	.edge('start-approval', 'wait-for-approval')

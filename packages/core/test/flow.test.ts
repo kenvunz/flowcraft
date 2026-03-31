@@ -3,12 +3,15 @@ import { createFlow } from '../src/flow'
 import { BaseNode } from '../src/node'
 import type { NodeContext, NodeFunction } from '../src/types'
 
+const emptyNode: NodeFunction = async () => ({})
+const testNode: NodeFunction = async () => ({ output: 'test' })
+const batchWorker: NodeFunction = async () => ({})
+
 describe('Flow Builder', () => {
 	describe('Blueprint Construction', () => {
 		it('should add a node definition when .node() is called with a function', () => {
 			const flow = createFlow('test')
-			const func: NodeFunction = async () => ({ output: 'test' })
-			flow.node('A', func)
+			flow.node('A', testNode)
 			const blueprint = flow.toBlueprint()
 			expect(blueprint.nodes).toHaveLength(1)
 			expect(blueprint.nodes[0]).toEqual({
@@ -91,11 +94,10 @@ describe('Flow Builder', () => {
 	describe('Function & Class Registry', () => {
 		it('should register a function implementation with a unique key', () => {
 			const flow = createFlow('test')
-			const func: NodeFunction = async () => ({})
-			flow.node('A', func)
+			flow.node('A', emptyNode)
 			const registry = flow.getFunctionRegistry()
 			expect(registry.size).toBe(1)
-			expect(Array.from(registry.values())).toContain(func)
+			expect(Array.from(registry.values())).toContain(emptyNode)
 		})
 
 		it('should register a class implementation using its name as the key', () => {
@@ -128,13 +130,12 @@ describe('Flow Builder', () => {
 
 		it('should return the complete map of implementations on .getFunctionRegistry()', () => {
 			const flow = createFlow('test')
-			const func: NodeFunction = async () => ({})
 			class TestNode extends BaseNode {
 				async exec() {
 					return {}
 				}
 			}
-			flow.node('A', func)
+			flow.node('A', emptyNode)
 			flow.node('B', TestNode)
 			const registry = flow.getFunctionRegistry()
 			expect(registry.size).toBe(2)
@@ -144,8 +145,7 @@ describe('Flow Builder', () => {
 	describe('High-Level Patterns', () => {
 		it('should generate `batch-scatter` and `batch-gather` nodes for a .batch() call', () => {
 			const flow = createFlow('test')
-			const worker: NodeFunction = async () => ({})
-			flow.batch('batch1', worker, { inputKey: 'items', outputKey: 'results' })
+			flow.batch('batch1', batchWorker, { inputKey: 'items', outputKey: 'results' })
 			const blueprint = flow.toBlueprint()
 			expect(blueprint.nodes).toHaveLength(2)
 			expect(blueprint.nodes[0].uses).toBe('batch-scatter')
@@ -154,8 +154,7 @@ describe('Flow Builder', () => {
 
 		it('should correctly wire the edges around a .batch() construct', () => {
 			const flow = createFlow('test')
-			const worker: NodeFunction = async () => ({})
-			flow.batch('batch1', worker, { inputKey: 'items', outputKey: 'results' })
+			flow.batch('batch1', batchWorker, { inputKey: 'items', outputKey: 'results' })
 			const blueprint = flow.toBlueprint()
 			expect(blueprint.edges).toHaveLength(1)
 			expect(blueprint.edges[0].source).toBe('batch1_scatter')
@@ -234,7 +233,9 @@ describe('Flow Builder', () => {
 				endNodeId: 'nonexistent',
 				condition: 'i < 10',
 			})
-			expect(() => flow.toBlueprint()).toThrow("Loop 'loop1' references non-existent end node 'nonexistent'.")
+			expect(() => flow.toBlueprint()).toThrow(
+				"Loop 'loop1' references non-existent end node 'nonexistent'.",
+			)
 		})
 
 		it('should throw an error when loop references non-existent start node', () => {
@@ -245,7 +246,9 @@ describe('Flow Builder', () => {
 				endNodeId: 'end',
 				condition: 'i < 10',
 			})
-			expect(() => flow.toBlueprint()).toThrow("Loop 'loop1' references non-existent start node 'nonexistent'.")
+			expect(() => flow.toBlueprint()).toThrow(
+				"Loop 'loop1' references non-existent start node 'nonexistent'.",
+			)
 		})
 
 		it('should include cycle entry points in blueprint metadata', () => {
@@ -311,14 +314,15 @@ describe('Flow Builder', () => {
 			const graph = flow.toGraphRepresentation()
 			expect(graph.nodes).toHaveLength(3) // start, end, exit
 			expect(graph.edges).toHaveLength(3) // original, loopback, break edge
-			const breakEdge = graph.edges.find((edge) => edge.source === 'end' && edge.target === 'exit')
+			const breakEdge = graph.edges.find(
+				(edge) => edge.source === 'end' && edge.target === 'exit',
+			)
 			expect(breakEdge).toBeDefined()
 		})
 
 		it('should replace batch scatter/gather pairs with a single batch-worker node', () => {
 			const flow = createFlow('test')
-			const worker: NodeFunction = async () => ({})
-			flow.batch('batch1', worker, { inputKey: 'items', outputKey: 'results' })
+			flow.batch('batch1', batchWorker, { inputKey: 'items', outputKey: 'results' })
 			const graph = flow.toGraphRepresentation()
 			expect(graph.nodes).toHaveLength(1)
 			expect(graph.nodes[0].id).toBe('batch1')
@@ -330,8 +334,7 @@ describe('Flow Builder', () => {
 		it('should handle combined loops and batches correctly', () => {
 			const flow = createFlow('test')
 			flow.node('input', async () => ({}))
-			const worker: NodeFunction = async () => ({})
-			flow.batch('batch1', worker, { inputKey: 'items', outputKey: 'results' })
+			flow.batch('batch1', batchWorker, { inputKey: 'items', outputKey: 'results' })
 			flow.node('output', async () => ({}))
 			flow.edge('input', 'batch1')
 			flow.edge('batch1', 'output')

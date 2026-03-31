@@ -5,6 +5,7 @@ This example demonstrates how to set up persistent event storage for workflow ex
 ## Overview
 
 The example runs a simple greeting workflow that:
+
 1. Fetches a user
 2. Extracts the user's name
 3. Creates a personalized greeting
@@ -24,6 +25,7 @@ pnpm start
 ```
 
 This will:
+
 - Execute the workflow with persistent event storage
 - Display the workflow results
 - Show the execution ID for CLI inspection
@@ -34,12 +36,14 @@ This will:
 After running the workflow, use the Flowcraft CLI to inspect the execution:
 
 ### Option 1: Install CLI globally
+
 ```bash
 npm install -g @flowcraft/cli
 flowcraft inspect <execution-id> --database ./workflow-events.db
 ```
 
 ### Option 2: Use npx
+
 ```bash
 npx @flowcraft/cli inspect <execution-id> --database ./workflow-events.db
 ```
@@ -49,6 +53,7 @@ Replace `<execution-id>` with the execution ID printed by the example (starts wi
 ## What You'll See
 
 The CLI will display:
+
 - **Execution Summary**: Run ID, blueprint, status
 - **Statistics**: Total events, node execution counts
 - **Node Timeline**: Execution status and timing for each node
@@ -62,11 +67,11 @@ The example uses SQLite for event storage, but you can also configure PostgreSQL
 import { PostgresHistoryAdapter } from '@flowcraft/postgres-history'
 
 const eventStore = new PostgresHistoryAdapter({
-  host: 'localhost',
-  port: 5432,
-  database: 'flowcraft',
-  user: 'flowcraft',
-  password: 'password',
-  tableName: 'workflow_events',
+	host: 'localhost',
+	port: 5432,
+	database: 'flowcraft',
+	user: 'flowcraft',
+	password: 'password',
+	tableName: 'workflow_events',
 })
 ```

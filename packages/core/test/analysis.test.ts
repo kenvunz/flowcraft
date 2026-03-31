@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeBlueprint, checkForCycles, generateMermaid, generateMermaidForRun } from '../src/analysis'
+import {
+	analyzeBlueprint,
+	checkForCycles,
+	generateMermaid,
+	generateMermaidForRun,
+} from '../src/analysis'
 import { FlowcraftError } from '../src/errors'
 import type { FlowcraftEvent, WorkflowBlueprint } from '../src/types'
 
@@ -201,7 +206,12 @@ describe('Graph Analysis', () => {
 			const events: FlowcraftEvent[] = [
 				{
 					type: 'node:finish',
-					payload: { nodeId: 'A', result: { output: 'success' }, executionId: 'test', blueprintId: 'test' },
+					payload: {
+						nodeId: 'A',
+						result: { output: 'success' },
+						executionId: 'test',
+						blueprintId: 'test',
+					},
 				},
 			]
 			const mermaid = generateMermaidForRun(blueprint, events)
@@ -248,7 +258,10 @@ describe('Graph Analysis', () => {
 				edges: [{ source: 'A', target: 'B' }],
 			}
 			const events: FlowcraftEvent[] = [
-				{ type: 'edge:evaluate', payload: { source: 'A', target: 'B', condition: 'true', result: true } },
+				{
+					type: 'edge:evaluate',
+					payload: { source: 'A', target: 'B', condition: 'true', result: true },
+				},
 			]
 			const mermaid = generateMermaidForRun(blueprint, events)
 			expect(mermaid).toContain('linkStyle 0 stroke:#007bff,stroke-width:3px')
@@ -270,7 +283,12 @@ describe('Graph Analysis', () => {
 			const events: FlowcraftEvent[] = [
 				{
 					type: 'node:finish',
-					payload: { nodeId: 'A', result: { output: 'success' }, executionId: 'test', blueprintId: 'test' },
+					payload: {
+						nodeId: 'A',
+						result: { output: 'success' },
+						executionId: 'test',
+						blueprintId: 'test',
+					},
 				},
 				{
 					type: 'node:error',
@@ -281,7 +299,10 @@ describe('Graph Analysis', () => {
 						blueprintId: 'test',
 					},
 				},
-				{ type: 'edge:evaluate', payload: { source: 'A', target: 'B', condition: 'true', result: true } },
+				{
+					type: 'edge:evaluate',
+					payload: { source: 'A', target: 'B', condition: 'true', result: true },
+				},
 			]
 			const mermaid = generateMermaidForRun(blueprint, events)
 			expect(mermaid).toContain('style A fill:#d4edda,stroke:#c3e6cb')

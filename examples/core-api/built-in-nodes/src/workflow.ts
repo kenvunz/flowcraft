@@ -3,7 +3,13 @@ import { createFlow, type NodeContext } from 'flowcraft'
 export interface WorkflowContext {
 	batchItems: { id: number; name: string; value: number }[]
 	batchResults: { id: number; name: string; value: number; processed: boolean }[]
-	loopData: { items: number[]; currentIndex: number; counter: number; results: string[]; maxIterations: number }
+	loopData: {
+		items: number[]
+		currentIndex: number
+		counter: number
+		results: string[]
+		maxIterations: number
+	}
 	loopResults: number[]
 	waitCompleted: boolean
 	mainData: { message: string; timestamp: string }
@@ -58,7 +64,9 @@ async function prepareBatchData(ctx: NodeContext<WorkflowContext>) {
 }
 
 // Node that processes individual batch items
-async function processBatchItem(ctx: NodeContext<WorkflowContext, any, { id: number; name: string; value: number }>) {
+async function processBatchItem(
+	ctx: NodeContext<WorkflowContext, any, { id: number; name: string; value: number }>,
+) {
 	const { input } = ctx
 	console.log('⚙️ [Process Item] Processing batch item...')
 
@@ -102,7 +110,9 @@ async function aggregateBatchResults(ctx: NodeContext<WorkflowContext>) {
 	await context.set('batchStats', stats)
 	await context.set('processedItems', results)
 
-	console.log(`📊 Aggregation complete: ${stats.totalItems} items, ${stats.highValueItems} high-value`)
+	console.log(
+		`📊 Aggregation complete: ${stats.totalItems} items, ${stats.highValueItems} high-value`,
+	)
 	return { output: `Processed ${stats.totalItems} items` }
 }
 

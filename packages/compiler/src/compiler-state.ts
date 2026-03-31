@@ -69,7 +69,12 @@ export class CompilerState {
 		return this.scopes.pop()
 	}
 
-	addNodeAndWire(nodeDef: NodeDefinition, node: ts.Node, sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker): void {
+	addNodeAndWire(
+		nodeDef: NodeDefinition,
+		node: ts.Node,
+		sourceFile: ts.SourceFile,
+		typeChecker: ts.TypeChecker,
+	): void {
 		this.nodes.push(nodeDef)
 		if (this.pendingBranches) {
 			for (const end of this.pendingBranches.ends) {
@@ -167,7 +172,10 @@ export class CompilerState {
 		return undefined
 	}
 
-	private getSourceLocation(node: ts.Node, sourceFile: ts.SourceFile): import('flowcraft').SourceLocation {
+	private getSourceLocation(
+		node: ts.Node,
+		sourceFile: ts.SourceFile,
+	): import('flowcraft').SourceLocation {
 		const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart())
 		return {
 			file: sourceFile.fileName,

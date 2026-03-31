@@ -1,4 +1,9 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
 import { createPerformanceTunedWorkflow } from './workflow.js'
 
 class PerformanceTuningMiddleware implements Middleware {
@@ -53,14 +58,20 @@ async function main() {
 		console.log(`\n--- Run ${i} ---`)
 		try {
 			const workflow = createPerformanceTunedWorkflow()
-			const result = await runtime.run(workflow.toBlueprint(), {}, { functionRegistry: workflow.getFunctionRegistry() })
+			const result = await runtime.run(
+				workflow.toBlueprint(),
+				{},
+				{ functionRegistry: workflow.getFunctionRegistry() },
+			)
 
 			console.log(`✅ Run ${i} completed successfully`)
 
 			// Show some results
 			const report = result.context.report
 			if (report) {
-				console.log(`   Processed ${report.totalRecords} records, avg value: ${report.averageValue.toFixed(2)}`)
+				console.log(
+					`   Processed ${report.totalRecords} records, avg value: ${report.averageValue.toFixed(2)}`,
+				)
 			}
 		} catch (error) {
 			console.error(`❌ Run ${i} failed: ${(error as Error).message}`)

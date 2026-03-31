@@ -6,7 +6,7 @@ import FlowNode, { FlowcraftNodeProps } from './Node.vue'
 
 const props = defineProps<NodeProps & FlowcraftNodeProps>()
 
-const sourcePosition = computed(() => props.direction === 'TB' ? Position.Bottom : Position.Right)
+const sourcePosition = computed(() => (props.direction === 'TB' ? Position.Bottom : Position.Right))
 </script>
 
 <template>

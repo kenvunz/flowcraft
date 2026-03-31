@@ -61,7 +61,9 @@ export function createGcpReconciler(options: GcpReconcilerOptions) {
 					const enqueued = await (adapter as any).reconcile(runId)
 					if (enqueued.size > 0) {
 						stats.reconciledRuns++
-						logger.info(`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`)
+						logger.info(
+							`[Reconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`,
+						)
 					}
 				} catch (error) {
 					stats.failedRuns++

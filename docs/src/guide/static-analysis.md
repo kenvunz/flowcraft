@@ -22,6 +22,7 @@ console.log(analysis)
 ```
 
 The output will look like this:
+
 ```json
 {
 	"cycles": [],
@@ -34,11 +35,12 @@ The output will look like this:
 ```
 
 This tells you:
--   **`cycles`**: An array of any cyclic paths found. An empty array means the graph is a valid Directed Acyclic Graph (DAG).
--   **`startNodeIds`**: The IDs of nodes that have no incoming edges. These are the entry points of your workflow.
--   **`terminalNodeIds`**: The IDs of nodes that have no outgoing edges. These are the exit points.
--   **`nodeCount`** and **`edgeCount`**: Total number of nodes and edges.
--   **`isDag`**: A boolean flag that is `true` if no cycles were detected.
+
+- **`cycles`**: An array of any cyclic paths found. An empty array means the graph is a valid Directed Acyclic Graph (DAG).
+- **`startNodeIds`**: The IDs of nodes that have no incoming edges. These are the entry points of your workflow.
+- **`terminalNodeIds`**: The IDs of nodes that have no outgoing edges. These are the exit points.
+- **`nodeCount`** and **`edgeCount`**: Total number of nodes and edges.
+- **`isDag`**: A boolean flag that is `true` if no cycles were detected.
 
 ## Detecting Cycles
 
@@ -54,8 +56,8 @@ const cyclicBlueprint = {
 	nodes: [{ id: 'A' }, { id: 'B' }],
 	edges: [
 		{ source: 'A', target: 'B' },
-		{ source: 'B', target: 'A' }
-	]
+		{ source: 'B', target: 'A' },
+	],
 }
 
 const cycles = checkForCycles(cyclicBlueprint)
@@ -104,14 +106,14 @@ const blueprintWithIssues = createFlow('batch-example')
 	.node('scatter', {
 		uses: 'batch-scatter',
 		params: {
-			workerUsesKey: 'non-existent-worker' // This will trigger an error
-		}
+			workerUsesKey: 'non-existent-worker', // This will trigger an error
+		},
 	})
 	.node('subflow-node', {
 		uses: 'subflow',
 		params: {
-			blueprintId: 'missing-blueprint' // This will trigger an error
-		}
+			blueprintId: 'missing-blueprint', // This will trigger an error
+		},
 	})
 	.toBlueprint()
 
@@ -146,21 +148,21 @@ The compiler uses TypeScript's TypeChecker to ensure that:
 ```typescript
 /** @flow */
 export async function typeSafeWorkflow(input: string) {
-  const parsed = await parseData(input) // Expects string, returns ParsedData
+	const parsed = await parseData(input) // Expects string, returns ParsedData
 
-  const validated = await validateData(parsed) // Expects ParsedData, returns ValidatedData
+	const validated = await validateData(parsed) // Expects ParsedData, returns ValidatedData
 
-  return validated
+	return validated
 }
 
 /** @step */
 async function parseData(data: string): Promise<ParsedData> {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function validateData(data: ParsedData): Promise<ValidatedData> {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -169,11 +171,11 @@ If you try to pass incompatible types, the compiler will report a type error:
 ```typescript
 /** @flow */
 export async function invalidWorkflow() {
-  const result = await parseData("input")
+	const result = await parseData('input')
 
-  const validated = await validateData("invalid") // ❌ Type error: expected ParsedData, got string
+	const validated = await validateData('invalid') // ❌ Type error: expected ParsedData, got string
 
-  return validated
+	return validated
 }
 ```
 

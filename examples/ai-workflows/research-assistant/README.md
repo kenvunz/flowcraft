@@ -17,7 +17,7 @@ This project demonstrates a simple yet powerful research agent that can search t
     ```
 
 2. **Set your OpenAI API key**:
-    Create a `.env` file in this directory or set an environment variable:
+   Create a `.env` file in this directory or set an environment variable:
 
     ```
     OPENAI_API_KEY="your-api-key-here"
@@ -35,18 +35,19 @@ This project demonstrates a simple yet powerful research agent that can search t
     npm start -- "Who won the Nobel Prize in Physics 2024?"
     ```
 
- ## Security Note
+## Security Note
 
- This example uses `UnsafeEvaluator` in the runtime configuration because it requires complex expression evaluation for the loop condition (`loop_count < 2 && last_action !== 'answer'`). The `UnsafeEvaluator` allows JavaScript expressions but poses security risks if used with untrusted input.
+This example uses `UnsafeEvaluator` in the runtime configuration because it requires complex expression evaluation for the loop condition (`loop_count < 2 && last_action !== 'answer'`). The `UnsafeEvaluator` allows JavaScript expressions but poses security risks if used with untrusted input.
 
- For production use, consider implementing a custom evaluator using a sandboxed library like `jsep` for safer expression evaluation.
+For production use, consider implementing a custom evaluator using a sandboxed library like `jsep` for safer expression evaluation.
 
- ## How It Works
+## How It Works
 
- The agent uses a graph structure with a decision loop:
+The agent uses a graph structure with a decision loop:
 
 ```mermaid
 graph TD
     A[DecideAction] -->|"search"| B[SearchWeb]
     A -->|"answer"| C[AnswerQuestion]
     B -->|"decide"| A
+```

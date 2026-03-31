@@ -10,9 +10,9 @@ export const config = {
 		entryWorkflowId: '200',
 		initialContext: {
 			applicantName: 'Jane Doe',
-			resume:
-				'Experienced developer with a background in TypeScript, Node.js, and building complex DAG workflow systems. Also proficient in React and SQL.',
-			coverLetter: 'To Whom It May Concern, I am writing to express my interest in the Senior Developer position.',
+			resume: 'Experienced developer with a background in TypeScript, Node.js, and building complex DAG workflow systems. Also proficient in React and SQL.',
+			coverLetter:
+				'To Whom It May Concern, I am writing to express my interest in the Senior Developer position.',
 		},
 	},
 	'3.customer-review': {
@@ -26,7 +26,8 @@ export const config = {
 		entryWorkflowId: '400',
 		initialContext: {
 			userId: 'user-456',
-			userPost: 'Hi, I need help with my account. My email is test@example.com and my phone is 555-123-4567.',
+			userPost:
+				'Hi, I need help with my account. My email is test@example.com and my phone is 555-123-4567.',
 		},
 	},
 } as const

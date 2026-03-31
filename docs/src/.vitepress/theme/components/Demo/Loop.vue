@@ -7,9 +7,9 @@ const loopFlow = createFlow('loop-example')
 		return { output: 'Initialized' }
 	})
 	.node('increment', async ({ context }) => {
-		const currentCount = await context.get('count') || 0
+		const currentCount = (await context.get('count')) || 0
 		const newCount = currentCount + 1
-		await new Promise(r => setTimeout(r, 500))
+		await new Promise((r) => setTimeout(r, 500))
 		await context.set('count', newCount)
 		return { output: newCount }
 	})

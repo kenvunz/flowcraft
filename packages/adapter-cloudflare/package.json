@@ -1,17 +1,17 @@
 {
 	"name": "@flowcraft/cloudflare-adapter",
-	"type": "module",
 	"version": "1.0.1",
 	"homepage": "https://flowcraft.js.org",
+	"files": [
+		"dist"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",
 			"import": "./dist/index.mjs"
 		}
 	},
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"build": "tsdown src/index.ts --format esm --dts",
 		"test": "vitest run src/*.test.ts",

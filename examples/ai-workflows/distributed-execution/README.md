@@ -8,8 +8,8 @@ It showcases a client-worker architecture where a client can initiate a workflow
 
 - **Distributed Execution**: Uses Redis and BullMQ to manage workflow execution across separate processes.
 - **Client-Worker Architecture**:
-  - The **Client** (`src/client.ts`) is a lightweight process that starts the workflow and awaits the final result.
-  - The **Worker** (`src/worker.ts`) is a separate process that executes the actual node logic.
+    - The **Client** (`src/client.ts`) is a lightweight process that starts the workflow and awaits the final result.
+    - The **Worker** (`src/worker.ts`) is a separate process that executes the actual node logic.
 - **Reuses Business Logic**: Executes the exact same workflow definitions from the [`@flowcraft/example-declarative-shared-logic`](../declarative-workflows/) package without any changes, showcasing the power of abstracting the execution layer.
 - **Resilience & Scalability**: By using a message queue, workflows can survive process restarts. You can run multiple worker processes to handle a high volume of concurrent tasks.
 
@@ -23,6 +23,7 @@ It showcases a client-worker architecture where a client can initiate a workflow
 
 2.  **Install dependencies**:
     From the root of the `flowcraft` project, run:
+
     ```bash
     npm install
     ```
@@ -45,6 +46,7 @@ It showcases a client-worker architecture where a client can initiate a workflow
     ```bash
     npm run client
     ```
+
     You can change the active use-case in `src/client.ts`.
 
 ## How It Works

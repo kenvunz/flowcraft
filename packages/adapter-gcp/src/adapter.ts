@@ -48,7 +48,11 @@ export class PubSubAdapter extends BaseDistributedAdapter {
 		})
 	}
 
-	protected async onJobStart(_runId: string, _blueprintId: string, _nodeId: string): Promise<void> {
+	protected async onJobStart(
+		_runId: string,
+		_blueprintId: string,
+		_nodeId: string,
+	): Promise<void> {
 		// Touch the status document to update the 'lastUpdated' timestamp.
 		try {
 			const statusDocRef = this.firestore.collection(this.statusCollectionName).doc(_runId)
@@ -60,7 +64,10 @@ export class PubSubAdapter extends BaseDistributedAdapter {
 				{ merge: true },
 			)
 		} catch (error) {
-			this.logger.error(`[PubSubAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`, { error })
+			this.logger.error(
+				`[PubSubAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`,
+				{ error },
+			)
 		}
 	}
 
@@ -77,7 +84,10 @@ export class PubSubAdapter extends BaseDistributedAdapter {
 		this.logger.info(`[PubSubAdapter] Published final result for Run ID ${runId}.`)
 	}
 
-	public async registerWebhookEndpoint(_runId: string, _nodeId: string): Promise<{ url: string; event: string }> {
+	public async registerWebhookEndpoint(
+		_runId: string,
+		_nodeId: string,
+	): Promise<{ url: string; event: string }> {
 		// TODO: Implement webhook endpoint registration for GCP adapter
 		// This would typically involve setting up Cloud Functions or Cloud Run for webhook handling
 		throw new Error('registerWebhookEndpoint not implemented for GCPAdapter')
@@ -99,7 +109,9 @@ export class PubSubAdapter extends BaseDistributedAdapter {
 		const messageHandler = async (message: any) => {
 			try {
 				const job = JSON.parse(message.data.toString('utf-8')) as JobPayload
-				this.logger.info(`[PubSubAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`)
+				this.logger.info(
+					`[PubSubAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`,
+				)
 				await handler(job)
 				message.ack() // acknowledge the message so it's not redelivered
 			} catch (error) {
@@ -113,7 +125,9 @@ export class PubSubAdapter extends BaseDistributedAdapter {
 			this.logger.error('[PubSubAdapter] Received error from Pub/Sub subscription:', error)
 		})
 
-		this.logger.info(`[PubSubAdapter] Worker listening for jobs on subscription: "${this.subscriptionName}"`)
+		this.logger.info(
+			`[PubSubAdapter] Worker listening for jobs on subscription: "${this.subscriptionName}"`,
+		)
 	}
 
 	public async stop(): Promise<void> {

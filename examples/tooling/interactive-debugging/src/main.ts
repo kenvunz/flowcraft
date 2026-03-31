@@ -1,4 +1,9 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
 import { createInteractiveDebuggingWorkflow } from './workflow.js'
 
 class InteractiveDebuggingMiddleware implements Middleware {
@@ -47,7 +52,11 @@ async function main() {
 
 	try {
 		const workflow = createInteractiveDebuggingWorkflow()
-		const result = await runtime.run(workflow.toBlueprint(), {}, { functionRegistry: workflow.getFunctionRegistry() })
+		const result = await runtime.run(
+			workflow.toBlueprint(),
+			{},
+			{ functionRegistry: workflow.getFunctionRegistry() },
+		)
 
 		console.log('\n✅ Interactive debugging completed successfully!')
 		console.log('\n📊 Debug Results:')

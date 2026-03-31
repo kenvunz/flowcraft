@@ -2,7 +2,7 @@
 import { createFlow } from 'flowcraft'
 
 async function mockApiCall(name, delay, shouldFail = false) {
-	await new Promise(resolve => setTimeout(resolve, delay))
+	await new Promise((resolve) => setTimeout(resolve, delay))
 	if (shouldFail) {
 		throw new Error(`API call "${name}" failed.`)
 	}

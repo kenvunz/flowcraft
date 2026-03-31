@@ -17,16 +17,16 @@ import { build } from 'esbuild'
 import flowcraftPlugin from '@flowcraft/esbuild-plugin'
 
 await build({
-  entryPoints: ['src/index.ts'],
-  outfile: 'dist/index.js',
-  plugins: [
-    flowcraftPlugin({
-      // Optional: customize compiler options
-      // srcDir: './flows',
-      // outDir: './.flowcraft'
-    })
-  ],
-  // ... other options
+	entryPoints: ['src/index.ts'],
+	outfile: 'dist/index.js',
+	plugins: [
+		flowcraftPlugin({
+			// Optional: customize compiler options
+			// srcDir: './flows',
+			// outDir: './.flowcraft'
+		}),
+	],
+	// ... other options
 })
 ```
 

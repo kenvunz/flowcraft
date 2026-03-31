@@ -1,17 +1,17 @@
 {
 	"name": "@flowcraft/gcp-adapter",
-	"type": "module",
 	"version": "1.4.3",
 	"homepage": "https://flowcraft.js.org",
+	"files": [
+		"dist"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",
 			"import": "./dist/index.mjs"
 		}
 	},
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"build": "tsdown src/index.ts --format esm --dts",
 		"test": "./testcontainers.sh && vitest run src/*.test.ts",

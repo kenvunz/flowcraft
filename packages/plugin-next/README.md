@@ -13,11 +13,11 @@ npm install @flowcraft/next-plugin
 Update your `next.config.js`:
 
 ```javascript
-const { withFlowcraft } = require('@flowcraft/next-plugin');
+const { withFlowcraft } = require('@flowcraft/next-plugin')
 
 module.exports = withFlowcraft({
-  // ... your Next.js config
-});
+	// ... your Next.js config
+})
 ```
 
 Your Flowcraft workflows will be automatically compiled during production builds.

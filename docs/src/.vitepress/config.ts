@@ -41,7 +41,10 @@ export default defineConfig({
 		['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
 		[
 			'link',
-			{ href: 'https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap', rel: 'stylesheet' },
+			{
+				href: 'https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap',
+				rel: 'stylesheet',
+			},
 		],
 		['script', { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-XR04CH71VC' }],
 		[
@@ -88,9 +91,15 @@ export default defineConfig({
 							collapsed: true,
 							items: [
 								{ text: 'Configuration', link: '/guide/compiler/configuration' },
-								{ text: 'Authoring Guide', link: '/guide/compiler/authoring-guide' },
+								{
+									text: 'Authoring Guide',
+									link: '/guide/compiler/authoring-guide',
+								},
 								{ text: 'Durable Primitives', link: '/guide/durable-primitives' },
-								{ text: 'Build Tool Integration', link: '/guide/compiler/build-tools' },
+								{
+									text: 'Build Tool Integration',
+									link: '/guide/compiler/build-tools',
+								},
 							],
 						},
 					],

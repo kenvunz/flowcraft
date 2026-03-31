@@ -10,7 +10,11 @@ export function useLayout() {
 
 	const previousDirection = ref<'TB' | 'LR'>('LR')
 
-	function layout(nodes: Array<GraphNode | Node>, edges: Array<GraphEdge | Edge>, direction: 'TB' | 'LR'): GraphNode[] {
+	function layout(
+		nodes: Array<GraphNode | Node>,
+		edges: Array<GraphEdge | Edge>,
+		direction: 'TB' | 'LR',
+	): GraphNode[] {
 		const dagreGraph = new dagre.graphlib.Graph()
 		graph.value = dagreGraph
 		const isHorizontal = direction === 'LR'
@@ -38,8 +42,7 @@ export function useLayout() {
 					position: { x: nodeWithPosition.x, y: nodeWithPosition.y },
 				} as GraphNode
 			})
-		}
-		catch (error) {
+		} catch (error) {
 			console.error('Error while layouting graph:', error)
 			return nodes as GraphNode[]
 		}

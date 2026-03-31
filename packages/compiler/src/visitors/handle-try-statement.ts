@@ -3,7 +3,11 @@ import type { FlowAnalyzer } from '../flow-analyzer'
 
 export function handleTryStatement(analyzer: FlowAnalyzer, node: ts.TryStatement): string | null {
 	if (node.finallyBlock) {
-		analyzer.addDiagnostic(node.finallyBlock, 'error', `Finally blocks are not supported in flow functions.`)
+		analyzer.addDiagnostic(
+			node.finallyBlock,
+			'error',
+			`Finally blocks are not supported in flow functions.`,
+		)
 	}
 
 	// scan catch block to find fallback node
@@ -13,7 +17,9 @@ export function handleTryStatement(analyzer: FlowAnalyzer, node: ts.TryStatement
 		const nodesBeforeCatch = analyzer.state.getNodes().length
 		analyzer.traverse(node.catchClause.block)
 		fallbackNodeId =
-			analyzer.state.getNodes().length > nodesBeforeCatch ? analyzer.state.getNodes()[nodesBeforeCatch].id : null
+			analyzer.state.getNodes().length > nodesBeforeCatch
+				? analyzer.state.getNodes()[nodesBeforeCatch].id
+				: null
 		analyzer.state.getNodes().splice(nodesBeforeCatch)
 		analyzer.state.setCursor(null)
 		analyzer.state.setUsageCounts(savedUsageCounts)

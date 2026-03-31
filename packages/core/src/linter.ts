@@ -36,11 +36,16 @@ export function lintBlueprint(
 ): LinterResult {
 	const issues: LinterIssue[] = []
 	const nodeIds = new Set(blueprint.nodes.map((n) => n.id))
-	const registryKeys = registry instanceof Map ? new Set(registry.keys()) : new Set(Object.keys(registry))
+	const registryKeys =
+		registry instanceof Map ? new Set(registry.keys()) : new Set(Object.keys(registry))
 
 	// check for missing node implementations
 	for (const node of blueprint.nodes) {
-		if (!node.uses.startsWith('batch-') && !node.uses.startsWith('loop-') && !registryKeys.has(node.uses)) {
+		if (
+			!node.uses.startsWith('batch-') &&
+			!node.uses.startsWith('loop-') &&
+			!registryKeys.has(node.uses)
+		) {
 			issues.push({
 				code: 'MISSING_NODE_IMPLEMENTATION',
 				message: `Node implementation key '${node.uses}' is not found in the provided registry.`,
@@ -103,8 +108,8 @@ export function lintBlueprint(
 			visited.add(currentId)
 			connectedNodes.add(currentId)
 
-			for (const e of blueprint.edges.filter((e) => e.source === currentId)) {
-				nodesToVisit.push(e.target)
+			for (const targetEdge of blueprint.edges.filter((e) => e.source === currentId)) {
+				nodesToVisit.push(targetEdge.target)
 			}
 		}
 

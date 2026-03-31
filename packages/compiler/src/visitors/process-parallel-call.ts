@@ -2,7 +2,10 @@ import type { NodeDefinition } from 'flowcraft'
 import ts from 'typescript'
 import type { FlowAnalyzer } from '../flow-analyzer'
 
-export function processParallelCall(analyzer: FlowAnalyzer, callNode: ts.CallExpression): string | null {
+export function processParallelCall(
+	analyzer: FlowAnalyzer,
+	callNode: ts.CallExpression,
+): string | null {
 	const symbol = analyzer.typeChecker.getSymbolAtLocation(callNode.expression)
 	if (symbol) {
 		let originalSymbol = symbol
@@ -41,7 +44,11 @@ export function processParallelCall(analyzer: FlowAnalyzer, callNode: ts.CallExp
 
 					analyzer.state.addNode(nodeDef)
 					return nodeDef.id
-				} else if (ts.isFunctionDeclaration(decl) || ts.isFunctionExpression(decl) || ts.isArrowFunction(decl)) {
+				} else if (
+					ts.isFunctionDeclaration(decl) ||
+					ts.isFunctionExpression(decl) ||
+					ts.isArrowFunction(decl)
+				) {
 					// this is a local function declaration in the same file
 					const count = analyzer.state.incrementUsageCount(exportName)
 

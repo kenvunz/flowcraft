@@ -73,19 +73,19 @@ For a more imperative approach, you can write the same workflow using the Flowcr
 ```typescript
 /** @flow */
 export async function simpleWorkflow(value: number) {
-  const startResult = await startNode(value)
-  const finalResult = await doubleNode(startResult)
-  return finalResult
+	const startResult = await startNode(value)
+	const finalResult = await doubleNode(startResult)
+	return finalResult
 }
 
 /** @step */
 export async function startNode(value: number) {
-  return value
+	return value
 }
 
 /** @step */
 export async function doubleNode(input: number) {
-  return input * 2
+	return input * 2
 }
 ```
 

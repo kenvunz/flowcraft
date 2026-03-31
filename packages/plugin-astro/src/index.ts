@@ -3,7 +3,9 @@ import type { AstroIntegration } from 'astro'
 
 export interface FlowcraftAstroIntegrationOptions extends CompileFlowsOptions {}
 
-export default function flowcraftIntegration(options?: FlowcraftAstroIntegrationOptions): AstroIntegration {
+export default function flowcraftIntegration(
+	options?: FlowcraftAstroIntegrationOptions,
+): AstroIntegration {
 	return {
 		name: '@flowcraft/astro-integration',
 		hooks: {

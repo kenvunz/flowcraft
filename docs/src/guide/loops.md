@@ -13,20 +13,20 @@ When you write imperative loops in your `/** @flow */` functions, the compiler a
 ```typescript
 /** @flow */
 export async function counterWorkflow() {
-  let count = 0
+	let count = 0
 
-  while (count < 5) {
-    count = await incrementCounter(count)
-  }
+	while (count < 5) {
+		count = await incrementCounter(count)
+	}
 
-  return count
+	return count
 }
 
 /** @step */
 async function incrementCounter(currentCount: number) {
-  const newCount = currentCount + 1
-  console.log(`Count is now: ${newCount}`)
-  return newCount
+	const newCount = currentCount + 1
+	console.log(`Count is now: ${newCount}`)
+	return newCount
 }
 ```
 
@@ -37,6 +37,7 @@ This imperative code compiles to the same loop structure as the Fluent API examp
 The [`.loop()`](/api/flow#loop-id-options) method creates a special `loop-controller` node that manages the iteration. After the last node in the loop body executes, the controller evaluates a condition to decide whether to run the loop again or exit.
 
 Here's the method signature:
+
 ```typescript
 flow.loop(
 	id: string, // A unique ID for the loop construct
@@ -64,7 +65,7 @@ const flow = createFlow('loop-workflow')
 
 	// 2. This is the body of our loop. It reads, increments, and saves the counter.
 	.node('increment', async ({ context }) => {
-		const currentCount = await context.get('count') || 0
+		const currentCount = (await context.get('count')) || 0
 		const newCount = currentCount + 1
 		await context.set('count', newCount)
 		console.log(`Count is now: ${newCount}`)
@@ -75,7 +76,7 @@ const flow = createFlow('loop-workflow')
 	.loop('counter', {
 		startNodeId: 'increment',
 		endNodeId: 'increment', // The loop body is just one node.
-		condition: 'count < 5' // Continue as long as this is true.
+		condition: 'count < 5', // Continue as long as this is true.
 	})
 
 	// 4. Define the edges.
@@ -102,13 +103,13 @@ Loop controllers support conditional edges that are evaluated first, allowing ea
 ```typescript
 const flow = createFlow('conditional-loop')
 	.node('process', async ({ context }) => {
-		const items = await context.get('items') || []
+		const items = (await context.get('items')) || []
 		const item = items.shift()
 		await context.set('items', items)
 		return { item }
 	})
 	.node('check', async ({ context }) => {
-		const items = await context.get('items') || []
+		const items = (await context.get('items')) || []
 		return { shouldContinue: items.length > 0 }
 	})
 	.loop('loop', {
@@ -127,7 +128,7 @@ const flow = createFlow('conditional-loop')
 When a loop controller has multiple outgoing edges with conditions, all conditional edges are evaluated first. If any condition evaluates to true, the corresponding edge is taken. This allows the loop to exit early based on runtime conditions.
 
 > [!NOTE]
-> The loop controller node is configured with `joinStrategy: 'any'` so it can be re-entered on each iteration. If your loop body has multiple nodes and the loop's start node has more than one incoming edge (e.g., from an external predecessor *and* the loop's back-edge), you may need to add an explicit edge to the loop controller to prevent a join deadlock:
+> The loop controller node is configured with `joinStrategy: 'any'` so it can be re-entered on each iteration. If your loop body has multiple nodes and the loop's start node has more than one incoming edge (e.g., from an external predecessor _and_ the loop's back-edge), you may need to add an explicit edge to the loop controller to prevent a join deadlock:
 >
 > ```typescript
 > // Without this edge, 'initialize' -> 'loop-body-start' has no path
@@ -143,9 +144,10 @@ When a loop controller has multiple outgoing edges with conditions, all conditio
 
 > [!INFO]
 > `joinStrategy` decides how a node should be executed when it has multiple predecessors:
+>
 > - `'any'`: the node will be executed when any of the predecessors finishes, possibly for many times
 > - `'all'`: the node will be only executed once when all its predecessors finish.
-> The default value is `'all'`.
+>   The default value is `'all'`.
 
 ## Error Handling
 
@@ -156,7 +158,7 @@ Flowcraft validates loop configurations at runtime and provides descriptive erro
 When a loop controller is missing a required continue edge, Flowcraft throws a descriptive `FlowcraftError`:
 
 ```
-FlowcraftError: Loop 'myLoop' has no continue edge to start node. 
+FlowcraftError: Loop 'myLoop' has no continue edge to start node.
 Ensure edges are wired inside the loop and incoming/breaking edges point to the loop controller.
 ```
 
@@ -200,9 +202,9 @@ When a workflow contains cycles and is run in non-strict mode, the runtime arbit
 
 2. **Enable strict mode**: Run workflows in strict mode (`strict: true`) to prevent execution of non-DAG graphs entirely:
 
-   ```typescript
-   const result = await runtime.run(blueprint, initialContext, { strict: true })
-   ```
+    ```typescript
+    const result = await runtime.run(blueprint, initialContext, { strict: true })
+    ```
 
 3. **Design for predictability**: If you must use cycles, ensure they have clear entry and exit points, and test thoroughly in various scenarios.
 

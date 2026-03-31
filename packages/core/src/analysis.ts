@@ -143,7 +143,10 @@ export function generateMermaid(blueprint: WorkflowBlueprint): string {
  * @param events Array of FlowcraftEvent objects from the workflow execution
  * @returns Mermaid syntax string for the flowchart with execution path highlighting
  */
-export function generateMermaidForRun(blueprint: WorkflowBlueprint, events: FlowcraftEvent[]): string {
+export function generateMermaidForRun(
+	blueprint: WorkflowBlueprint,
+	events: FlowcraftEvent[],
+): string {
 	if (!blueprint?.nodes || blueprint.nodes.length === 0) {
 		return 'flowchart TD\n    empty[Empty Blueprint]'
 	}
@@ -248,14 +251,18 @@ export function analyzeBlueprint(blueprint: WorkflowBlueprint): BlueprintAnalysi
 		nodesWithIncoming.add(edge.target)
 	}
 
-	const startNodeIds = blueprint.nodes.map((node) => node.id).filter((nodeId) => !nodesWithIncoming.has(nodeId))
+	const startNodeIds = blueprint.nodes
+		.map((node) => node.id)
+		.filter((nodeId) => !nodesWithIncoming.has(nodeId))
 
 	const nodesWithOutgoing = new Set<string>()
 	for (const edge of blueprint.edges || []) {
 		nodesWithOutgoing.add(edge.source)
 	}
 
-	const terminalNodeIds = blueprint.nodes.map((node) => node.id).filter((nodeId) => !nodesWithOutgoing.has(nodeId))
+	const terminalNodeIds = blueprint.nodes
+		.map((node) => node.id)
+		.filter((nodeId) => !nodesWithOutgoing.has(nodeId))
 
 	return {
 		cycles,

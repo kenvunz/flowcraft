@@ -10,9 +10,9 @@ Defining a context provides a strongly-typed and intuitive way to construct your
 
 ```typescript
 interface UserProcessingContext {
-  user_data?: { id: number; name: string }
-  validation_result?: boolean
-  processing_status?: 'pending' | 'completed' | 'failed'
+	user_data?: { id: number; name: string }
+	validation_result?: boolean
+	processing_status?: 'pending' | 'completed' | 'failed'
 }
 ```
 
@@ -40,20 +40,24 @@ const flowBuilder = createFlow<UserProcessingContext>('user-processing')
 		return { output: user }
 	})
 	// A node with type-safe input handling
-	.node('validate-user', async ({ context, input }) => {
-		const userData = input as { id: number; name: string }
-		const isValid = userData.name === 'Alice'
+	.node(
+		'validate-user',
+		async ({ context, input }) => {
+			const userData = input as { id: number; name: string }
+			const isValid = userData.name === 'Alice'
 
-		await context.set('validation_result', isValid)
-		return {
-			output: isValid,
-			action: isValid ? 'valid' : 'invalid'
-		}
-	}, {
-		// This tells the runtime to provide the output of 'fetch-user'
-		// as the 'input' for this node.
-		inputs: 'fetch-user'
-	})
+			await context.set('validation_result', isValid)
+			return {
+				output: isValid,
+				action: isValid ? 'valid' : 'invalid',
+			}
+		},
+		{
+			// This tells the runtime to provide the output of 'fetch-user'
+			// as the 'input' for this node.
+			inputs: 'fetch-user',
+		},
+	)
 ```
 
 ## Adding Edges
@@ -62,8 +66,8 @@ Edges define the dependencies and control flow between nodes. You can create the
 
 ```typescript
 const flowBuilder = createFlow<UserProcessingContext>('user-processing')
-	.node('fetch-user', /* ... */)
-	.node('validate-user', /* ... */)
+	.node('fetch-user' /* ... */)
+	.node('validate-user' /* ... */)
 	.node('process-valid', async ({ context }) => {
 		// Type-safe context access in downstream nodes
 		const userData = await context.get('user_data')

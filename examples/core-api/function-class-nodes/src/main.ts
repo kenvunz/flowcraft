@@ -56,10 +56,15 @@ async function main() {
 		console.log(`📧 Notifications Sent: ${notificationsSent}`)
 
 		console.log('\n📋 Complete Final Context:')
-		const cleanContext = Object.fromEntries(Object.entries(result.context).filter(([key]) => !key.startsWith('_')))
+		const cleanContext = Object.fromEntries(
+			Object.entries(result.context).filter(([key]) => !key.startsWith('_')),
+		)
 		console.log(JSON.stringify(cleanContext, null, 2))
 	} catch (error) {
-		console.error('\n❌ Workflow failed:', error instanceof Error ? error.message : String(error))
+		console.error(
+			'\n❌ Workflow failed:',
+			error instanceof Error ? error.message : String(error),
+		)
 		process.exit(1)
 	}
 

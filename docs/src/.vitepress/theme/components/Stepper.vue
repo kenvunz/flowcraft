@@ -32,16 +32,12 @@ const runtime = new FlowRuntime({
 	...(props.registry ? { registry: props.registry } : {}),
 })
 
-const stepper = await createStepper(
-	runtime,
-	blueprint,
-	functionRegistry,
-)
+const stepper = await createStepper(runtime, blueprint, functionRegistry)
 
 const vueFlowNodes: Node[] = uiGraph.nodes.map((node) => ({
 	id: node.id,
 	position: props.positionsMap[node.id] || { x: 0, y: 0 },
-	data: { label: node.id.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) },
+	data: { label: node.id.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase()) },
 	type: props.typesMap[node.id],
 	targetPosition: Position.Left,
 	sourcePosition: Position.Right,
@@ -56,11 +52,10 @@ const vueFlowEdges: Edge[] = uiGraph.edges.map((edge, index) => ({
 	animated: true,
 	...(edge.data?.isLoopback
 		? {
-			type: 'loopback',
-			data: { pathType: 'bezier' }
-		}
-		: {}
-	),
+				type: 'loopback',
+				data: { pathType: 'bezier' },
+			}
+		: {}),
 }))
 
 onMounted(() => {
@@ -71,12 +66,17 @@ onMounted(() => {
 const viewContext = ref(false)
 const executionResult = ref<any>(null)
 const awaitingNodes = ref<string[]>([])
-const nodeData = ref(new Map<string, {
-	inputs?: any,
-	outputs?: any,
-	contextChanges?: Record<string, any>,
-	status?: NodeDataStatus
-}>())
+const nodeData = ref(
+	new Map<
+		string,
+		{
+			inputs?: any
+			outputs?: any
+			contextChanges?: Record<string, any>
+			status?: NodeDataStatus
+		}
+	>(),
+)
 
 eventBus.on('node:start', (event) => {
 	const { nodeId, input } = event.payload as any
@@ -87,14 +87,22 @@ eventBus.on('node:start', (event) => {
 eventBus.on('node:finish', (event) => {
 	const { nodeId, result } = event.payload as any
 	const currentData = nodeData.value.get(nodeId) || {}
-	nodeData.value.set(nodeId, { ...currentData, status: 'completed' as const, outputs: result.output })
+	nodeData.value.set(nodeId, {
+		...currentData,
+		status: 'completed' as const,
+		outputs: result.output,
+	})
 })
 
 eventBus.on('context:change', (event) => {
 	const { sourceNode, key, value } = event.payload as any
 	const currentData = nodeData.value.get(sourceNode) || { contextChanges: {} }
 	const updatedContextChanges = { ...currentData.contextChanges, [key]: value }
-	nodeData.value.set(sourceNode, { ...currentData, contextChanges: updatedContextChanges, status: 'completed' })
+	nodeData.value.set(sourceNode, {
+		...currentData,
+		contextChanges: updatedContextChanges,
+		status: 'completed',
+	})
 	awaitingNodes.value = awaitingNodes.value.filter((id: string) => id !== sourceNode)
 })
 
@@ -119,13 +127,13 @@ function syncUiWithStepperState() {
 	const completedNodes = stepper.state.getCompletedNodes()
 	const context = stepper.state.getContext()
 
-	context.toJSON().then(contextJSON => {
+	context.toJSON().then((contextJSON) => {
 		executionResult.value = Object.keys(contextJSON).length > 0 ? contextJSON : null
-		blueprint.nodes.forEach(node => {
+		blueprint.nodes.forEach((node) => {
 			const data: {
-				inputs?: any,
-				outputs?: any,
-				contextChanges?: Record<string, any>,
+				inputs?: any
+				outputs?: any
+				contextChanges?: Record<string, any>
 				status?: NodeDataStatus
 			} = { status: 'idle' }
 
@@ -137,7 +145,7 @@ function syncUiWithStepperState() {
 		})
 
 		const frontierIds = (stepper.traverser as any).frontier as Set<string>
-		frontierIds.forEach(nodeId => {
+		frontierIds.forEach((nodeId) => {
 			const currentData = newMap.get(nodeId) || {}
 			newMap.set(nodeId, { ...currentData, status: 'idle' })
 		})
@@ -171,23 +179,31 @@ async function clear() {
 
 <template>
 	<div class="relative flex flex-col h-full rounded-[8px] overflow-hidden">
-		<header class="flex items-center gap-2 p-2 bg-[var(--vp-c-bg-alt)] border-b border-[var(--vp-c-divider)]">
-			<button @click="prev" class="brand" :disabled="!executionResult">
-				Prev
-			</button>
-			<button @click="next" class="brand">
-				Next
-			</button>
+		<header
+			class="flex items-center gap-2 p-2 bg-[var(--vp-c-bg-alt)] border-b border-[var(--vp-c-divider)]"
+		>
+			<button @click="prev" class="brand" :disabled="!executionResult">Prev</button>
+			<button @click="next" class="brand">Next</button>
 			<!-- <button :disabled="!executionResult" @click="clear" class="alt">
 				Clear
 			</button> -->
 			<div v-if="awaitingNodes.length > 0" class="flex items-center gap-2">
 				<span class="border-l border-[var(--vp-c-divider)] h-4 mx-4" />
 				<span class="text-sm font-medium">Resume:</span>
-				<button v-for="nodeId in awaitingNodes" :key="nodeId" @click="resumeWorkflow(nodeId, { output: { approved: true } })" class="brand">
+				<button
+					v-for="nodeId in awaitingNodes"
+					:key="nodeId"
+					@click="resumeWorkflow(nodeId, { output: { approved: true } })"
+					class="brand"
+				>
 					Approve
 				</button>
-				<button v-for="nodeId in awaitingNodes" :key="nodeId" @click="resumeWorkflow(nodeId, { output: { approved: false } })" class="brand">
+				<button
+					v-for="nodeId in awaitingNodes"
+					:key="nodeId"
+					@click="resumeWorkflow(nodeId, { output: { approved: false } })"
+					class="brand"
+				>
 					Deny
 				</button>
 			</div>
@@ -200,11 +216,9 @@ async function clear() {
 		<pre
 			v-show="viewContext"
 			class="absolute inset-0 top-[45px] z-10 overflow-auto p-4 text-sm flex-auto bg-[var(--vp-code-block-bg)]"
-		>{{ JSON.stringify(executionResult, null, 2) }}</pre>
-		<VueFlow
-			fit-view-on-init
-			:max-zoom="1.25"
+			>{{ JSON.stringify(executionResult, null, 2) }}</pre
 		>
+		<VueFlow fit-view-on-init :max-zoom="1.25">
 			<Background />
 			<template #node-input="nodeProps">
 				<NodeInput v-bind="nodeProps" :node-data="getNodeData(nodeProps.id)" :direction />

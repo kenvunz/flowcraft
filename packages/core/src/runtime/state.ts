@@ -13,9 +13,12 @@ export class WorkflowState<TContext extends Record<string, any>> {
 
 	constructor(initialData: Partial<TContext>, context?: IAsyncContext<TContext>) {
 		if (context) {
-			this.context = context instanceof TrackedAsyncContext ? context : new TrackedAsyncContext(context)
+			this.context =
+				context instanceof TrackedAsyncContext ? context : new TrackedAsyncContext(context)
 		} else {
-			this.context = new TrackedAsyncContext(new AsyncContextView(new SyncContext<TContext>(initialData)))
+			this.context = new TrackedAsyncContext(
+				new AsyncContextView(new SyncContext<TContext>(initialData)),
+			)
 		}
 		if ((initialData as any)._awaitingNodeIds) {
 			this._isAwaiting = true
@@ -138,7 +141,10 @@ export class WorkflowState<TContext extends Record<string, any>> {
 		return 'stalled'
 	}
 
-	async toResult(serializer: ISerializer, executionId?: string): Promise<WorkflowResult<TContext>> {
+	async toResult(
+		serializer: ISerializer,
+		executionId?: string,
+	): Promise<WorkflowResult<TContext>> {
 		const contextJSON = (await this.context.toJSON()) as TContext
 		if (!this._isAwaiting && (contextJSON as any)._awaitingNodeIds) {
 			delete (contextJSON as any)._awaitingNodeIds

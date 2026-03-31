@@ -5,12 +5,12 @@ import { createFlow } from 'flowcraft'
 const init = { value: 42 }
 
 async function startNode({ context }: NodeContext) {
-	await new Promise(r => setTimeout(r, 500))
+	await new Promise((r) => setTimeout(r, 500))
 	return { output: await context.get('value') }
 }
 
 async function doubleNode({ input }: NodeContext) {
-	await new Promise(r => setTimeout(r, 500))
+	await new Promise((r) => setTimeout(r, 500))
 	return { output: input * 2 }
 }
 

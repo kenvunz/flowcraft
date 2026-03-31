@@ -35,7 +35,9 @@ async function main() {
 
 	console.log('\n--- CLI Inspection ---')
 	console.log('To inspect this workflow execution, run:')
-	console.log(`npx @flowcraft/cli inspect ${result.context._executionId} --database ./workflow-events.db`)
+	console.log(
+		`npx @flowcraft/cli inspect ${result.context._executionId} --database ./workflow-events.db`,
+	)
 	console.log('\nOr install globally and run:')
 	console.log(`flowcraft inspect ${result.context._executionId} --database ./workflow-events.db`)
 }

@@ -52,7 +52,9 @@ async function resolveInputs(
 	return resolved
 }
 
-export async function llmProcess(ctx: NodeContext<Record<string, any>, RuntimeDependencies>): Promise<NodeResult> {
+export async function llmProcess(
+	ctx: NodeContext<Record<string, any>, RuntimeDependencies>,
+): Promise<NodeResult> {
 	const llmCtx = ctx as any as LlmNodeContext
 	const templateData = await resolveInputs(ctx.context, llmCtx.params.inputs)
 	const prompt = resolveTemplate(llmCtx.params.promptTemplate, templateData)
@@ -60,19 +62,25 @@ export async function llmProcess(ctx: NodeContext<Record<string, any>, RuntimeDe
 	return { output: result }
 }
 
-export async function llmCondition(ctx: NodeContext<Record<string, any>, RuntimeDependencies>): Promise<NodeResult> {
+export async function llmCondition(
+	ctx: NodeContext<Record<string, any>, RuntimeDependencies>,
+): Promise<NodeResult> {
 	const result = await llmProcess(ctx)
 	const action = result.output?.toLowerCase().includes('true') ? 'true' : 'false'
 	return { action, output: result.output }
 }
 
-export async function llmRouter(ctx: NodeContext<Record<string, any>, RuntimeDependencies>): Promise<NodeResult> {
+export async function llmRouter(
+	ctx: NodeContext<Record<string, any>, RuntimeDependencies>,
+): Promise<NodeResult> {
 	const result = await llmProcess(ctx)
 	const action = result.output?.trim() ?? 'default'
 	return { action, output: result.output }
 }
 
-export async function outputNode(ctx: NodeContext<Record<string, any>, RuntimeDependencies>): Promise<NodeResult> {
+export async function outputNode(
+	ctx: NodeContext<Record<string, any>, RuntimeDependencies>,
+): Promise<NodeResult> {
 	const llmCtx = ctx as any as LlmNodeContext
 	const { outputKey = 'final_output' } = llmCtx.params
 	const templateData = await resolveInputs(ctx.context, llmCtx.params.inputs)

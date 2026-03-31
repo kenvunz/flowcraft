@@ -47,7 +47,11 @@ export class SqsAdapter extends BaseDistributedAdapter {
 	/**
 	 * Hook called at the start of job processing to update lastUpdated timestamp.
 	 */
-	protected async onJobStart(_runId: string, _blueprintId: string, _nodeId: string): Promise<void> {
+	protected async onJobStart(
+		_runId: string,
+		_blueprintId: string,
+		_nodeId: string,
+	): Promise<void> {
 		// Touch the status table to update the 'lastUpdated' timestamp.
 		// This is critical for the reconciler to find stalled workflows.
 		try {
@@ -66,7 +70,10 @@ export class SqsAdapter extends BaseDistributedAdapter {
 			})
 			await this.dynamo.send(touchCommand)
 		} catch (error) {
-			this.logger.error(`[SqsAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`, { error })
+			this.logger.error(
+				`[SqsAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`,
+				{ error },
+			)
 		}
 	}
 
@@ -93,7 +100,10 @@ export class SqsAdapter extends BaseDistributedAdapter {
 		this.logger.info(`[SqsAdapter] Published final result for Run ID ${runId}.`)
 	}
 
-	public async registerWebhookEndpoint(_runId: string, _nodeId: string): Promise<{ url: string; event: string }> {
+	public async registerWebhookEndpoint(
+		_runId: string,
+		_nodeId: string,
+	): Promise<{ url: string; event: string }> {
 		// TODO: Implement webhook endpoint registration for SQS adapter
 		// This would typically involve setting up an API Gateway + Lambda that forwards to SQS
 		throw new Error('registerWebhookEndpoint not implemented for SQSAdapter')
@@ -111,7 +121,9 @@ export class SqsAdapter extends BaseDistributedAdapter {
 			handleMessage: async (message: Message) => {
 				try {
 					const job = JSON.parse(message.Body || '{}') as JobPayload
-					this.logger.info(`[SqsAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`)
+					this.logger.info(
+						`[SqsAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`,
+					)
 					await handler(job)
 					return message
 				} catch (error: unknown) {

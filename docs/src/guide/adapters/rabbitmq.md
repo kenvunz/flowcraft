@@ -38,25 +38,27 @@ You must have RabbitMQ, PostgreSQL, and Redis available. For local development, 
 ### Using Docker Compose
 
 Create a `docker-compose.yml` file:
+
 ```yaml
 version: '3.8'
 services:
-  rabbitmq:
-    image: rabbitmq:3.13.0-management-alpine
-    ports: ["5672:5672", "15672:15672"] # App & Management UI
-  postgres:
-    image: postgres:16-alpine
-    ports: ["5432:5432"]
-    environment:
-      POSTGRES_DB: flowcraft_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-  redis:
-    image: redis:8-alpine
-    ports: ["6379:6379"]
+    rabbitmq:
+        image: rabbitmq:3.13.0-management-alpine
+        ports: ['5672:5672', '15672:15672'] # App & Management UI
+    postgres:
+        image: postgres:16-alpine
+        ports: ['5432:5432']
+        environment:
+            POSTGRES_DB: flowcraft_db
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: password
+    redis:
+        image: redis:8-alpine
+        ports: ['6379:6379']
 ```
 
 After running `docker-compose up -d`, connect to PostgreSQL and create the required tables:
+
 ```sql
 -- For context data
 CREATE TABLE flowcraft_contexts (
@@ -85,8 +87,12 @@ import Redis from 'ioredis'
 import { Client as PgClient } from 'pg'
 
 // 1. Define your blueprints and registry
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize service clients
 const amqpConnection = await amqplib.connect(process.env.RABBITMQ_URL)
@@ -102,13 +108,13 @@ const coordinationStore = new RedisCoordinationStore(redisClient)
 
 // 5. Initialize the adapter
 const adapter = new RabbitMqAdapter({
-  runtimeOptions: runtime.options,
-  coordinationStore,
-  amqpConnection,
-  pgClient,
-  contextTableName: 'flowcraft_contexts',
-  statusTableName: 'flowcraft_statuses',
-  queueName: 'flowcraft-jobs',
+	runtimeOptions: runtime.options,
+	coordinationStore,
+	amqpConnection,
+	pgClient,
+	contextTableName: 'flowcraft_contexts',
+	statusTableName: 'flowcraft_statuses',
+	queueName: 'flowcraft-jobs',
 })
 
 // 6. Start the worker
@@ -127,34 +133,40 @@ import amqplib from 'amqplib'
 import { Client as PgClient } from 'pg'
 
 async function startWorkflow(blueprint, initialContext) {
-  const runId = crypto.randomUUID()
-  const pg = new PgClient({ connectionString: process.env.POSTGRES_URL })
-  await pg.connect()
-  const amqp = await amqplib.connect(process.env.RABBITMQ_URL)
+	const runId = crypto.randomUUID()
+	const pg = new PgClient({ connectionString: process.env.POSTGRES_URL })
+	await pg.connect()
+	const amqp = await amqplib.connect(process.env.RABBITMQ_URL)
 
-  // 1. Set initial context and status in PostgreSQL
-  await pg.query('INSERT INTO flowcraft_contexts (run_id, context_data) VALUES ($1, $2)', [runId, initialContext])
-  await pg.query('INSERT INTO flowcraft_statuses (run_id, status) VALUES ($1, $2)', [runId, 'running'])
+	// 1. Set initial context and status in PostgreSQL
+	await pg.query('INSERT INTO flowcraft_contexts (run_id, context_data) VALUES ($1, $2)', [
+		runId,
+		initialContext,
+	])
+	await pg.query('INSERT INTO flowcraft_statuses (run_id, status) VALUES ($1, $2)', [
+		runId,
+		'running',
+	])
 
-  // 2. Analyze blueprint for start nodes
-  const analysis = analyzeBlueprint(blueprint)
+	// 2. Analyze blueprint for start nodes
+	const analysis = analyzeBlueprint(blueprint)
 
-  // 3. Publish start jobs to RabbitMQ
-  const channel = await amqp.createChannel()
-  const queue = 'flowcraft-jobs'
-  await channel.assertQueue(queue, { durable: true })
+	// 3. Publish start jobs to RabbitMQ
+	const channel = await amqp.createChannel()
+	const queue = 'flowcraft-jobs'
+	await channel.assertQueue(queue, { durable: true })
 
-  analysis.startNodeIds.forEach(nodeId => {
-    const job = Buffer.from(JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }))
-    channel.sendToQueue(queue, job, { persistent: true })
-  })
+	analysis.startNodeIds.forEach((nodeId) => {
+		const job = Buffer.from(JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }))
+		channel.sendToQueue(queue, job, { persistent: true })
+	})
 
-  await channel.close()
-  await amqp.close()
-  await pg.end()
+	await channel.close()
+	await amqp.close()
+	await pg.end()
 
-  console.log(`Workflow ${runId} started.`)
-  return runId
+	console.log(`Workflow ${runId} started.`)
+	return runId
 }
 ```
 
@@ -173,16 +185,16 @@ import { createRabbitMqReconciler } from '@flowcraft/rabbitmq-adapter'
 
 // 'adapter' and 'pgClient' should be initialized as in the worker setup
 const reconciler = createRabbitMqReconciler({
-  adapter,
-  pgClient,
-  statusTableName: 'flowcraft_statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter,
+	pgClient,
+	statusTableName: 'flowcraft_statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run this function periodically
 async function reconcile() {
-  const stats = await reconciler.run()
-  console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
+	const stats = await reconciler.run()
+	console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
 }
 ```
 
@@ -199,6 +211,7 @@ Registers a webhook endpoint for the specified workflow run and node.
 - **Returns**: `Promise<{ url: string; event: string }>` - The webhook URL and event name.
 
 **Example Implementation:**
+
 ```typescript
 // In RabbitMqAdapter
 public async registerWebhookEndpoint(runId: string, nodeId: string): Promise<{ url: string; event: string }> {
@@ -227,28 +240,33 @@ const connection = await amqp.connect('amqp://localhost')
 const channel = await connection.createChannel()
 
 app.post('/webhooks/:runId/:nodeId', async (req, res) => {
-  const { runId, nodeId } = req.params
-  const payload = req.body
+	const { runId, nodeId } = req.params
+	const payload = req.body
 
-  // Get webhook mapping from PostgreSQL
-  const result = await postgres.query(
-    'SELECT event_name FROM webhooks WHERE webhook_id = $1',
-    [`${runId}:${nodeId}`]
-  )
+	// Get webhook mapping from PostgreSQL
+	const result = await postgres.query('SELECT event_name FROM webhooks WHERE webhook_id = $1', [
+		`${runId}:${nodeId}`,
+	])
 
-  if (result.rows.length > 0) {
-    const eventName = result.rows[0].event_name
+	if (result.rows.length > 0) {
+		const eventName = result.rows[0].event_name
 
-    // Publish event to RabbitMQ exchange
-    await channel.publish('flowcraft-events', '', Buffer.from(JSON.stringify({
-      event: eventName,
-      payload
-    })))
+		// Publish event to RabbitMQ exchange
+		await channel.publish(
+			'flowcraft-events',
+			'',
+			Buffer.from(
+				JSON.stringify({
+					event: eventName,
+					payload,
+				}),
+			),
+		)
 
-    res.status(200).send('OK')
-  } else {
-    res.status(404).send('Webhook not found')
-  }
+		res.status(200).send('OK')
+	} else {
+		res.status(404).send('Webhook not found')
+	}
 })
 ```
 

@@ -2,7 +2,7 @@
 import { createFlow } from 'flowcraft'
 
 async function mockApiCall(name, delay, shouldFail = false) {
-	await new Promise(resolve => setTimeout(resolve, delay))
+	await new Promise((resolve) => setTimeout(resolve, delay))
 	if (shouldFail) {
 		throw new Error(`API call "${name}" failed.`)
 	}
@@ -33,14 +33,14 @@ const positionsMap = {
 	'task-1': { x: 300, y: 0 },
 	'task-2': { x: 300, y: 200 },
 	'task-3': { x: 300, y: 400 },
-	'gather': { x: 600, y: 200 },
+	gather: { x: 600, y: 200 },
 }
 const typesMap = {
 	'start-parallel': 'input',
 	'task-1': 'default',
 	'task-2': 'default',
 	'task-3': 'default',
-	'gather': 'output',
+	gather: 'output',
 }
 </script>
 

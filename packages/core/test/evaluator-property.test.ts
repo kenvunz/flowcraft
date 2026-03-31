@@ -25,8 +25,16 @@ describe('Evaluator Property Tests', () => {
 				{ expr: 'a.b.c', context: { a: { b: { c: 3 } } }, expected: 3 },
 
 				// Deep nesting
-				{ expr: 'result.output.status', context: { result: { output: { status: 'OK' } } }, expected: 'OK' },
-				{ expr: 'context.user.isAdmin', context: { context: { user: { isAdmin: true } } }, expected: true },
+				{
+					expr: 'result.output.status',
+					context: { result: { output: { status: 'OK' } } },
+					expected: 'OK',
+				},
+				{
+					expr: 'context.user.isAdmin',
+					context: { context: { user: { isAdmin: true } } },
+					expected: true,
+				},
 
 				// Undefined paths
 				{ expr: 'missing', context: {}, expected: undefined },
@@ -135,7 +143,9 @@ describe('Evaluator Property Tests', () => {
 				},
 			}
 
-			expect(evaluator.evaluate('level1.level2.level3.level4.level5.value', deepContext)).toBe('deep')
+			expect(
+				evaluator.evaluate('level1.level2.level3.level4.level5.value', deepContext),
+			).toBe('deep')
 		})
 
 		it('handles arrays of objects', () => {

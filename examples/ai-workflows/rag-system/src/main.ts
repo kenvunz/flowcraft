@@ -51,10 +51,16 @@ async function main() {
 	await fs.mkdir(path.dirname(outputFilePath), { recursive: true })
 
 	const serializedContext = result.serializedContext
-	await fs.writeFile(outputFilePath, JSON.stringify(JSON.parse(serializedContext), null, 2), 'utf-8')
+	await fs.writeFile(
+		outputFilePath,
+		JSON.stringify(JSON.parse(serializedContext), null, 2),
+		'utf-8',
+	)
 
 	console.log(`Full context saved to: ${outputFilePath}\n`)
-	console.log('Inspect the file to see that complex types like Map, Date, and classes were preserved.')
+	console.log(
+		'Inspect the file to see that complex types like Map, Date, and classes were preserved.',
+	)
 }
 
 main().catch(console.error)

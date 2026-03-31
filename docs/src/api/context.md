@@ -21,7 +21,7 @@ interface ISyncContext<TContext extends Record<string, any> = Record<string, any
 
 The default, high-performance, in-memory implementation of [`ISyncContext`](/api/context#isynccontext-interface), backed by a `Map`.
 
--   **`new Context<TContext>(initialData?)`**: Creates a new context with full type safety, optionally seeding it with initial data.
+- **`new Context<TContext>(initialData?)`**: Creates a new context with full type safety, optionally seeding it with initial data.
 
 ## `IAsyncContext` Interface
 
@@ -61,9 +61,9 @@ The strongly-typed context system provides:
 ```typescript
 // Define your workflow's context shape
 interface SearchWorkflowContext {
-  query: string
-  results: SearchResult[]
-  final_answer?: string
+	query: string
+	results: SearchResult[]
+	final_answer?: string
 }
 
 // Create a strongly-typed flow
@@ -71,18 +71,18 @@ const flow = createFlow<SearchWorkflowContext>('search-flow')
 
 // In your node functions, get full type safety
 flow.node('search', async (ctx) => {
-  // ✅ Autocomplete suggests: 'query', 'results', 'final_answer'
-  const query = await ctx.context.get('query')
+	// ✅ Autocomplete suggests: 'query', 'results', 'final_answer'
+	const query = await ctx.context.get('query')
 
-  // ✅ Type inference: query is 'string | undefined'
-  if (!query) return { action: 'fail' }
+	// ✅ Type inference: query is 'string | undefined'
+	if (!query) return { action: 'fail' }
 
-  const results = await searchWeb(query)
+	const results = await searchWeb(query)
 
-  // ✅ Type checking: results must match SearchResult[]
-  await ctx.context.set('results', results)
+	// ✅ Type checking: results must match SearchResult[]
+	await ctx.context.set('results', results)
 
-  // ❌ Compile-time error: 'invalid_key' not in SearchWorkflowContext
-  await ctx.context.get('invalid_key')
+	// ❌ Compile-time error: 'invalid_key' not in SearchWorkflowContext
+	await ctx.context.get('invalid_key')
 })
 ```

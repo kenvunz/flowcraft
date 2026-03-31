@@ -7,7 +7,7 @@ import './flow.css'
 
 export default {
 	...DefaultTheme,
-	enhanceApp({ app }) {
+	enhanceApp() {
 		// app.component('CopyOrDownloadAsMarkdownButtons', CopyOrDownloadAsMarkdownButtons)
 	},
 } satisfies Theme

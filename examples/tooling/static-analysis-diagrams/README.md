@@ -5,6 +5,7 @@ This example demonstrates static analysis and ASCII diagram generation for Flowc
 ## Overview
 
 The workflow performs static analysis on workflow blueprints:
+
 1. Analyzes structural properties (nodes, edges, connectivity)
 2. Generates ASCII diagrams showing workflow topology
 3. Validates the generated diagrams

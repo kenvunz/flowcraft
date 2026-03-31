@@ -11,7 +11,7 @@ Functions that define workflow orchestration must be marked with the `/** @flow 
 ```typescript
 /** @flow */
 export async function myWorkflow(input: string) {
-  // Your workflow logic here
+	// Your workflow logic here
 }
 ```
 
@@ -22,21 +22,21 @@ Any async operation that should be durable (retried on failure, tracked in execu
 ```typescript
 /** @flow */
 export async function myWorkflow(input: string) {
-  const data = await fetchData(input)
+	const data = await fetchData(input)
 
-  const result = await processData(data)
+	const result = await processData(data)
 
-  return result
+	return result
 }
 
 /** @step */
 async function fetchData(input: string) {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function processData(data: any) {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -48,19 +48,19 @@ The compiler will throw an error if you try to await a function that isn't marke
 // ❌ This will cause a compile error
 /** @flow */
 export async function myWorkflow() {
-  const helper = async () => 'hello'
-  const result = await helper() // Error: Cannot await non-step function
+	const helper = async () => 'hello'
+	const result = await helper() // Error: Cannot await non-step function
 }
 
 // ✅ Correct approach
 /** @flow */
 export async function myWorkflow() {
-  const result = await helperStep()
+	const result = await helperStep()
 }
 
 /** @step */
 async function helperStep() {
-  return 'hello'
+	return 'hello'
 }
 ```
 
@@ -71,28 +71,28 @@ async function helperStep() {
 ```typescript
 /** @flow */
 export async function sequentialWorkflow() {
-  const a = await stepA()
+	const a = await stepA()
 
-  const b = await stepB(a)
+	const b = await stepB(a)
 
-  const c = await stepC(b)
+	const c = await stepC(b)
 
-  return c
+	return c
 }
 
 /** @step */
 async function stepA() {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function stepB(input: any) {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function stepC(input: any) {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -101,21 +101,21 @@ async function stepC(input: any) {
 ```typescript
 /** @flow */
 export async function conditionalWorkflow(input: number) {
-  if (input > 10) {
-    return await handleLargeInput(input)
-  } else {
-    return await handleSmallInput(input)
-  }
+	if (input > 10) {
+		return await handleLargeInput(input)
+	} else {
+		return await handleSmallInput(input)
+	}
 }
 
 /** @step */
 async function handleLargeInput(input: number) {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function handleSmallInput(input: number) {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -124,21 +124,21 @@ async function handleSmallInput(input: number) {
 ```typescript
 /** @flow */
 export async function resilientWorkflow() {
-  try {
-    return await riskyOperation()
-  } catch (error) {
-    return await fallbackOperation(error)
-  }
+	try {
+		return await riskyOperation()
+	} catch (error) {
+		return await fallbackOperation(error)
+	}
 }
 
 /** @step */
 async function riskyOperation() {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function fallbackOperation(error: any) {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -147,34 +147,34 @@ async function fallbackOperation(error: any) {
 ```typescript
 /** @flow */
 export async function loopWorkflow(items: string[]) {
-  const results = []
+	const results = []
 
-  for (const item of items) {
-    const result = await processItem(item)
-    results.push(result)
-  }
+	for (const item of items) {
+		const result = await processItem(item)
+		results.push(result)
+	}
 
-  return results
+	return results
 }
 
 /** @flow */
 export async function whileWorkflow() {
-  let count = 0
+	let count = 0
 
-  while (count < 10) {
-    await incrementCounter()
-    count++
-  }
+	while (count < 10) {
+		await incrementCounter()
+		count++
+	}
 }
 
 /** @step */
 async function processItem(item: string) {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function incrementCounter() {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -183,18 +183,18 @@ async function incrementCounter() {
 ```typescript
 /** @flow */
 export async function controlledLoop(items: number[]) {
-  for (const item of items) {
-    if (item < 0) continue
+	for (const item of items) {
+		if (item < 0) continue
 
-    const result = await processItem(item)
+		const result = await processItem(item)
 
-    if (result === 'stop') break
-  }
+		if (result === 'stop') break
+	}
 }
 
 /** @step */
 async function processItem(item: number) {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -203,16 +203,14 @@ async function processItem(item: number) {
 ```typescript
 /** @flow */
 export async function parallelWorkflow(items: string[]) {
-  const promises = items.map(item =>
-    processItem(item)
-  )
+	const promises = items.map((item) => processItem(item))
 
-  return await Promise.all(promises)
+	return await Promise.all(promises)
 }
 
 /** @step */
 async function processItem(item: string) {
-  // Implementation
+	// Implementation
 }
 ```
 
@@ -224,9 +222,9 @@ Subflows are created naturally by importing and awaiting other `/** @flow */` fu
 // subflow.ts
 /** @flow */
 export async function subWorkflow(input: string) {
-  const processed = await processData(input)
+	const processed = await processData(input)
 
-  return await saveResult(processed)
+	return await saveResult(processed)
 }
 
 // main-workflow.ts
@@ -234,32 +232,32 @@ import { subWorkflow } from './subflow'
 
 /** @flow */
 export async function mainWorkflow(input: string) {
-  const validated = await validateInput(input)
+	const validated = await validateInput(input)
 
-  // This creates a subflow node in the compiled blueprint
-  const result = await subWorkflow(validated)
+	// This creates a subflow node in the compiled blueprint
+	const result = await subWorkflow(validated)
 
-  return await finalizeResult(result)
+	return await finalizeResult(result)
 }
 
 /** @step */
 async function validateInput(input: string) {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function finalizeResult(result: any) {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function processData(input: string) {
-  // Implementation
+	// Implementation
 }
 
 /** @step */
 async function saveResult(processed: any) {
-  // Implementation
+	// Implementation
 }
 ```
 

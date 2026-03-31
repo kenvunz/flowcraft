@@ -39,8 +39,9 @@ interface IEvaluator {
 	evaluate: (expression: string, context: Record<string, any>) => any
 }
 ```
--   `expression`: The string to evaluate (e.g., `"result.output.status"` for `PropertyEvaluator` or `"result.output > 100"` for `UnsafeEvaluator`).
--   `context`: A JavaScript object containing the data available to the expression (e.g., `result`, `context`).
+
+- `expression`: The string to evaluate (e.g., `"result.output.status"` for `PropertyEvaluator` or `"result.output > 100"` for `UnsafeEvaluator`).
+- `context`: A JavaScript object containing the data available to the expression (e.g., `result`, `context`).
 
 #### Example: Using `jsep` for Safe AST-Based Evaluation
 
@@ -65,12 +66,14 @@ function evaluateAst(node: jsep.Expression, context: Record<string, any>): any {
 			const left = evaluateAst(binaryNode.left, context)
 			const right = evaluateAst(binaryNode.right, context)
 			switch (binaryNode.operator) {
-				case '===': return left === right
-				case '>': return left > right
-			// ... handle other operators
+				case '===':
+					return left === right
+				case '>':
+					return left > right
+				// ... handle other operators
 			}
 			break
-			// ... handle MemberExpression for `result.output`, etc.
+		// ... handle MemberExpression for `result.output`, etc.
 	}
 	throw new Error(`Unsupported expression type: ${node.type}`)
 }
@@ -80,8 +83,7 @@ class JsepEvaluator implements IEvaluator {
 		try {
 			const ast = jsep(expression)
 			return evaluateAst(ast, context)
-		}
-		catch (error) {
+		} catch (error) {
 			console.error(`Error evaluating expression with jsep: ${expression}`, error)
 			return undefined // Return a falsy value on error
 		}
@@ -96,8 +98,8 @@ const runtime = new FlowRuntime({
 
 ## Evaluator Comparison
 
-| Evaluator | Security | Use Case | Example Expression |
-|-----------|----------|----------|-------------------|
-| [`PropertyEvaluator`](/api/evaluator#propertyevaluator-class) | High | Production, simple property access | `'result.output.status'` |
-| [`UnsafeEvaluator`](/api/evaluator#unsafeevaluator-class) | Low | Trusted environments, complex expressions | `'result.output > 100'` |
-| Custom (`jsep`) | Configurable | Advanced, secure needs | AST-based evaluation |
+| Evaluator                                                     | Security     | Use Case                                  | Example Expression       |
+| ------------------------------------------------------------- | ------------ | ----------------------------------------- | ------------------------ |
+| [`PropertyEvaluator`](/api/evaluator#propertyevaluator-class) | High         | Production, simple property access        | `'result.output.status'` |
+| [`UnsafeEvaluator`](/api/evaluator#unsafeevaluator-class)     | Low          | Trusted environments, complex expressions | `'result.output > 100'`  |
+| Custom (`jsep`)                                               | Configurable | Advanced, secure needs                    | AST-based evaluation     |

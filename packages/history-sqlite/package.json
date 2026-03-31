@@ -1,17 +1,17 @@
 {
 	"name": "@flowcraft/sqlite-history",
-	"type": "module",
 	"version": "1.0.0-beta.0",
 	"description": "SQLite-based event store for Flowcraft workflow observability",
+	"files": [
+		"dist"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",
 			"import": "./dist/index.mjs"
 		}
 	},
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"build": "tsdown",
 		"dev": "tsdown --watch",

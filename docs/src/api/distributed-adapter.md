@@ -7,15 +7,17 @@ The distributed adapter pattern is the mechanism for scaling Flowcraft beyond a 
 The base class for all distributed adapters. It handles the technology-agnostic orchestration logic, leaving queue-specific implementation details to subclasses.
 
 ### `constructor(options)`
--   **`options`** `AdapterOptions`:
-    -   **`runtimeOptions`**: The `RuntimeOptions` to configure the internal [`FlowRuntime`](/api/runtime#flowruntime-class) instance.
-    -   **`coordinationStore`**: An instance of `ICoordinationStore`.
+
+- **`options`** `AdapterOptions`:
+    - **`runtimeOptions`**: The `RuntimeOptions` to configure the internal [`FlowRuntime`](/api/runtime#flowruntime-class) instance.
+    - **`coordinationStore`**: An instance of `ICoordinationStore`.
 
 ### Abstract Methods to Implement
--   **`protected abstract createContext(runId)`**: Must return an instance of a distributed `IAsyncContext`.
--   **`protected abstract processJobs(handler)`**: Must set up a listener on the message queue and call the provided `handler` for each job.
--   **`protected abstract enqueueJob(job)`**: Must enqueue a new job onto the message queue.
--   **`protected abstract publishFinalResult(runId, result)`**: Must publish the final result of a workflow run.
+
+- **`protected abstract createContext(runId)`**: Must return an instance of a distributed `IAsyncContext`.
+- **`protected abstract processJobs(handler)`**: Must set up a listener on the message queue and call the provided `handler` for each job.
+- **`protected abstract enqueueJob(job)`**: Must enqueue a new job onto the message queue.
+- **`protected abstract publishFinalResult(runId, result)`**: Must publish the final result of a workflow run.
 
 ## `ICoordinationStore` Interface
 
@@ -57,6 +59,7 @@ interface JobPayload {
 All distributed adapters now support **delta-based persistence** for optimal performance with large state objects. Instead of serializing and transmitting the entire workflow context after each node execution, adapters use the `patch()` method to apply only the changes (deltas) atomically.
 
 Each adapter implements `patch()` using its database's most efficient partial update mechanism:
+
 - **DynamoDB (SQS)**: `UpdateExpression` with `SET` and `REMOVE`
 - **Redis (BullMQ)**: `HSET` and `HDEL` for hash operations
 - **PostgreSQL (RabbitMQ)**: `jsonb_set()` and `#-` operators

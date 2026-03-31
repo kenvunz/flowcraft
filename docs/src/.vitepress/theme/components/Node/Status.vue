@@ -4,15 +4,18 @@ import { computed } from 'vue'
 
 type Status = 'pending' | 'completed' | 'failed' | 'idle'
 
-const props = withDefaults(defineProps<{
-	status?: Status
-	progress?: number
-	size?: number
-}>(), {
-	status: 'idle',
-	progress: undefined,
-	size: 16,
-})
+const props = withDefaults(
+	defineProps<{
+		status?: Status
+		progress?: number
+		size?: number
+	}>(),
+	{
+		status: 'idle',
+		progress: undefined,
+		size: 16,
+	},
+)
 
 const DIAMETER = 24
 
@@ -59,7 +62,8 @@ const isSpinning = computed(() => props.status === 'pending')
 			:width="size"
 			:height="size"
 			:viewBox="`0 0 ${DIAMETER} ${DIAMETER}`"
-			class="transform -rotate-90" :class="[{ 'animate-spin': isSpinning }]"
+			class="transform -rotate-90"
+			:class="[{ 'animate-spin': isSpinning }]"
 		>
 			<circle
 				:cx="DIAMETER / 2"

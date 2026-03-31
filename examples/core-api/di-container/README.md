@@ -10,6 +10,7 @@ Flowcraft provides two ways to configure `FlowRuntime` with services:
 2. **Container-Based**: Use `createDefaultContainer` for dependency injection
 
 Containers provide benefits for:
+
 - **Testing**: Easy mocking of services
 - **Dependency Injection**: Loose coupling between components
 - **Service Reuse**: Share services across multiple runtimes
@@ -43,9 +44,9 @@ pnpm dev -- --test-demo
 
 ```typescript
 const runtime = new FlowRuntime({
-  logger: new ConsoleLogger(),
-  registry: { myNode: myFunction },
-  serializer: new JsonSerializer()
+	logger: new ConsoleLogger(),
+	registry: { myNode: myFunction },
+	serializer: new JsonSerializer(),
 })
 ```
 
@@ -53,9 +54,9 @@ const runtime = new FlowRuntime({
 
 ```typescript
 const container = createDefaultContainer({
-  logger: new ConsoleLogger(),
-  registry: { myNode: myFunction },
-  serializer: new JsonSerializer()
+	logger: new ConsoleLogger(),
+	registry: { myNode: myFunction },
+	serializer: new JsonSerializer(),
 })
 
 const runtime = new FlowRuntime(container)
@@ -67,8 +68,8 @@ const runtime = new FlowRuntime(container)
 const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
 
 const container = createDefaultContainer({
-  logger: mockLogger,
-  registry: { myNode: mockFunction }
+	logger: mockLogger,
+	registry: { myNode: mockFunction },
 })
 
 const runtime = new FlowRuntime(container)
@@ -78,11 +79,13 @@ const runtime = new FlowRuntime(container)
 ## When to Use Containers
 
 **Use Direct Configuration when:**
+
 - Simple applications with few services
 - No testing requirements
 - Services don't need to be shared or mocked
 
 **Use Containers when:**
+
 - Complex applications with many services
 - Writing unit tests (easier mocking)
 - Services need to be shared across workflows

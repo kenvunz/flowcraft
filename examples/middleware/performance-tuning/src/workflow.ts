@@ -16,7 +16,9 @@ async function loadData(ctx: NodeContext<WorkflowContext>) {
 	console.log('📥 Loading data from external source...')
 	// Simulate slow I/O
 	await new Promise((resolve) => setTimeout(resolve, 100))
-	const data = { records: Array.from({ length: 1000 }, (_, i) => ({ id: i, value: Math.random() })) }
+	const data = {
+		records: Array.from({ length: 1000 }, (_, i) => ({ id: i, value: Math.random() })),
+	}
 	await context.set('data', data)
 	return { output: 'Data loaded' }
 }
@@ -56,7 +58,9 @@ async function generateReport(ctx: NodeContext<WorkflowContext>) {
 	if (!processedData) throw new Error('Invalid processed data')
 	const report = {
 		totalRecords: processedData.length,
-		averageValue: processedData.reduce((sum: number, r: any) => sum + r.processedValue, 0) / processedData.length,
+		averageValue:
+			processedData.reduce((sum: number, r: any) => sum + r.processedValue, 0) /
+			processedData.length,
 		timestamp: new Date().toISOString(),
 	}
 	await new Promise((resolve) => setTimeout(resolve, 30))

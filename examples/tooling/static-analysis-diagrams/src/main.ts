@@ -1,4 +1,9 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
 import { createStaticAnalysisDiagramsWorkflow } from './workflow.js'
 
 class StaticAnalysisMiddleware implements Middleware {

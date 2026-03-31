@@ -2,10 +2,7 @@
 	"compilerOptions": {
 		"module": "esnext",
 		"target": "esnext",
-		"lib": [
-			"dom",
-			"esnext"
-		],
+		"lib": ["dom", "esnext"],
 		"preserveSymlinks": true,
 		"strict": true,
 		"esModuleInterop": true,
@@ -18,10 +15,6 @@
 		"forceConsistentCasingInFileNames": true,
 		"declaration": true,
 		"emitDeclarationOnly": true,
-		"types": [
-			"vite/client",
-			"@types/node"
-		]
+		"types": ["vite/client", "@types/node"]
 	}
 }
-

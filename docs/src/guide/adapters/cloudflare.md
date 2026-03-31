@@ -40,11 +40,11 @@ graph TD
 
 You must have the following Cloudflare resources provisioned:
 
--   A **Cloudflare Queue** to handle jobs.
--   A **KV Namespace** for workflow **status** tracking.
--   A **Durable Object** class for:
-    -   Context persistence (workflow state survives restarts)
-    -   Atomic coordination (fan-in join counters, locks)
+- A **Cloudflare Queue** to handle jobs.
+- A **KV Namespace** for workflow **status** tracking.
+- A **Durable Object** class for:
+    - Context persistence (workflow state survives restarts)
+    - Atomic coordination (fan-in join counters, locks)
 
 ### Using Wrangler CLI
 
@@ -100,7 +100,10 @@ consumer_type = "http-pull"
 ### 2. Create the Worker
 
 ```typescript
-import { CloudflareQueueAdapter, DurableObjectCoordinationStore } from '@flowcraft/cloudflare-adapter'
+import {
+	CloudflareQueueAdapter,
+	DurableObjectCoordinationStore,
+} from '@flowcraft/cloudflare-adapter'
 import type { Queue } from '@cloudflare/workers-types'
 
 export interface Env {
@@ -108,14 +111,20 @@ export interface Env {
 	JOBS: Queue
 }
 
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 export default {
 	async queue(batch: MessageBatch, env: Env): Promise<void> {
 		// Note: In a real Worker, you'd get the Durable Object stub from env
 		// For example: const doStorage = env.FLOWCRAFT_CONTEXT_DO.get(env.FLOWCRAFT_CONTEXT_DO.idFromName('default'))
-		const mockStorage = { /* your Durable Object storage */ }
+		const mockStorage = {
+			/* your Durable Object storage */
+		}
 
 		// Use DurableObjectCoordinationStore for atomic fan-in joins
 		const coordinationStore = new DurableObjectCoordinationStore({
@@ -198,10 +207,13 @@ async function startWorkflow(env: Env, blueprint, initialContext) {
 	const runId = crypto.randomUUID()
 
 	// 1. Set initial status in KV
-	await env.STATUS.put(runId, JSON.stringify({
-		status: 'running',
-		lastUpdated: Math.floor(Date.now() / 1000),
-	}))
+	await env.STATUS.put(
+		runId,
+		JSON.stringify({
+			status: 'running',
+			lastUpdated: Math.floor(Date.now() / 1000),
+		}),
+	)
 
 	// 2. Analyze blueprint for start nodes
 	const analysis = analyzeBlueprint(blueprint)
@@ -237,6 +249,7 @@ console.log(`Reconciled ${enqueuedNodes.size} nodes for run ${runId}`)
 ```
 
 The reconciliation process:
+
 1.  Loads the workflow context from the Durable Object
 2.  Identifies completed nodes
 3.  Calculates the frontier (next executable nodes)
@@ -265,9 +278,9 @@ CLOUDFLARE_API_TOKEN=your-token CLOUDFLARE_ACCOUNT_ID=your-account pnpm test:int
 
 ## Key Components
 
--   **`CloudflareQueueAdapter`**: The main class that orchestrates job execution.
--   **`DurableObjectContext`**: An `IAsyncContext` implementation for storing state in Durable Objects.
--   **`DurableObjectCoordinationStore`**: An `ICoordinationStore` implementation using Durable Objects for atomic distributed locking and fan-in counting.
+- **`CloudflareQueueAdapter`**: The main class that orchestrates job execution.
+- **`DurableObjectContext`**: An `IAsyncContext` implementation for storing state in Durable Objects.
+- **`DurableObjectCoordinationStore`**: An `ICoordinationStore` implementation using Durable Objects for atomic distributed locking and fan-in counting.
 
 ## Webhook Endpoints
 
@@ -275,15 +288,15 @@ The Cloudflare adapter does not currently support webhook endpoint registration.
 
 ## Differences from Other Adapters
 
-| Feature | Cloudflare Adapter | Other Adapters |
-|---------|-------------------|----------------|
-| State Storage | Durable Objects | DynamoDB, Cosmos DB, Firestore |
-| Coordination | Durable Objects | Redis, DynamoDB |
-| Job Queue | Cloudflare Queues | SQS, Pub/Sub, RabbitMQ |
-| Testing | Miniflare | Testcontainers |
+| Feature       | Cloudflare Adapter | Other Adapters                 |
+| ------------- | ------------------ | ------------------------------ |
+| State Storage | Durable Objects    | DynamoDB, Cosmos DB, Firestore |
+| Coordination  | Durable Objects    | Redis, DynamoDB                |
+| Job Queue     | Cloudflare Queues  | SQS, Pub/Sub, RabbitMQ         |
+| Testing       | Miniflare          | Testcontainers                 |
 
 ## Limitations
 
--   Cloudflare Queues are currently in beta and may have feature limitations.
--   KV has eventual consistency - design coordination logic accordingly.
--   Durable Objects have per-request CPU and memory limits.
+- Cloudflare Queues are currently in beta and may have feature limitations.
+- KV has eventual consistency - design coordination logic accordingly.
+- Durable Objects have per-request CPU and memory limits.

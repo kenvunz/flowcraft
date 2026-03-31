@@ -12,13 +12,13 @@ When you import and await another `/** @flow */` function, the compiler automati
 // math-subflow.ts
 /** @flow */
 export async function addNumbers(a: number, b: number) {
-  const sum = await performAddition(a, b)
-  return sum
+	const sum = await performAddition(a, b)
+	return sum
 }
 
 /** @step */
 async function performAddition(a: number, b: number) {
-  return a + b
+	return a + b
 }
 
 // parent-workflow.ts
@@ -26,8 +26,8 @@ import { addNumbers } from './math-subflow'
 
 /** @flow */
 export async function parentWorkflow() {
-  const result = await addNumbers(10, 20)
-  return result
+	const result = await addNumbers(10, 20)
+	return result
 }
 ```
 
@@ -38,9 +38,10 @@ This imperative code compiles to the same subflow structure as the Fluent API ex
 You can run a subflow using the exported `SubflowNode` class with the builder API, or by defining a node with `uses: 'subflow'` in a raw blueprint. The `SubflowNode` approach is recommended for type safety.
 
 The `params` for a subflow node are critical:
--   **`blueprintId`**: The ID of the [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface) to execute. This blueprint must be available in the [`FlowRuntime`](/api/runtime#flowruntime-class)'s `blueprints` registry.
--   **`inputs`** (optional): An object mapping keys in the subflow's initial context to keys in the parent workflow's context. This is how you pass data *into* the subflow.
--   **`outputs`** (optional): An object mapping keys in the parent workflow's context to keys in the subflow's *final* context. This is how you get data *out of* the subflow.
+
+- **`blueprintId`**: The ID of the [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface) to execute. This blueprint must be available in the [`FlowRuntime`](/api/runtime#flowruntime-class)'s `blueprints` registry.
+- **`inputs`** (optional): An object mapping keys in the subflow's initial context to keys in the parent workflow's context. This is how you pass data _into_ the subflow.
+- **`outputs`** (optional): An object mapping keys in the parent workflow's context to keys in the subflow's _final_ context. This is how you get data _out of_ the subflow.
 
 ## Example: A Reusable Subflow
 
@@ -88,9 +89,9 @@ export const parentFlow = createFlow('parent-workflow')
 			},
 			// Map parent context key to a subflow result key
 			outputs: {
-				addition_result: 'add' // 'add' is the ID of the node in the subflow
-			}
-		}
+				addition_result: 'add', // 'add' is the ID of the node in the subflow
+			},
+		},
 	})
 	.edge('prepare-data', 'run-math')
 ```
@@ -108,10 +109,10 @@ import { mathSubflowBlueprint } from './subflow'
 const runtime = new FlowRuntime({
 	// The runtime needs access to all blueprints it might be asked to run.
 	blueprints: {
-		'math-subflow': mathSubflowBlueprint
+		'math-subflow': mathSubflowBlueprint,
 	},
 	// The registry only needs the implementations from the parent flow.
-	registry: parentFlow.getFunctionRegistry()
+	registry: parentFlow.getFunctionRegistry(),
 })
 
 const result = await runtime.run(parentFlow.toBlueprint(), {})
@@ -140,15 +141,15 @@ This allows you to trace failures back to their source, even in deeply nested su
 ```typescript
 // Example: Handling subflow errors
 try {
-  const result = await runtime.run(parentFlow.toBlueprint(), {})
+	const result = await runtime.run(parentFlow.toBlueprint(), {})
 } catch (error) {
-  if (error instanceof FlowcraftError) {
-    console.log(`Subflow failed: ${error.message}`)
-    if (error.cause) {
-      console.log(`Original error: ${error.cause.message}`)
-      console.log(`Failed node in subflow: ${error.cause.nodeId}`)
-    }
-  }
+	if (error instanceof FlowcraftError) {
+		console.log(`Subflow failed: ${error.message}`)
+		if (error.cause) {
+			console.log(`Original error: ${error.cause.message}`)
+			console.log(`Failed node in subflow: ${error.cause.nodeId}`)
+		}
+	}
 }
 ```
 
@@ -165,52 +166,56 @@ Subflows can contain wait nodes, causing the entire parent workflow to pause. Wh
 import { createFlow } from 'flowcraft'
 
 export const approvalSubflow = createFlow('approval-subflow')
-  .node('start', async ({ context }) => {
-    await context.set('data', 'Request for approval')
-    return { output: 'Started' }
-  })
-  .edge('start', 'wait-for-approval')
-  .wait('wait-for-approval')  // Pauses here
-  .edge('wait-for-approval', 'process')
-  .node('process', async ({ input }) => {
-    const approved = input?.approved
-    return { output: approved ? 'Approved' : 'Rejected' }
-  })
-  .toBlueprint()
+	.node('start', async ({ context }) => {
+		await context.set('data', 'Request for approval')
+		return { output: 'Started' }
+	})
+	.edge('start', 'wait-for-approval')
+	.wait('wait-for-approval') // Pauses here
+	.edge('wait-for-approval', 'process')
+	.node('process', async ({ input }) => {
+		const approved = input?.approved
+		return { output: approved ? 'Approved' : 'Rejected' }
+	})
+	.toBlueprint()
 
 // parent-flow.ts
 import { createFlow, SubflowNode } from 'flowcraft'
 
 export const parentFlow = createFlow('parent-workflow')
-  .node('prepare', async ({ context }) => {
-    await context.set('request', 'User request')
-    return { output: 'Prepared' }
-  })
-  .edge('prepare', 'subflow-node')
-  .node('subflow-node', SubflowNode, {
-    params: {
-      blueprintId: 'approval-subflow',
-      inputs: { data: 'request' }
-    }
-  })
-  .edge('subflow-node', 'finish')
-  .node('finish', async ({ context }) => {
-    const subflowResult = await context.get('_outputs.subflow-node')
-    return { output: `Final result: ${subflowResult}` }
-  })
+	.node('prepare', async ({ context }) => {
+		await context.set('request', 'User request')
+		return { output: 'Prepared' }
+	})
+	.edge('prepare', 'subflow-node')
+	.node('subflow-node', SubflowNode, {
+		params: {
+			blueprintId: 'approval-subflow',
+			inputs: { data: 'request' },
+		},
+	})
+	.edge('subflow-node', 'finish')
+	.node('finish', async ({ context }) => {
+		const subflowResult = await context.get('_outputs.subflow-node')
+		return { output: `Final result: ${subflowResult}` }
+	})
 
 // Execution
 const runtime = new FlowRuntime({
-  blueprints: { 'approval-subflow': approvalSubflow },
-  registry: parentFlow.getFunctionRegistry()
+	blueprints: { 'approval-subflow': approvalSubflow },
+	registry: parentFlow.getFunctionRegistry(),
 })
 
 const initialResult = await runtime.run(parentFlow.toBlueprint(), {})
 // initialResult.status === 'awaiting'
 
-const resumeResult = await runtime.resume(parentFlow.toBlueprint(), initialResult.serializedContext, {
-  output: { approved: true }
-})
+const resumeResult = await runtime.resume(
+	parentFlow.toBlueprint(),
+	initialResult.serializedContext,
+	{
+		output: { approved: true },
+	},
+)
 // resumeResult.status === 'completed'
 ```
 

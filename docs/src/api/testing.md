@@ -9,11 +9,14 @@ Creates a stepper for interactive, step-by-step execution of workflows.
 ### Signature
 
 ```typescript
-function createStepper<TContext extends Record<string, any> = Record<string, any>, TDependencies extends RuntimeDependencies = RuntimeDependencies>(
-   runtime: FlowRuntime<TContext, TDependencies>,
-   blueprint: WorkflowBlueprint,
-   functionRegistry: Map<string, NodeFunction | NodeClass>,
-   initialState?: Partial<TContext>
+function createStepper<
+	TContext extends Record<string, any> = Record<string, any>,
+	TDependencies extends RuntimeDependencies = RuntimeDependencies,
+>(
+	runtime: FlowRuntime<TContext, TDependencies>,
+	blueprint: WorkflowBlueprint,
+	functionRegistry: Map<string, NodeFunction | NodeClass>,
+	initialState?: Partial<TContext>,
 ): Promise<IWorkflowStepper<TContext>>
 ```
 
@@ -43,12 +46,15 @@ The `IWorkflowStepper` interface provides methods for step-by-step workflow exec
 
 ```typescript
 interface IWorkflowStepper<TContext extends Record<string, any>> {
-  readonly state: WorkflowState<TContext>
-  readonly traverser: GraphTraverser
-  next(options?: { signal?: AbortSignal; concurrency?: number }): Promise<WorkflowResult<TContext> | null>
-  prev(): Promise<WorkflowResult<TContext> | null>
-  reset(): void
-  isDone(): boolean
+	readonly state: WorkflowState<TContext>
+	readonly traverser: GraphTraverser
+	next(options?: {
+		signal?: AbortSignal
+		concurrency?: number
+	}): Promise<WorkflowResult<TContext> | null>
+	prev(): Promise<WorkflowResult<TContext> | null>
+	reset(): void
+	isDone(): boolean
 }
 ```
 
@@ -68,14 +74,17 @@ Executes a workflow and prints a detailed trace on failure or when `DEBUG` is se
 ### Signature
 
 ```typescript
-function runWithTrace<TContext extends Record<string, any> = Record<string, any>, TDependencies extends RuntimeDependencies = RuntimeDependencies>(
-  runtime: IRuntime<TContext, TDependencies>,
-  blueprint: WorkflowBlueprint,
-  options?: {
-    functionRegistry?: Map<string, NodeFunction | NodeClass>
-    initialState?: Partial<TContext>
-    signal?: AbortSignal
-  }
+function runWithTrace<
+	TContext extends Record<string, any> = Record<string, any>,
+	TDependencies extends RuntimeDependencies = RuntimeDependencies,
+>(
+	runtime: IRuntime<TContext, TDependencies>,
+	blueprint: WorkflowBlueprint,
+	options?: {
+		functionRegistry?: Map<string, NodeFunction | NodeClass>
+		initialState?: Partial<TContext>
+		signal?: AbortSignal
+	},
 ): Promise<WorkflowResult<TContext>>
 ```
 
@@ -84,9 +93,9 @@ function runWithTrace<TContext extends Record<string, any> = Record<string, any>
 - **`runtime`**: The runtime instance.
 - **`blueprint`**: The workflow blueprint.
 - **`options`** (optional):
-  - **`functionRegistry`**: Node implementations.
-  - **`initialState`**: Initial context.
-  - **`signal`**: AbortSignal.
+    - **`functionRegistry`**: Node implementations.
+    - **`initialState`**: Initial context.
+    - **`signal`**: AbortSignal.
 
 ### Returns
 
@@ -108,13 +117,15 @@ An event bus implementation that captures events in memory for testing.
 
 ```typescript
 class InMemoryEventLogger implements IEventBus {
-   readonly events: FlowcraftEvent[]
-   constructor()
-   emit(event: FlowcraftEvent): Promise<void>
-   clear(): void
-   find<T extends FlowcraftEvent['type']>(type: T): Extract<FlowcraftEvent, { type: T }> | undefined
-   filter<T extends FlowcraftEvent['type']>(type: T): Extract<FlowcraftEvent, { type: T }>[]
-   printLog(title?: string): void
+	readonly events: FlowcraftEvent[]
+	constructor()
+	emit(event: FlowcraftEvent): Promise<void>
+	clear(): void
+	find<T extends FlowcraftEvent['type']>(
+		type: T,
+	): Extract<FlowcraftEvent, { type: T }> | undefined
+	filter<T extends FlowcraftEvent['type']>(type: T): Extract<FlowcraftEvent, { type: T }>[]
+	printLog(title?: string): void
 }
 ```
 

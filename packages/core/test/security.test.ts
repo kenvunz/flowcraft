@@ -26,7 +26,12 @@ describe('Security Boundaries', () => {
 		})
 
 		it('only allows safe identifier access', () => {
-			const safeExpressions = ['context.user.name', 'result.output.value', 'input.data[0]', 'context.items.length > 0']
+			const safeExpressions = [
+				'context.user.name',
+				'result.output.value',
+				'input.data[0]',
+				'context.items.length > 0',
+			]
 
 			const testContext = {
 				context: { user: { name: 'test' }, items: [] },
@@ -229,7 +234,11 @@ describe('Security Boundaries', () => {
 			const runtime = new FlowRuntime()
 
 			// The runtime prevents infinite loops by not re-executing completed nodes
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 			expect(result.status).toBe('completed')
 			expect(result.context.count).toBe(1) // Node executes only once
 		})
@@ -241,13 +250,20 @@ describe('Security Boundaries', () => {
 
 			const runtime = new FlowRuntime()
 
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 			expect(result.status).toBe('failed')
 			expect(result.errors).toBeDefined()
 		})
 
 		it('prevents resource exhaustion through large contexts', async () => {
-			const largeData = Array.from({ length: 10000 }, (_, i) => ({ id: i, data: 'x'.repeat(1000) }))
+			const largeData = Array.from({ length: 10000 }, (_, i) => ({
+				id: i,
+				data: 'x'.repeat(1000),
+			}))
 
 			const flow = createFlow('large-context').node('process', async ({ context }) => {
 				await context.set('largeData', largeData)
@@ -256,7 +272,11 @@ describe('Security Boundaries', () => {
 
 			const runtime = new FlowRuntime()
 
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 			expect(result.status).toBe('completed')
 			expect(result.serializedContext.length).toBeLessThan(50 * 1024 * 1024) // Less than 50MB
 		})
@@ -272,7 +292,11 @@ describe('Security Boundaries', () => {
 
 			const runtime = new FlowRuntime()
 
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('failed')
 			expect(result.errors?.[0]?.message).toBe("Node 'fail' execution failed")
@@ -287,7 +311,11 @@ describe('Security Boundaries', () => {
 
 			const runtime = new FlowRuntime()
 
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('failed')
 			// Error messages should be sanitized to prevent data leakage
@@ -314,14 +342,22 @@ describe('Security Boundaries', () => {
 		})
 
 		it('validates node parameters', async () => {
-			const flow = createFlow('invalid-params').node('test', async () => ({ output: 'test' }), {
-				config: { maxRetries: -1 }, // Invalid negative retries
-			})
+			const flow = createFlow('invalid-params').node(
+				'test',
+				async () => ({ output: 'test' }),
+				{
+					config: { maxRetries: -1 }, // Invalid negative retries
+				},
+			)
 
 			const runtime = new FlowRuntime()
 
 			// Should either reject or handle gracefully
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 			expect(['completed', 'failed']).toContain(result.status)
 		})
 
@@ -337,7 +373,11 @@ describe('Security Boundaries', () => {
 			const runtime = new FlowRuntime()
 
 			// Should handle circular references without crashing
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 			expect(result.status).toBe('completed')
 		})
 	})

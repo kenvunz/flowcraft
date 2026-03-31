@@ -16,12 +16,12 @@ import { PersistentEventBusAdapter } from 'flowcraft'
 
 // Create PostgreSQL event store
 const eventStore = new PostgresHistoryAdapter({
-  host: 'localhost',
-  port: 5432,
-  database: 'flowcraft',
-  user: 'flowcraft',
-  password: 'password',
-  tableName: 'workflow_events', // optional, defaults to 'flowcraft_events'
+	host: 'localhost',
+	port: 5432,
+	database: 'flowcraft',
+	user: 'flowcraft',
+	password: 'password',
+	tableName: 'workflow_events', // optional, defaults to 'flowcraft_events'
 })
 
 // Create persistent event bus

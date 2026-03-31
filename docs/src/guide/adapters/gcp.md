@@ -39,6 +39,7 @@ graph TD
 ## Infrastructure Setup
 
 Before running, you need to provision the following GCP resources:
+
 - A **Pub/Sub Topic** and a corresponding **Subscription**.
 - A **Firestore Database**. The required collections will be created by the adapter.
 - A **Redis** instance (e.g., Memorystore for Redis).
@@ -95,8 +96,12 @@ import { FlowRuntime } from 'flowcraft'
 import Redis from 'ioredis'
 
 // 1. Define your blueprints and registry
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize service clients
 const pubsubClient = new PubSub({ projectId: process.env.GCP_PROJECT_ID })
@@ -111,14 +116,14 @@ const coordinationStore = new RedisCoordinationStore(redisClient)
 
 // 5. Initialize the adapter
 const adapter = new PubSubAdapter({
-  runtimeOptions: runtime.options,
-  coordinationStore,
-  pubsubClient,
-  firestoreClient,
-  topicName: 'flowcraft-jobs',
-  subscriptionName: 'flowcraft-workers',
-  contextCollectionName: 'workflow-contexts',
-  statusCollectionName: 'workflow-statuses',
+	runtimeOptions: runtime.options,
+	coordinationStore,
+	pubsubClient,
+	firestoreClient,
+	topicName: 'flowcraft-jobs',
+	subscriptionName: 'flowcraft-workers',
+	contextCollectionName: 'workflow-contexts',
+	statusCollectionName: 'workflow-statuses',
 })
 
 // 6. Start the worker
@@ -137,28 +142,31 @@ import { Firestore } from '@google-cloud/firestore'
 import { PubSub } from '@google-cloud/pubsub'
 
 async function startWorkflow(blueprint, initialContext) {
-  const runId = crypto.randomUUID()
-  const projectId = process.env.GCP_PROJECT_ID
-  const firestore = new Firestore({ projectId })
-  const pubsub = new PubSub({ projectId })
+	const runId = crypto.randomUUID()
+	const projectId = process.env.GCP_PROJECT_ID
+	const firestore = new Firestore({ projectId })
+	const pubsub = new PubSub({ projectId })
 
-  // 1. Set initial context and status in Firestore
-  await firestore.collection('workflow-contexts').doc(runId).set(initialContext)
-  await firestore.collection('workflow-statuses').doc(runId).set({ status: 'running', lastUpdated: new Date() })
+	// 1. Set initial context and status in Firestore
+	await firestore.collection('workflow-contexts').doc(runId).set(initialContext)
+	await firestore
+		.collection('workflow-statuses')
+		.doc(runId)
+		.set({ status: 'running', lastUpdated: new Date() })
 
-  // 2. Analyze blueprint for start nodes
-  const analysis = analyzeBlueprint(blueprint)
-  const topic = pubsub.topic('flowcraft-jobs')
-  const publishPromises = analysis.startNodeIds.map(nodeId => {
-    const data = Buffer.from(JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }))
-    return topic.publishMessage({ data })
-  })
+	// 2. Analyze blueprint for start nodes
+	const analysis = analyzeBlueprint(blueprint)
+	const topic = pubsub.topic('flowcraft-jobs')
+	const publishPromises = analysis.startNodeIds.map((nodeId) => {
+		const data = Buffer.from(JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }))
+		return topic.publishMessage({ data })
+	})
 
-  // 3. Publish start jobs
-  await Promise.all(publishPromises)
+	// 3. Publish start jobs
+	await Promise.all(publishPromises)
 
-  console.log(`Workflow ${runId} started.`)
-  return runId
+	console.log(`Workflow ${runId} started.`)
+	return runId
 }
 ```
 
@@ -177,16 +185,16 @@ import { createGcpReconciler } from '@flowcraft/gcp-adapter'
 
 // 'adapter' and 'firestoreClient' should be initialized as in the worker setup
 const reconciler = createGcpReconciler({
-  adapter,
-  firestoreClient,
-  statusCollectionName: 'workflow-statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter,
+	firestoreClient,
+	statusCollectionName: 'workflow-statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run this function periodically
 async function reconcile() {
-  const stats = await reconciler.run()
-  console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
+	const stats = await reconciler.run()
+	console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
 }
 ```
 
@@ -203,6 +211,7 @@ Registers a webhook endpoint for the specified workflow run and node.
 - **Returns**: `Promise<{ url: string; event: string }>` - The webhook URL and event name.
 
 **Example Implementation:**
+
 ```typescript
 // In PubSubAdapter
 public async registerWebhookEndpoint(runId: string, nodeId: string): Promise<{ url: string; event: string }> {
@@ -234,27 +243,29 @@ const pubsub = new PubSub()
 const firestore = new Firestore()
 
 export async function webhookHandler(req: any, res: any) {
-  const { runId, nodeId } = req.params
-  const payload = req.body
+	const { runId, nodeId } = req.params
+	const payload = req.body
 
-  // Get webhook mapping from Firestore
-  const webhookDoc = await firestore.collection('webhooks').doc(`${runId}:${nodeId}`).get()
+	// Get webhook mapping from Firestore
+	const webhookDoc = await firestore.collection('webhooks').doc(`${runId}:${nodeId}`).get()
 
-  if (webhookDoc.exists) {
-    const webhookData = webhookDoc.data()
+	if (webhookDoc.exists) {
+		const webhookData = webhookDoc.data()
 
-    // Publish event to Pub/Sub topic
-    await pubsub.topic('flowcraft-events').publishMessage({
-      data: Buffer.from(JSON.stringify({
-        event: webhookData.eventName,
-        payload
-      }))
-    })
+		// Publish event to Pub/Sub topic
+		await pubsub.topic('flowcraft-events').publishMessage({
+			data: Buffer.from(
+				JSON.stringify({
+					event: webhookData.eventName,
+					payload,
+				}),
+			),
+		})
 
-    res.status(200).send('OK')
-  } else {
-    res.status(404).send('Webhook not found')
-  }
+		res.status(200).send('OK')
+	} else {
+		res.status(404).send('Webhook not found')
+	}
 }
 ```
 

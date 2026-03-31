@@ -25,13 +25,16 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 	describe('Core Execution', () => {
 		it('should execute a simple linear blueprint', async () => {
 			const flow = createFlow('linear')
-			flow
-				.node('A', async () => ({ output: 'resultA' }))
+			flow.node('A', async () => ({ output: 'resultA' }))
 				.node('B', async (ctx) => ({ output: `${ctx.input}_B` }))
 				.edge('A', 'B')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.B']).toBe('resultA_B')
@@ -39,8 +42,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should correctly traverse a DAG with fan-out and fan-in', async () => {
 			const flow = createFlow('fan')
-			flow
-				.node('A', async () => ({ output: 'A' }))
+			flow.node('A', async () => ({ output: 'A' }))
 				.node('B', async () => ({ output: 'B' }))
 				.node('C', async () => ({ output: 'C' }))
 				.node('D', async (ctx) => ({
@@ -51,7 +53,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('C', 'D')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			// A fan-in node with no explicit `inputs` mapping receives `undefined` as input.
@@ -60,8 +66,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should fail the workflow if a branch fails in a fan-in scenario', async () => {
 			const flow = createFlow('stall')
-			flow
-				.node('A', async () => ({ output: 'A' }))
+			flow.node('A', async () => ({ output: 'A' }))
 				.node('B', async () => {
 					throw new Error('Fail')
 				})
@@ -72,7 +77,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('C', 'D')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('failed')
 			expect(result.errors).toBeDefined()
@@ -82,8 +91,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should handle a blueprint with multiple start nodes', async () => {
 			const flow = createFlow('multi')
-			flow
-				.node('A', async () => ({ output: 'A' }))
+			flow.node('A', async () => ({ output: 'A' }))
 				.node('B', async () => ({ output: 'B' }))
 				.node('C', async (ctx) => ({
 					output: `input was ${String(ctx.input)}`,
@@ -92,7 +100,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('B', 'C')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			// A fan-in node with no explicit `inputs` mapping receives `undefined` as input.
@@ -101,8 +113,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should correctly execute a graph with a cycle when strict mode is off', async () => {
 			const flow = createFlow('cycle')
-			flow
-				.node('A', async () => ({ output: 'A' }))
+			flow.node('A', async () => ({ output: 'A' }))
 				.node('B', async () => ({ output: 'B' }))
 				.edge('A', 'B')
 				.edge('B', 'A')
@@ -141,7 +152,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('mainLoop', 'end')
 
 			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(loopBodyMock).toHaveBeenCalledTimes(2)
@@ -179,7 +194,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('mainLoop', 'end')
 
 			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(loopBodyMock).toHaveBeenCalledTimes(3)
@@ -211,7 +230,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('myLoop', 'end')
 
 			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(specialExitCalled).toHaveBeenCalledTimes(1)
@@ -220,19 +243,21 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should execute fallback node when main node fails', async () => {
 			const flow = createFlow('fallback-test')
-			flow
-				.node(
-					'A',
-					async () => {
-						throw new Error('Main failed')
-					},
-					{ config: { fallback: 'B' } },
-				)
-				.node('B', async () => ({ output: 'fallback success' }))
+			flow.node(
+				'A',
+				async () => {
+					throw new Error('Main failed')
+				},
+				{ config: { fallback: 'B' } },
+			).node('B', async () => ({ output: 'fallback success' }))
 
 			const blueprint = flow.toBlueprint()
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(blueprint, {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				blueprint,
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.B']).toBe('fallback success')
@@ -245,7 +270,9 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 			const flow = createFlow('retry-fallback-flow')
 				.node('start', async () => ({ output: 'start' }))
-				.node('failingNode', failingNodeImpl, { config: { maxRetries: 3, fallback: 'fallbackNode' } })
+				.node('failingNode', failingNodeImpl, {
+					config: { maxRetries: 3, fallback: 'fallbackNode' },
+				})
 				.node('fallbackNode', fallbackNodeImpl)
 				.node('endNode', async ({ input }) => ({ output: `end-with-${input}` }))
 				.edge('start', 'failingNode')
@@ -253,7 +280,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('failingNode', 'endNode')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(failingNodeImpl).toHaveBeenCalledTimes(3)
@@ -263,8 +294,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should throw an error on a graph with a cycle when strict mode is on', async () => {
 			const flow = createFlow('cycle')
-			flow
-				.node('A', async () => ({ output: 'A' }))
+			flow.node('A', async () => ({ output: 'A' }))
 				.node('B', async () => ({ output: 'B' }))
 				.edge('A', 'B')
 				.edge('B', 'A')
@@ -321,7 +351,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			}
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(maxConcurrent).toBe(4) // All nodes should run in parallel
@@ -373,7 +407,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('B', 'D', { action: 'path-d' })
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			expect(result.context['_outputs.C']).toBe('C received 42')
@@ -388,78 +426,99 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				output: 'test',
 			}))
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.A']).toBe('test')
 		})
 
 		it('should correctly resolve a simple string `inputs` mapping', async () => {
 			const flow = createFlow('input')
-			flow
-				.node('A', async () => ({ output: 'data' }))
+			flow.node('A', async () => ({ output: 'data' }))
 				.node('B', async (ctx) => ({ output: `${ctx.input}_B` }), {
 					inputs: 'A',
 				})
 				.edge('A', 'B')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBe('data_B')
 		})
 
 		it('should correctly resolve a complex object `inputs` mapping', async () => {
 			const flow = createFlow('complex')
-			flow
-				.node('A', async () => ({ output: { key: 'value' } }))
+			flow.node('A', async () => ({ output: { key: 'value' } }))
 				.node('B', async (ctx) => ({ output: `${ctx.input.data.key}_B` }), {
 					inputs: { data: 'A' },
 				})
 				.edge('A', 'B')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBe('value_B')
 		})
 
 		it('should use the single-predecessor output as `input` if no mapping is provided', async () => {
 			const flow = createFlow('single')
-			flow
-				.node('A', async () => ({ output: 'data' }))
+			flow.node('A', async () => ({ output: 'data' }))
 				.node('B', async (ctx) => ({ output: `${ctx.input}_B` }))
 				.edge('A', 'B')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBe('data_B')
 		})
 
 		it('should apply an edge `transform` expression to the data flow', async () => {
 			const flow = createFlow('transform')
-			flow
-				.node('A', async () => ({ output: 10 }))
+			flow.node('A', async () => ({ output: 10 }))
 				.node('B', async (ctx) => ({ output: ctx.input }))
 				.edge('A', 'B', { transform: 'input * 2' })
 
 			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBe(20)
 		})
 
 		it('should apply edge transform to the inputs-referenced node output, not the edge source', async () => {
 			const flow = createFlow('transform-explicit-inputs')
-			flow
-				.node('start', async () => ({ output: { deeply: { nested: { value: 'extracted' } } } }))
+			flow.node('start', async () => ({
+				output: { deeply: { nested: { value: 'extracted' } } },
+			}))
 				.node('middle', async () => ({ output: 'pass-through' }))
 				.node('end', async (ctx) => ({ output: ctx.input }), { inputs: 'start' })
 				.edge('start', 'middle')
 				.edge('middle', 'end', { transform: 'input.deeply.nested.value' })
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			// The transform should be evaluated against start's output (via inputs: 'start'),
 			// not middle's output. end should receive 'extracted', not the full object.
@@ -468,28 +527,36 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should still respect edge transform with PropertyEvaluator on direct edges', async () => {
 			const flow = createFlow('transform-direct-edge')
-			flow
-				.node('start', async () => ({ output: { deeply: { nested: { value: 'extracted' } } } }))
+			flow.node('start', async () => ({
+				output: { deeply: { nested: { value: 'extracted' } } },
+			}))
 				.node('end', async (ctx) => ({ output: ctx.input }))
 				.edge('start', 'end', { transform: 'input.deeply.nested.value' })
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.end']).toBe('extracted')
 		})
 
 		it('should store transformed value in _inputs when edge has transform and target has explicit inputs', async () => {
 			const flow = createFlow('transform-stores-inputs')
-			flow
-				.node('A', async () => ({ output: { data: 42 } }))
+			flow.node('A', async () => ({ output: { data: 42 } }))
 				.node('B', async () => ({ output: 'B-result' }))
 				.node('C', async (ctx) => ({ output: ctx.input }), { inputs: 'A' })
 				.edge('A', 'B')
 				.edge('B', 'C', { transform: 'input.data' })
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			// When inputs: 'A' references the same node as the edge source (A->B->C with inputs: 'A'),
 			// the transform should evaluate against A's output and the result should be used.
@@ -503,7 +570,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				output: undefined,
 			}))
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context).toHaveProperty('_outputs.A')
 			expect(result.context['_outputs.A']).toBeUndefined()
@@ -511,8 +582,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should not have input for a node with multiple predecessors and no explicit "inputs" mapping', async () => {
 			const flow = createFlow('multi-no-input')
-			flow
-				.node('A', async () => ({ output: 'A' }))
+			flow.node('A', async () => ({ output: 'A' }))
 				.node('B', async () => ({ output: 'B' }))
 				.node('C', async (ctx) => ({
 					output: ctx.input === undefined ? 'no-input' : 'had-input',
@@ -521,7 +591,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				.edge('B', 'C')
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.C']).toBe('no-input')
 		})
@@ -530,15 +604,18 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 	describe('Control Flow', () => {
 		it('should follow an edge based on the returned `action`', async () => {
 			const flow = createFlow('action')
-			flow
-				.node('A', async () => ({ output: 'A', action: 'success' }))
+			flow.node('A', async () => ({ output: 'A', action: 'success' }))
 				.node('B', async () => ({ output: 'B' }))
 				.node('C', async () => ({ output: 'C' }))
 				.edge('A', 'B', { action: 'success' })
 				.edge('A', 'C', { action: 'fail' })
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBe('B')
 			expect(result.context['_outputs.C']).toBeUndefined()
@@ -546,15 +623,18 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should evaluate an edge `condition` and route correctly if true', async () => {
 			const flow = createFlow('condition-true')
-			flow
-				.node('A', async () => ({ output: { status: 'OK' } }))
+			flow.node('A', async () => ({ output: { status: 'OK' } }))
 				.node('B', async () => ({ output: 'B' }))
 				.node('C', async () => ({ output: 'C' }))
 				.edge('A', 'B', { condition: "result.output.status === 'OK'" })
 				.edge('A', 'C', { condition: "result.output.status === 'ERROR'" })
 
 			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBe('B')
 			expect(result.context['_outputs.C']).toBeUndefined()
@@ -562,15 +642,18 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should not follow a conditional edge if the condition is false', async () => {
 			const flow = createFlow('condition-false')
-			flow
-				.node('A', async () => ({ output: 'A' }))
+			flow.node('A', async () => ({ output: 'A' }))
 				.node('B', async () => ({ output: 'B' }))
 				.node('C', async () => ({ output: 'C' }))
 				.edge('A', 'B', { condition: '1 === 2' }) // false
 				.edge('A', 'C')
 
 			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBeUndefined()
 			expect(result.context['_outputs.C']).toBe('C')
@@ -578,15 +661,18 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 		it('should follow the default (unconditional) edge if no other paths match', async () => {
 			const flow = createFlow('default')
-			flow
-				.node('A', async () => ({ output: 'A', action: 'unknown' }))
+			flow.node('A', async () => ({ output: 'A', action: 'unknown' }))
 				.node('B', async () => ({ output: 'B' }))
 				.node('C', async () => ({ output: 'C' }))
 				.edge('A', 'B', { action: 'known' })
 				.edge('A', 'C') // default edge
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.B']).toBeUndefined()
 			expect(result.context['_outputs.C']).toBe('C')
@@ -620,7 +706,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				return { output: 'A' }
 			})
 			const runtime = new FlowRuntime({ middleware })
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(order).toEqual(['before1', 'before2', 'exec', 'after2', 'after1'])
 		})
@@ -635,7 +725,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				output: 'should-not-run',
 			}))
 			const runtime = new FlowRuntime({ middleware })
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.context['_outputs.A']).toBe('short-circuit')
 		})
@@ -649,7 +743,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				output: 'A',
 			}))
 			const runtime = new FlowRuntime({ middleware })
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(beforeSpy).toHaveBeenCalledOnce()
 			expect(afterSpy).toHaveBeenCalledOnce()
@@ -662,7 +760,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				throw new Error('Fail')
 			})
 			const runtime = new FlowRuntime({ middleware })
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(afterSpy).toHaveBeenCalledOnce()
 		})
@@ -673,7 +775,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				output: 'A',
 			}))
 			const runtime = new FlowRuntime({ eventBus })
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(eventBus.has('workflow:start')).toBe(true)
 			expect(eventBus.has('workflow:finish')).toBe(true)
@@ -683,22 +789,24 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			const eventBus = new MockEventBus()
 			let attempts = 0
 			const flow = createFlow('events-node')
-			flow
-				.node(
-					'A',
-					async () => {
-						attempts++
-						if (attempts < 2) throw new Error('Retry me')
-						return { output: 'A' }
-					},
-					{ config: { maxRetries: 2 } },
-				)
-				.node('B', async () => {
-					throw new Error('Fail me')
-				})
+			flow.node(
+				'A',
+				async () => {
+					attempts++
+					if (attempts < 2) throw new Error('Retry me')
+					return { output: 'A' }
+				},
+				{ config: { maxRetries: 2 } },
+			).node('B', async () => {
+				throw new Error('Fail me')
+			})
 
 			const runtime = new FlowRuntime({ eventBus })
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(eventBus.has('node:start')).toBe(true)
 			expect(eventBus.has('node:finish')).toBe(true)
@@ -714,7 +822,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				return { output: 'A' }
 			})
 			const runtime = new FlowRuntime({ dependencies: deps })
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(capturedDeps.db).toBe(deps.db)
 			expect(capturedDeps.logger).toBeDefined()
@@ -725,11 +837,10 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 		it('should result in a cancelled status if the signal is aborted mid-flight', async () => {
 			const controller = new AbortController()
 			const flow = createFlow('cancel-me')
-			flow
-				.node('A', async (): Promise<NodeResult<string>> => {
-					controller.abort() // Abort after the first node starts
-					return { output: 'A' }
-				})
+			flow.node('A', async (): Promise<NodeResult<string>> => {
+				controller.abort() // Abort after the first node starts
+				return { output: 'A' }
+			})
 				.node(
 					'B',
 					async (): Promise<NodeResult<string>> =>
@@ -786,7 +897,10 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 					},
 				],
 			])('should handle %s gracefully', async (_description, blueprintOrFactory) => {
-				const blueprint = typeof blueprintOrFactory === 'function' ? blueprintOrFactory() : blueprintOrFactory
+				const blueprint =
+					typeof blueprintOrFactory === 'function'
+						? blueprintOrFactory()
+						: blueprintOrFactory
 				const runtime = new FlowRuntime()
 				const result = await runtime.run(blueprint, {}, {})
 
@@ -808,7 +922,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				flow.node(nodeId, async () => ({ output: 'test' }))
 
 				const runtime = new FlowRuntime()
-				const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				expect(result.status).toBe('completed')
 				if (nodeId.trim() !== '') {
@@ -826,13 +944,20 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				['empty object', {}],
 				['deeply nested object', { a: { b: { c: { d: { e: 'deep' } } } } }],
 				['large array', Array.from({ length: 1000 }, (_, i) => i)],
-				['mixed types', { str: 'string', num: 42, bool: true, arr: [1, 2], obj: { nested: 'value' } }],
+				[
+					'mixed types',
+					{ str: 'string', num: 42, bool: true, arr: [1, 2], obj: { nested: 'value' } },
+				],
 			])('should handle %s as node output', async (_description, output) => {
 				const flow = createFlow('output-test')
 				flow.node('A', async () => ({ output }))
 
 				const runtime = new FlowRuntime()
-				const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				expect(result.status).toBe('completed')
 				expect(result.context['_outputs.A']).toBe(output)
@@ -929,7 +1054,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				}
 
 				const runtime = new FlowRuntime()
-				const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				expect(result.status).toBe('completed')
 				expect(result.context[`_outputs.node${nodeCount - 1}`]).toBe(nodeCount - 1)
@@ -952,7 +1081,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				}
 
 				const runtime = new FlowRuntime()
-				const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				expect(result.status).toBe('completed')
 			})
@@ -973,7 +1106,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				})
 
 				const runtime = new FlowRuntime()
-				const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				expect(result.status).toBe('failed')
 				expect(result.errors).toBeDefined()
@@ -988,7 +1125,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				})
 
 				const runtime = new FlowRuntime()
-				const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				// Should either complete or fail gracefully
 				expect(['completed', 'failed']).toContain(result.status)
@@ -1021,7 +1162,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				flow.edge('A', 'B')
 
 				const runtime = new FlowRuntime()
-				const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				expect(result.status).toBe('completed')
 				expect(result.context['_outputs.B']).toBe(value)
@@ -1054,7 +1199,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			}
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			// All readers should get the same initial value
@@ -1118,7 +1267,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			// The array should contain all values, though possibly in different orders due to concurrency
 			const finalArray = result.context.array
 			expect(finalArray).toHaveLength(nodeCount)
-			expect(finalArray.sort()).toEqual(Array.from({ length: nodeCount }, (_, i) => i))
+			expect(finalArray.toSorted()).toEqual(Array.from({ length: nodeCount }, (_, i) => i))
 		})
 
 		it('should handle race conditions in conditional logic', async () => {
@@ -1149,7 +1298,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			})
 
 			const runtime = new FlowRuntime()
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(result.status).toBe('completed')
 			// One and only one should have set the winner

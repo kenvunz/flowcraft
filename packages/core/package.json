@@ -1,15 +1,7 @@
 {
 	"name": "flowcraft",
-	"type": "module",
 	"version": "2.9.1",
 	"description": "A lightweight workflow engine",
-	"license": "MIT",
-	"homepage": "https://flowcraft.js.org",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/gorango/flowcraft.git"
-	},
-	"bugs": "https://github.com/gorango/flowcraft/issues",
 	"keywords": [
 		"agentic-workflows",
 		"ai-agent",
@@ -25,6 +17,17 @@
 		"state-machine",
 		"workflow-engine"
 	],
+	"homepage": "https://flowcraft.js.org",
+	"bugs": "https://github.com/gorango/flowcraft/issues",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gorango/flowcraft.git"
+	},
+	"files": [
+		"dist"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",
@@ -39,9 +42,6 @@
 			"import": "./dist/testing/index.mjs"
 		}
 	},
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"dev": "tsdown --watch",
 		"build": "tsdown",

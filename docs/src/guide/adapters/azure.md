@@ -39,9 +39,10 @@ graph TD
 ## Infrastructure Setup
 
 You must have the following resources provisioned:
--   An **Azure Storage Account** with a Queue.
--   An **Azure Cosmos DB** account (Core SQL API) with a database and two containers (one for context, one for status).
--   A **Redis** instance (e.g., Azure Cache for Redis) accessible by your workers.
+
+- An **Azure Storage Account** with a Queue.
+- An **Azure Cosmos DB** account (Core SQL API) with a database and two containers (one for context, one for status).
+- A **Redis** instance (e.g., Azure Cache for Redis) accessible by your workers.
 
 ### Using Azure CLI
 
@@ -113,8 +114,12 @@ import { FlowRuntime } from 'flowcraft'
 import Redis from 'ioredis'
 
 // 1. Define your blueprints and registry
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize service clients
 const queueClient = new QueueClient(process.env.AZURE_STORAGE_CONNECTION_STRING, 'your-queue-name')
@@ -129,13 +134,13 @@ const coordinationStore = new RedisCoordinationStore(redisClient)
 
 // 5. Initialize the adapter
 const adapter = new AzureQueueAdapter({
-  runtimeOptions: runtime.options,
-  coordinationStore,
-  queueClient,
-  cosmosClient,
-  cosmosDatabaseName: 'your-cosmos-db-name',
-  contextContainerName: 'workflow-contexts',
-  statusContainerName: 'workflow-statuses',
+	runtimeOptions: runtime.options,
+	coordinationStore,
+	queueClient,
+	cosmosClient,
+	cosmosDatabaseName: 'your-cosmos-db-name',
+	contextContainerName: 'workflow-contexts',
+	statusContainerName: 'workflow-statuses',
 })
 
 // 6. Start the worker
@@ -154,26 +159,31 @@ import { CosmosClient } from '@azure/cosmos'
 import { QueueClient } from '@azure/storage-queue'
 
 async function startWorkflow(blueprint, initialContext) {
-  const runId = crypto.randomUUID()
-  const cosmosClient = new CosmosClient(process.env.COSMOS_DB_CONNECTION_STRING)
-  const queueClient = new QueueClient(process.env.AZURE_STORAGE_CONNECTION_STRING, 'your-queue-name')
+	const runId = crypto.randomUUID()
+	const cosmosClient = new CosmosClient(process.env.COSMOS_DB_CONNECTION_STRING)
+	const queueClient = new QueueClient(
+		process.env.AZURE_STORAGE_CONNECTION_STRING,
+		'your-queue-name',
+	)
 
-  // 1. Set initial context and status in Cosmos DB
-  const db = cosmosClient.database('your-cosmos-db-name')
-  await db.container('workflow-contexts').items.create({ id: runId, ...initialContext })
-  await db.container('workflow-statuses').items.create({ id: runId, status: 'running', lastUpdated: new Date().toISOString() })
+	// 1. Set initial context and status in Cosmos DB
+	const db = cosmosClient.database('your-cosmos-db-name')
+	await db.container('workflow-contexts').items.create({ id: runId, ...initialContext })
+	await db
+		.container('workflow-statuses')
+		.items.create({ id: runId, status: 'running', lastUpdated: new Date().toISOString() })
 
-  // 2. Analyze blueprint for start nodes
-  const analysis = analyzeBlueprint(blueprint)
-  const startJobs = analysis.startNodeIds.map(nodeId =>
-    queueClient.sendMessage(JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }))
-  )
+	// 2. Analyze blueprint for start nodes
+	const analysis = analyzeBlueprint(blueprint)
+	const startJobs = analysis.startNodeIds.map((nodeId) =>
+		queueClient.sendMessage(JSON.stringify({ runId, blueprintId: blueprint.id, nodeId })),
+	)
 
-  // 3. Enqueue start jobs
-  await Promise.all(startJobs)
+	// 3. Enqueue start jobs
+	await Promise.all(startJobs)
 
-  console.log(`Workflow ${runId} started.`)
-  return runId
+	console.log(`Workflow ${runId} started.`)
+	return runId
 }
 ```
 
@@ -192,17 +202,17 @@ import { createAzureReconciler } from '@flowcraft/azure-adapter'
 
 // 'adapter' and 'cosmosClient' should be initialized as in the worker setup
 const reconciler = createAzureReconciler({
-  adapter,
-  cosmosClient,
-  cosmosDatabaseName: 'your-cosmos-db-name',
-  statusContainerName: 'workflow-statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter,
+	cosmosClient,
+	cosmosDatabaseName: 'your-cosmos-db-name',
+	statusContainerName: 'workflow-statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run this function periodically
 async function reconcile() {
-  const stats = await reconciler.run()
-  console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
+	const stats = await reconciler.run()
+	console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
 }
 ```
 
@@ -219,6 +229,7 @@ Registers a webhook endpoint for the specified workflow run and node.
 - **Returns**: `Promise<{ url: string; event: string }>` - The webhook URL and event name.
 
 **Example Implementation:**
+
 ```typescript
 // In AzureQueueAdapter
 public async registerWebhookEndpoint(runId: string, nodeId: string): Promise<{ url: string; event: string }> {
@@ -247,33 +258,38 @@ Create an Azure Function to handle webhook requests and send messages to Azure Q
 import { QueueClient } from '@azure/storage-queue'
 import { CosmosClient } from '@azure/cosmos'
 
-const queueClient = QueueClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING!, 'flowcraft-events')
+const queueClient = QueueClient.fromConnectionString(
+	process.env.AZURE_STORAGE_CONNECTION_STRING!,
+	'flowcraft-events',
+)
 const cosmosClient = new CosmosClient(process.env.COSMOS_CONNECTION_STRING!)
 const database = cosmosClient.database('flowcraft')
 const container = database.container('webhooks')
 
 export async function webhookHandler(context: any, req: any): Promise<void> {
-  const { runId, nodeId } = context.bindingData
-  const payload = req.body
+	const { runId, nodeId } = context.bindingData
+	const payload = req.body
 
-  // Get webhook mapping from Cosmos DB
-  const { resources: webhooks } = await container.items
-    .query(`SELECT * FROM c WHERE c.id = '${runId}:${nodeId}'`)
-    .fetchAll()
+	// Get webhook mapping from Cosmos DB
+	const { resources: webhooks } = await container.items
+		.query(`SELECT * FROM c WHERE c.id = '${runId}:${nodeId}'`)
+		.fetchAll()
 
-  if (webhooks.length > 0) {
-    const webhookData = webhooks[0]
+	if (webhooks.length > 0) {
+		const webhookData = webhooks[0]
 
-    // Send event to Azure Queue
-    await queueClient.sendMessage(JSON.stringify({
-      event: webhookData.eventName,
-      payload
-    }))
+		// Send event to Azure Queue
+		await queueClient.sendMessage(
+			JSON.stringify({
+				event: webhookData.eventName,
+				payload,
+			}),
+		)
 
-    context.res = { status: 200, body: 'OK' }
-  } else {
-    context.res = { status: 404, body: 'Webhook not found' }
-  }
+		context.res = { status: 200, body: 'OK' }
+	} else {
+		context.res = { status: 404, body: 'Webhook not found' }
+	}
 }
 ```
 

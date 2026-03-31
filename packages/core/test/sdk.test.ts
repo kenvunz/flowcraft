@@ -22,7 +22,9 @@ describe('Flow SDK', () => {
 
 			sleep('5m')
 
-			expect(consoleWarnSpy).toHaveBeenCalledWith(`'sleep' should only be used inside a compiled @flow function.`)
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				`'sleep' should only be used inside a compiled @flow function.`,
+			)
 
 			consoleWarnSpy.mockRestore()
 		})

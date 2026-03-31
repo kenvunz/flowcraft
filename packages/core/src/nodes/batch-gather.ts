@@ -2,7 +2,10 @@ import { BaseNode } from '../node'
 import type { NodeContext, NodeResult } from '../types'
 
 export class BatchGatherNode extends BaseNode {
-	async exec(_prepResult: any, context: NodeContext<any, any, any>): Promise<Omit<NodeResult, 'error'>> {
+	async exec(
+		_prepResult: any,
+		context: NodeContext<any, any, any>,
+	): Promise<Omit<NodeResult, 'error'>> {
 		const { gatherNodeId, outputKey } = (this.params as any) || {}
 		const hasMore = (await context.context.get(`${gatherNodeId}_hasMore`)) || false
 		const dynamicNodes: any[] = []
@@ -18,7 +21,8 @@ export class BatchGatherNode extends BaseNode {
 			})
 		} else {
 			// collect results from all chunks into outputKey
-			const allWorkerIds = ((await context.context.get(`${gatherNodeId}_allWorkerIds`)) as string[]) || []
+			const allWorkerIds =
+				((await context.context.get(`${gatherNodeId}_allWorkerIds`)) as string[]) || []
 			results = []
 			for (const workerId of allWorkerIds) {
 				const result = await context.context.get(`_outputs.${workerId}` as any)

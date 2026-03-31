@@ -38,32 +38,34 @@ You must have Kafka, Cassandra, and Redis available. For local development, Dock
 ### Using Docker Compose
 
 Create a `docker-compose.yml` file:
+
 ```yaml
 version: '3.8'
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.9.4
-    ports: ["2181:2181"]
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-  kafka:
-    image: confluentinc/cp-kafka:7.9.4
-    ports: ["9092:9092"]
-    depends_on: [zookeeper]
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-  cassandra:
-    image: cassandra:5.0.5
-    ports: ["9042:9042"]
-  redis:
-    image: redis:8-alpine
-    ports: ["6379:6379"]
+    zookeeper:
+        image: confluentinc/cp-zookeeper:7.9.4
+        ports: ['2181:2181']
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+    kafka:
+        image: confluentinc/cp-kafka:7.9.4
+        ports: ['9092:9092']
+        depends_on: [zookeeper]
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    cassandra:
+        image: cassandra:5.0.5
+        ports: ['9042:9042']
+    redis:
+        image: redis:8-alpine
+        ports: ['6379:6379']
 ```
 
 After running `docker-compose up -d`, create the Kafka topic and Cassandra schema:
+
 ```bash
 # 1. Create the Kafka topic
 docker exec kafka kafka-topics --create --topic flowcraft-jobs --bootstrap-server localhost:9092
@@ -89,15 +91,19 @@ import Redis from 'ioredis'
 import { Kafka } from 'kafkajs'
 
 // 1. Define your blueprints and registry
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize service clients
 const kafka = new Kafka({ brokers: [process.env.KAFKA_BROKER] })
 const cassandraClient = new CassandraClient({
-  contactPoints: [process.env.CASSANDRA_HOST],
-  localDataCenter: 'datacenter1',
-  keyspace: 'flowcraft_ks',
+	contactPoints: [process.env.CASSANDRA_HOST],
+	localDataCenter: 'datacenter1',
+	keyspace: 'flowcraft_ks',
 })
 const redisClient = new Redis(process.env.REDIS_URL)
 
@@ -109,15 +115,15 @@ const coordinationStore = new RedisCoordinationStore(redisClient)
 
 // 5. Initialize the adapter
 const adapter = new KafkaAdapter({
-  runtimeOptions: runtime.options,
-  coordinationStore,
-  kafka,
-  cassandraClient,
-  keyspace: 'flowcraft_ks',
-  contextTableName: 'contexts',
-  statusTableName: 'statuses',
-  topicName: 'flowcraft-jobs',
-  groupId: 'flowcraft-workers',
+	runtimeOptions: runtime.options,
+	coordinationStore,
+	kafka,
+	cassandraClient,
+	keyspace: 'flowcraft_ks',
+	contextTableName: 'contexts',
+	statusTableName: 'statuses',
+	topicName: 'flowcraft-jobs',
+	groupId: 'flowcraft-workers',
 })
 
 // 6. Start the worker
@@ -136,29 +142,40 @@ import { Client as CassandraClient } from 'cassandra-driver'
 import { Kafka } from 'kafkajs'
 
 async function startWorkflow(blueprint, initialContext) {
-  const runId = crypto.randomUUID()
-  const kafka = new Kafka({ brokers: [process.env.KAFKA_BROKER] })
-  const cassandra = new CassandraClient({ contactPoints: [process.env.CASSANDRA_HOST], localDataCenter: 'datacenter1', keyspace: 'flowcraft_ks' })
+	const runId = crypto.randomUUID()
+	const kafka = new Kafka({ brokers: [process.env.KAFKA_BROKER] })
+	const cassandra = new CassandraClient({
+		contactPoints: [process.env.CASSANDRA_HOST],
+		localDataCenter: 'datacenter1',
+		keyspace: 'flowcraft_ks',
+	})
 
-  // 1. Set initial context and status in Cassandra
-  await cassandra.execute('INSERT INTO contexts (run_id, context_data) VALUES (?, ?)', [runId, JSON.stringify(initialContext)])
-  await cassandra.execute('INSERT INTO statuses (run_id, status, updated_at) VALUES (?, ?, ?)', [runId, 'running', new Date()])
+	// 1. Set initial context and status in Cassandra
+	await cassandra.execute('INSERT INTO contexts (run_id, context_data) VALUES (?, ?)', [
+		runId,
+		JSON.stringify(initialContext),
+	])
+	await cassandra.execute('INSERT INTO statuses (run_id, status, updated_at) VALUES (?, ?, ?)', [
+		runId,
+		'running',
+		new Date(),
+	])
 
-  // 2. Analyze blueprint for start nodes and prepare Kafka messages
-  const analysis = analyzeBlueprint(blueprint)
-  const messages = analysis.startNodeIds.map(nodeId => ({
-    key: runId, // Using runId as key ensures messages for the same workflow go to the same partition
-    value: JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }),
-  }))
+	// 2. Analyze blueprint for start nodes and prepare Kafka messages
+	const analysis = analyzeBlueprint(blueprint)
+	const messages = analysis.startNodeIds.map((nodeId) => ({
+		key: runId, // Using runId as key ensures messages for the same workflow go to the same partition
+		value: JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }),
+	}))
 
-  // 3. Produce start jobs to Kafka
-  const producer = kafka.producer()
-  await producer.connect()
-  await producer.send({ topic: 'flowcraft-jobs', messages })
-  await producer.disconnect()
+	// 3. Produce start jobs to Kafka
+	const producer = kafka.producer()
+	await producer.connect()
+	await producer.send({ topic: 'flowcraft-jobs', messages })
+	await producer.disconnect()
 
-  console.log(`Workflow ${runId} started.`)
-  return runId
+	console.log(`Workflow ${runId} started.`)
+	return runId
 }
 ```
 
@@ -180,17 +197,17 @@ import { createKafkaReconciler } from '@flowcraft/kafka-adapter'
 
 // 'adapter' and 'cassandraClient' should be initialized as in the worker setup
 const reconciler = createKafkaReconciler({
-  adapter,
-  cassandraClient,
-  keyspace: 'flowcraft_ks',
-  statusTableName: 'statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter,
+	cassandraClient,
+	keyspace: 'flowcraft_ks',
+	statusTableName: 'statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run this function periodically
 async function reconcile() {
-  const stats = await reconciler.run()
-  console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
+	const stats = await reconciler.run()
+	console.log(`Reconciled ${stats.reconciledRuns} of ${stats.stalledRuns} stalled runs.`)
 }
 ```
 
@@ -207,6 +224,7 @@ Registers a webhook endpoint for the specified workflow run and node.
 - **Returns**: `Promise<{ url: string; event: string }>` - The webhook URL and event name.
 
 **Example Implementation:**
+
 ```typescript
 // In KafkaAdapter
 public async registerWebhookEndpoint(runId: string, nodeId: string): Promise<{ url: string; event: string }> {
@@ -238,34 +256,36 @@ const producer = kafka.producer()
 await producer.connect()
 
 app.post('/webhooks/:runId/:nodeId', async (req, res) => {
-  const { runId, nodeId } = req.params
-  const payload = req.body
+	const { runId, nodeId } = req.params
+	const payload = req.body
 
-  // Get webhook mapping from Cassandra
-  const result = await cassandra.execute(
-    'SELECT event_name FROM webhooks WHERE webhook_id = ?',
-    [`${runId}:${nodeId}`],
-    { prepare: true }
-  )
+	// Get webhook mapping from Cassandra
+	const result = await cassandra.execute(
+		'SELECT event_name FROM webhooks WHERE webhook_id = ?',
+		[`${runId}:${nodeId}`],
+		{ prepare: true },
+	)
 
-  if (result.rows.length > 0) {
-    const eventName = result.rows[0].event_name
+	if (result.rows.length > 0) {
+		const eventName = result.rows[0].event_name
 
-    // Produce event to Kafka topic
-    await producer.send({
-      topic: 'flowcraft-events',
-      messages: [{
-        value: JSON.stringify({
-          event: eventName,
-          payload
-        })
-      }]
-    })
+		// Produce event to Kafka topic
+		await producer.send({
+			topic: 'flowcraft-events',
+			messages: [
+				{
+					value: JSON.stringify({
+						event: eventName,
+						payload,
+					}),
+				},
+			],
+		})
 
-    res.status(200).send('OK')
-  } else {
-    res.status(404).send('Webhook not found')
-  }
+		res.status(200).send('OK')
+	} else {
+		res.status(404).send('Webhook not found')
+	}
 })
 ```
 

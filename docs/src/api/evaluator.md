@@ -12,8 +12,8 @@ interface IEvaluator {
 }
 ```
 
--   **`expression`**: The string to evaluate (e.g., `"result.output.status"` for `PropertyEvaluator` or `"result.output > 100"` for `UnsafeEvaluator`).
--   **`context`**: A JavaScript object containing the data available to the expression (e.g., `result`, `context`).
+- **`expression`**: The string to evaluate (e.g., `"result.output.status"` for `PropertyEvaluator` or `"result.output > 100"` for `UnsafeEvaluator`).
+- **`context`**: A JavaScript object containing the data available to the expression (e.g., `result`, `context`).
 
 ## `PropertyEvaluator` Class
 
@@ -24,17 +24,19 @@ import { PropertyEvaluator } from 'flowcraft'
 
 const evaluator = new PropertyEvaluator()
 const result = evaluator.evaluate('result.output.status', {
-  result: { output: { status: 'OK' } }
+	result: { output: { status: 'OK' } },
 })
 // result === 'OK'
 ```
 
 **Features:**
+
 - **Secure by default**: Only allows simple property access (e.g., `result.output.status`)
 - **No code execution**: Cannot run arbitrary JavaScript
 - **Performance optimized**: Lightweight and fast for basic use cases
 
 **Limitations:**
+
 - Cannot use operators like `<`, `>`, `===`, `!==`, `+`, `*`, etc.
 - Limited to dot-notation property access
 
@@ -46,7 +48,7 @@ An evaluator that uses `new Function()` to execute JavaScript expressions. **Not
 import { UnsafeEvaluator } from 'flowcraft'
 
 const runtime = new FlowRuntime({
-  evaluator: new UnsafeEvaluator(), // Explicit opt-in required
+	evaluator: new UnsafeEvaluator(), // Explicit opt-in required
 })
 ```
 
@@ -60,10 +62,12 @@ const runtime = new FlowRuntime({
 > For complex expressions in production, implement a custom evaluator using a sandboxed library like [jsep](https://www.npmjs.com/package/jsep). See the [Custom Evaluators guide](/guide/evaluators) for an example.
 
 **Features:**
+
 - **Full JavaScript support**: Can evaluate complex expressions with operators, functions, etc.
 - **Backward compatible**: Supports all expressions that worked with the previous `SimpleEvaluator`
 
 **When to use:**
+
 - Development and testing environments
 - Internal tools where all blueprints are controlled
 - Migration period while refactoring to use `PropertyEvaluator` or custom evaluators

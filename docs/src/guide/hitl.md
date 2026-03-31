@@ -36,7 +36,12 @@ const runtime = new FlowRuntime({ logger: new ConsoleLogger() })
 const result = await flow.run(runtime)
 if (result.status === 'awaiting') {
 	// Resume with input
-	const finalResult = await flow.resume(runtime, result.serializedContext, { output: { approved: true } }, 'wait-for-approval')
+	const finalResult = await flow.resume(
+		runtime,
+		result.serializedContext,
+		{ output: { approved: true } },
+		'wait-for-approval',
+	)
 	console.log(finalResult.context)
 }
 ```
@@ -62,7 +67,7 @@ const flow = createFlow('conditional-approval')
 // Resume with different actions
 await flow.resume(runtime, serializedContext, {
 	output: { reviewer: 'john@example.com' },
-	action: 'approve' // or 'reject' or 'escalate'
+	action: 'approve', // or 'reject' or 'escalate'
 })
 ```
 

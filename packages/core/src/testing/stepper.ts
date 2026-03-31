@@ -21,7 +21,10 @@ export interface IWorkflowStepper<TContext extends Record<string, any>> {
 	 * @param options Optional configuration for this specific step, like a cancellation signal.
 	 * @returns A `WorkflowResult` representing the state after the step, or `null` if the workflow has already completed.
 	 */
-	next(options?: { signal?: AbortSignal; concurrency?: number }): Promise<WorkflowResult<TContext> | null>
+	next(options?: {
+		signal?: AbortSignal
+		concurrency?: number
+	}): Promise<WorkflowResult<TContext> | null>
 
 	/**
 	 * Reverts the workflow to its previous state.
@@ -80,7 +83,10 @@ export interface IWorkflowStepper<TContext extends Record<string, any>> {
  * @param initialState The initial state for the workflow run.
  * @returns A Promise that resolves to an `IWorkflowStepper` instance.
  */
-export async function createStepper<TContext extends Record<string, any>, TDependencies extends Record<string, any>>(
+export async function createStepper<
+	TContext extends Record<string, any>,
+	TDependencies extends Record<string, any>,
+>(
 	runtime: FlowRuntime<TContext, TDependencies>,
 	blueprint: WorkflowBlueprint,
 	functionRegistry: Map<string, NodeFunction | NodeClass>,
@@ -124,7 +130,9 @@ export async function createStepper<TContext extends Record<string, any>, TDepen
 				return null
 			}
 
-			const previousStateData = runtime.serializer.deserialize(previousStateJson) as Partial<TContext>
+			const previousStateData = runtime.serializer.deserialize(
+				previousStateJson,
+			) as Partial<TContext>
 
 			state = new WorkflowState(previousStateData)
 			traverser = GraphTraverser.fromState(_initialBlueprint, state)
@@ -136,7 +144,8 @@ export async function createStepper<TContext extends Record<string, any>, TDepen
 				return null
 			}
 
-			const serializedContext = (await state.toResult(runtime.serializer, undefined)).serializedContext
+			const serializedContext = (await state.toResult(runtime.serializer, undefined))
+				.serializedContext
 			history.push(serializedContext)
 
 			const executionContext = new ExecutionContext(

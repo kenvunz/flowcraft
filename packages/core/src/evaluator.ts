@@ -14,7 +14,9 @@ export class PropertyEvaluator implements IEvaluator {
 		try {
 			// Basic validation to ensure it's a simple path
 			if (!/^[a-zA-Z0-9_$.]+$/.test(expression)) {
-				console.error(`Error evaluating expression: "${expression}" contains invalid characters.`)
+				console.error(
+					`Error evaluating expression: "${expression}" contains invalid characters.`,
+				)
 				return undefined
 			}
 

@@ -23,9 +23,13 @@ export class BullMQAdapter extends BaseDistributedAdapter {
 		super(options)
 		this.connection = options.connection
 		this.redisClient =
-			options.connection instanceof Redis ? options.connection : new Redis(options.connection as RedisOptions)
+			options.connection instanceof Redis
+				? options.connection
+				: new Redis(options.connection as RedisOptions)
 		this.queueName = options.queueName || 'flowcraft-queue'
-		this.queue = new Queue(this.queueName, { connection: this.redisClient as ConnectionOptions })
+		this.queue = new Queue(this.queueName, {
+			connection: this.redisClient as ConnectionOptions,
+		})
 		this.logger.info(`[BullMQAdapter] Connected to queue '${this.queueName}'.`)
 	}
 
@@ -37,7 +41,9 @@ export class BullMQAdapter extends BaseDistributedAdapter {
 		this.worker = new Worker(
 			this.queueName,
 			async (job: Job) => {
-				this.logger.info(`[BullMQAdapter] ==> Picked up job ID: ${job.id}, Name: ${job.name}`)
+				this.logger.info(
+					`[BullMQAdapter] ==> Picked up job ID: ${job.id}, Name: ${job.name}`,
+				)
 				await handler(job.data as JobPayload)
 			},
 			{ connection: this.redisClient as ConnectionOptions, concurrency: 5 },
@@ -55,7 +61,10 @@ export class BullMQAdapter extends BaseDistributedAdapter {
 		await this.redisClient.set(statusKey, JSON.stringify(result), 'EX', 3600)
 	}
 
-	public async registerWebhookEndpoint(_runId: string, _nodeId: string): Promise<{ url: string; event: string }> {
+	public async registerWebhookEndpoint(
+		_runId: string,
+		_nodeId: string,
+	): Promise<{ url: string; event: string }> {
 		// TODO: Implement webhook endpoint registration for BullMQ adapter
 		// This would typically involve setting up an HTTP endpoint that can trigger the workflow
 		throw new Error('registerWebhookEndpoint not implemented for BullMQAdapter')

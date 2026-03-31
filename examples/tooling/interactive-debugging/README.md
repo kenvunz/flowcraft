@@ -5,6 +5,7 @@ This example demonstrates step-through debugging capabilities for Flowcraft work
 ## Overview
 
 The workflow simulates an interactive debugging session that:
+
 1. Initializes debug mode and step tracking
 2. Processes steps with pause points
 3. Checks conditions for continuation

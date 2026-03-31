@@ -20,5 +20,5 @@ The default serializer, which uses `JSON.stringify` and `JSON.parse`.
 > [!WARNING]
 > This default implementation is lossy and does not handle complex data types like `Date`, `Map`, `Set`, or class instances. It is recommended to provide a robust serializer like `superjson` if your workflows handle such data.
 
--   **`serialize(data)`**: Converts a context object to a JSON string.
--   **`deserialize(text)`**: Parses a JSON string back into a context object.
+- **`serialize(data)`**: Converts a context object to a JSON string.
+- **`deserialize(text)`**: Parses a JSON string back into a context object.

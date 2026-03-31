@@ -19,10 +19,10 @@ function compileProject(options: CompileOptions): Promise<CompilationOutput>
 
 ```typescript
 interface CompilationOutput {
-  blueprints: Blueprint[]
-  registry: FlowRegistry
-  diagnostics: CompilationDiagnostic[]
-  manifestSource: string
+	blueprints: Blueprint[]
+	registry: FlowRegistry
+	diagnostics: CompilationDiagnostic[]
+	manifestSource: string
 }
 ```
 
@@ -44,6 +44,7 @@ function buildFlows(configPath?: string): Promise<void>
 - **`configPath?`**: `string` - Path to config file (defaults to './flowcraft.config.ts')
 
 This function:
+
 1. Loads the configuration from `flowcraft.config.ts`
 2. Compiles all workflows using `compileProject()`
 3. Writes the generated manifest to the configured `manifestPath`
@@ -53,28 +54,28 @@ This function:
 
 ```typescript
 interface FlowcraftConfig {
-  entryPoints: string[]
-  manifestPath: string
-  tsConfigPath?: string
+	entryPoints: string[]
+	manifestPath: string
+	tsConfigPath?: string
 }
 
 interface CompilationDiagnostic {
-  file: string
-  line: number
-  column: number
-  message: string
-  severity: 'error' | 'warning'
+	file: string
+	line: number
+	column: number
+	message: string
+	severity: 'error' | 'warning'
 }
 
 interface Blueprint {
-  id: string
-  nodes: Node[]
-  edges: Edge[]
-  // ... additional blueprint properties
+	id: string
+	nodes: Node[]
+	edges: Edge[]
+	// ... additional blueprint properties
 }
 
 interface FlowRegistry {
-  flows: Map<string, FlowDefinition>
-  steps: Map<string, StepDefinition>
+	flows: Map<string, FlowDefinition>
+	steps: Map<string, StepDefinition>
 }
 ```

@@ -1,7 +1,7 @@
 {
 	"name": "@example/declarative-shared-logic",
-	"type": "module",
 	"private": true,
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",

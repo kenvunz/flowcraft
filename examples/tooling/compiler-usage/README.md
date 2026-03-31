@@ -5,6 +5,7 @@ This example demonstrates how to use Flowcraft's compiler for workflow analysis 
 ## Overview
 
 The workflow simulates a compiler pipeline that:
+
 1. Analyzes workflow structure and metadata
 2. Validates node implementations
 3. Generates optimized code from the workflow blueprint

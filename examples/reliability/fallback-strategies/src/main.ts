@@ -1,4 +1,9 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
 import { createCascadingFallbackWorkflow, createParallelFallbackWorkflow } from './workflow.js'
 
 class FallbackMiddleware implements Middleware {
@@ -13,7 +18,9 @@ class FallbackMiddleware implements Middleware {
 			console.log(`[FALLBACK] ${nodeId} succeeded`)
 			return result
 		} catch (error: any) {
-			console.log(`[FALLBACK] ${nodeId} failed: ${error.message} - attempting fallback if available`)
+			console.log(
+				`[FALLBACK] ${nodeId} failed: ${error.message} - attempting fallback if available`,
+			)
 			throw error
 		}
 	}

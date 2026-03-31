@@ -2,14 +2,23 @@ import { BaseNode } from '../node'
 import type { NodeContext, NodeResult } from '../types'
 
 export class BatchScatterNode extends BaseNode {
-	async exec(_prepResult: any, context: NodeContext<any, any, any>): Promise<Omit<NodeResult, 'error'>> {
+	async exec(
+		_prepResult: any,
+		context: NodeContext<any, any, any>,
+	): Promise<Omit<NodeResult, 'error'>> {
 		const inputArray = context.input || []
 		if (!Array.isArray(inputArray)) {
 			throw new Error(`Input for batch-scatter node '${this.nodeId}' must be an array.`)
 		}
-		const { chunkSize = inputArray.length, workerUsesKey, gatherNodeId } = (this.params as any) || {}
+		const {
+			chunkSize = inputArray.length,
+			workerUsesKey,
+			gatherNodeId,
+		} = (this.params as any) || {}
 		if (!workerUsesKey || !gatherNodeId) {
-			throw new Error(`BatchScatterNode requires 'workerUsesKey' and 'gatherNodeId' parameters.`)
+			throw new Error(
+				`BatchScatterNode requires 'workerUsesKey' and 'gatherNodeId' parameters.`,
+			)
 		}
 		const batchId = globalThis.crypto.randomUUID()
 		const currentIndex = (await context.context.get(`${this.nodeId}_currentIndex`)) || 0

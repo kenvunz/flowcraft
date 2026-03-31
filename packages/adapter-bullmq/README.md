@@ -35,8 +35,12 @@ import { FlowRuntime } from 'flowcraft'
 import Redis from 'ioredis'
 
 // 1. Define your workflow blueprints and registry
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize the Redis client
 // This single connection will be used by BullMQ, the context, and the coordination store.
@@ -80,16 +84,18 @@ import { createBullMQReconciler } from '@flowcraft/bullmq-adapter'
 
 // Create a reconciler instance
 const reconciler = createBullMQReconciler({
-  adapter: myBullMQAdapter,
-  redis: myRedisClient,
-  stalledThresholdSeconds: 300, // 5 minutes
-  keyPrefix: 'workflow:state:', // Optional: defaults to 'workflow:state:'
-  scanCount: 100, // Optional: defaults to 100
+	adapter: myBullMQAdapter,
+	redis: myRedisClient,
+	stalledThresholdSeconds: 300, // 5 minutes
+	keyPrefix: 'workflow:state:', // Optional: defaults to 'workflow:state:'
+	scanCount: 100, // Optional: defaults to 100
 })
 
 // Run reconciliation
 const stats = await reconciler.run()
-console.log(`Scanned ${stats.scannedKeys} keys, found ${stats.stalledRuns} stalled runs, reconciled ${stats.reconciledRuns} runs`)
+console.log(
+	`Scanned ${stats.scannedKeys} keys, found ${stats.stalledRuns} stalled runs, reconciled ${stats.reconciledRuns} runs`,
+)
 ```
 
 ### Reconciliation Stats
@@ -98,10 +104,10 @@ The reconciler returns detailed statistics:
 
 ```typescript
 interface ReconciliationStats {
-  scannedKeys: number    // Number of Redis keys scanned
-  stalledRuns: number    // Number of workflows identified as stalled
-  reconciledRuns: number // Number of workflows successfully resumed
-  failedRuns: number     // Number of reconciliation attempts that failed
+	scannedKeys: number // Number of Redis keys scanned
+	stalledRuns: number // Number of workflows identified as stalled
+	reconciledRuns: number // Number of workflows successfully resumed
+	failedRuns: number // Number of reconciliation attempts that failed
 }
 ```
 

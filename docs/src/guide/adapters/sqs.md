@@ -36,8 +36,9 @@ graph TD
 ## Infrastructure Setup
 
 You must have the following AWS resources provisioned:
--   An **SQS Queue** to handle jobs.
--   Three **DynamoDB Tables**:
+
+- An **SQS Queue** to handle jobs.
+- Three **DynamoDB Tables**:
     1.  For workflow **context** (Primary Key: `runId`).
     2.  For workflow **status** (Primary Key: `runId`).
     3.  For **coordination** (Primary Key: `key`). This table should have TTL enabled on a `ttl` attribute for automatic cleanup of locks.
@@ -110,8 +111,12 @@ import { DynamoDbCoordinationStore, SqsAdapter } from '@flowcraft/sqs-adapter'
 import { FlowRuntime } from 'flowcraft'
 
 // 1. Define your workflow blueprints and node implementations
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize AWS service clients
 const awsConfig = { region: process.env.AWS_REGION || 'us-east-1' }
@@ -123,19 +128,19 @@ const runtime = new FlowRuntime({ blueprints, registry })
 
 // 4. Set up the coordination store using DynamoDB
 const coordinationStore = new DynamoDbCoordinationStore({
-  client: dynamoDbClient,
-  tableName: 'flowcraft-coordination',
+	client: dynamoDbClient,
+	tableName: 'flowcraft-coordination',
 })
 
 // 5. Initialize the adapter
 const adapter = new SqsAdapter({
-  runtimeOptions: runtime.options,
-  coordinationStore,
-  sqsClient,
-  dynamoDbClient,
-  queueUrl: process.env.SQS_QUEUE_URL,
-  contextTableName: 'flowcraft-contexts',
-  statusTableName: 'flowcraft-statuses',
+	runtimeOptions: runtime.options,
+	coordinationStore,
+	sqsClient,
+	dynamoDbClient,
+	queueUrl: process.env.SQS_QUEUE_URL,
+	contextTableName: 'flowcraft-contexts',
+	statusTableName: 'flowcraft-statuses',
 })
 
 // 6. Start the worker to begin polling the SQS queue
@@ -155,36 +160,42 @@ import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
 
 async function startWorkflow(blueprint, initialContext) {
-  const runId = crypto.randomUUID()
-  const awsConfig = { region: process.env.AWS_REGION }
-  const sqsClient = new SQSClient(awsConfig)
-  const docClient = DynamoDBDocumentClient.from(new DynamoDBClient(awsConfig))
+	const runId = crypto.randomUUID()
+	const awsConfig = { region: process.env.AWS_REGION }
+	const sqsClient = new SQSClient(awsConfig)
+	const docClient = DynamoDBDocumentClient.from(new DynamoDBClient(awsConfig))
 
-  // 1. Set initial context and status in DynamoDB
-  await docClient.send(new PutCommand({
-    TableName: 'flowcraft-contexts',
-    Item: { runId, context: initialContext },
-  }))
-  await docClient.send(new PutCommand({
-    TableName: 'flowcraft-statuses',
-    Item: { runId, status: 'running', lastUpdated: new Date().toISOString() },
-  }))
+	// 1. Set initial context and status in DynamoDB
+	await docClient.send(
+		new PutCommand({
+			TableName: 'flowcraft-contexts',
+			Item: { runId, context: initialContext },
+		}),
+	)
+	await docClient.send(
+		new PutCommand({
+			TableName: 'flowcraft-statuses',
+			Item: { runId, status: 'running', lastUpdated: new Date().toISOString() },
+		}),
+	)
 
-  // 2. Analyze blueprint for start nodes
-  const analysis = analyzeBlueprint(blueprint)
-  const startJobs = analysis.startNodeIds.map(nodeId => ({
-    Id: `${runId}-${nodeId}`,
-    MessageBody: JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }),
-  }))
+	// 2. Analyze blueprint for start nodes
+	const analysis = analyzeBlueprint(blueprint)
+	const startJobs = analysis.startNodeIds.map((nodeId) => ({
+		Id: `${runId}-${nodeId}`,
+		MessageBody: JSON.stringify({ runId, blueprintId: blueprint.id, nodeId }),
+	}))
 
-  // 3. Enqueue start jobs to SQS
-  await sqsClient.send(new SendMessageBatchCommand({
-    QueueUrl: process.env.SQS_QUEUE_URL,
-    Entries: startJobs,
-  }))
+	// 3. Enqueue start jobs to SQS
+	await sqsClient.send(
+		new SendMessageBatchCommand({
+			QueueUrl: process.env.SQS_QUEUE_URL,
+			Entries: startJobs,
+		}),
+	)
 
-  console.log(`Workflow ${runId} started.`)
-  return runId
+	console.log(`Workflow ${runId} started.`)
+	return runId
 }
 ```
 
@@ -203,16 +214,16 @@ import { createSqsReconciler } from '@flowcraft/sqs-adapter'
 
 // 'adapter' and 'dynamoDbClient' should be initialized as in the worker setup
 const reconciler = createSqsReconciler({
-  adapter,
-  dynamoDbClient,
-  statusTableName: 'flowcraft-statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter,
+	dynamoDbClient,
+	statusTableName: 'flowcraft-statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run this function periodically
 async function reconcile() {
-  const stats = await reconciler.run()
-  console.log(`Scanned ${stats.scannedItems} items, reconciled ${stats.reconciledRuns} runs.`)
+	const stats = await reconciler.run()
+	console.log(`Scanned ${stats.scannedItems} items, reconciled ${stats.reconciledRuns} runs.`)
 }
 ```
 
@@ -229,6 +240,7 @@ Registers a webhook endpoint for the specified workflow run and node.
 - **Returns**: `Promise<{ url: string; event: string }>` - The webhook URL and event name.
 
 **Example Implementation:**
+
 ```typescript
 // In SqsAdapter
 public async registerWebhookEndpoint(runId: string, nodeId: string): Promise<{ url: string; event: string }> {
@@ -258,29 +270,29 @@ Create a Lambda function to handle webhook requests and send messages to SQS:
 ```typescript
 // Lambda handler
 export async function handler(event: any) {
-  const { runId, nodeId } = event.pathParameters
-  const payload = JSON.parse(event.body)
+	const { runId, nodeId } = event.pathParameters
+	const payload = JSON.parse(event.body)
 
-  // Get webhook mapping from DynamoDB
-  const webhookData = await dynamoDb.getItem({
-    TableName: 'flowcraft-webhooks',
-    Key: { webhookId: `${runId}:${nodeId}` }
-  })
+	// Get webhook mapping from DynamoDB
+	const webhookData = await dynamoDb.getItem({
+		TableName: 'flowcraft-webhooks',
+		Key: { webhookId: `${runId}:${nodeId}` },
+	})
 
-  if (webhookData.Item) {
-    // Send event to SQS queue
-    await sqs.sendMessage({
-      QueueUrl: process.env.SQS_QUEUE_URL!,
-      MessageBody: JSON.stringify({
-        event: webhookData.Item.eventName,
-        payload
-      })
-    })
+	if (webhookData.Item) {
+		// Send event to SQS queue
+		await sqs.sendMessage({
+			QueueUrl: process.env.SQS_QUEUE_URL!,
+			MessageBody: JSON.stringify({
+				event: webhookData.Item.eventName,
+				payload,
+			}),
+		})
 
-    return { statusCode: 200, body: 'OK' }
-  }
+		return { statusCode: 200, body: 'OK' }
+	}
 
-  return { statusCode: 404, body: 'Webhook not found' }
+	return { statusCode: 404, body: 'Webhook not found' }
 }
 ```
 

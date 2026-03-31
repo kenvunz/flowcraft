@@ -18,14 +18,14 @@ Create a `flowcraft.config.ts` file in your project root to configure the compil
 import { defineConfig } from '@flowcraft/compiler'
 
 export default defineConfig({
-  // Entry points for your workflow files
-  entryPoints: ['./src/workflows/**/*.ts'],
+	// Entry points for your workflow files
+	entryPoints: ['./src/workflows/**/*.ts'],
 
-  // Path to the generated manifest file
-  manifestPath: './src/generated/manifest.ts',
+	// Path to the generated manifest file
+	manifestPath: './src/generated/manifest.ts',
 
-  // Path to your tsconfig.json (optional, defaults to './tsconfig.json')
-  tsConfigPath: './tsconfig.json',
+	// Path to your tsconfig.json (optional, defaults to './tsconfig.json')
+	tsConfigPath: './tsconfig.json',
 })
 ```
 
@@ -44,13 +44,13 @@ You can also run the compiler programmatically in build scripts:
 import { compileProject } from '@flowcraft/compiler'
 
 const result = await compileProject({
-  entryPoints: ['./src/workflows/**/*.ts'],
-  tsConfigPath: './tsconfig.json',
+	entryPoints: ['./src/workflows/**/*.ts'],
+	tsConfigPath: './tsconfig.json',
 })
 
 if (result.diagnostics.length > 0) {
-  console.error('Compilation errors:', result.diagnostics)
-  process.exit(1)
+	console.error('Compilation errors:', result.diagnostics)
+	process.exit(1)
 }
 
 // Write the manifest
@@ -83,7 +83,7 @@ const runtime = new FlowRuntime()
 
 // Execute a compiled workflow
 const result = await runtime.run(manifest['myWorkflow'], {
-  inputParam: 'value'
+	inputParam: 'value',
 })
 
 console.log('Execution result:', result)
@@ -98,10 +98,10 @@ import { compileProject } from '@flowcraft/compiler'
 import { FlowRuntime } from 'flowcraft'
 
 const compilationResult = await compileProject({
-  entryPoints: ['./src/workflows/**/*.ts']
+	entryPoints: ['./src/workflows/**/*.ts'],
 })
 
-const blueprint = compilationResult.blueprints.find(b => b.id === 'myWorkflow')
+const blueprint = compilationResult.blueprints.find((b) => b.id === 'myWorkflow')
 const runtime = new FlowRuntime()
 
 const result = await runtime.run(blueprint, initialData)

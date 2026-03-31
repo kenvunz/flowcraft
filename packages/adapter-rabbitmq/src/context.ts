@@ -23,7 +23,10 @@ export class PostgresContext implements IAsyncContext<Record<string, any>> {
 	}
 
 	private async readContext(): Promise<Record<string, any>> {
-		const res = await this.pg.query(`SELECT context_data FROM ${this.tableName} WHERE run_id = $1`, [this.runId])
+		const res = await this.pg.query(
+			`SELECT context_data FROM ${this.tableName} WHERE run_id = $1`,
+			[this.runId],
+		)
 		return res.rows[0]?.context_data || {}
 	}
 

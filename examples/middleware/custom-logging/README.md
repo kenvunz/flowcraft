@@ -28,16 +28,16 @@ Middleware implements the `Middleware` interface with an `aroundNode` method:
 
 ```typescript
 class LoggingMiddleware implements Middleware {
-  async aroundNode(
-    ctx: ContextImplementation,
-    nodeId: string,
-    next: () => Promise<NodeResult>
-  ): Promise<NodeResult> {
-    console.log(`[LOG] Starting node: ${nodeId}`)
-    const result = await next()
-    console.log(`[LOG] Completed node: ${nodeId}`)
-    return result
-  }
+	async aroundNode(
+		ctx: ContextImplementation,
+		nodeId: string,
+		next: () => Promise<NodeResult>,
+	): Promise<NodeResult> {
+		console.log(`[LOG] Starting node: ${nodeId}`)
+		const result = await next()
+		console.log(`[LOG] Completed node: ${nodeId}`)
+		return result
+	}
 }
 ```
 
@@ -47,7 +47,7 @@ Add middleware to the runtime configuration:
 
 ```typescript
 const runtime = new FlowRuntime({
-  middleware: [new LoggingMiddleware()],
+	middleware: [new LoggingMiddleware()],
 })
 ```
 
@@ -61,9 +61,9 @@ const result = await next()
 const duration = Date.now() - startTime
 
 logger.info(`Node ${nodeId} completed`, {
-  duration,
-  nodeId,
-  blueprintId: await ctx.get('blueprintId'),
+	duration,
+	nodeId,
+	blueprintId: await ctx.get('blueprintId'),
 })
 ```
 
@@ -148,6 +148,7 @@ When implementing logging middleware in production:
 ## Next Steps
 
 After understanding custom middleware, explore:
+
 - `middleware/db-transactions` - Database transaction middleware
 - `reliability/error-handling` - Advanced error handling patterns
 - `core-api/context-state-management` - Context manipulation techniques

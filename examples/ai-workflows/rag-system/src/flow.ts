@@ -105,9 +105,12 @@ async function vectorSearch(ctx: NodeContext<RagContext>): Promise<NodeResult> {
 	return { output: searchResults }
 }
 
-async function generateFinalAnswer(ctx: NodeContext<RagContext, any, SearchResult[]>): Promise<NodeResult<string>> {
+async function generateFinalAnswer(
+	ctx: NodeContext<RagContext, any, SearchResult[]>,
+): Promise<NodeResult<string>> {
 	const searchResults = ctx.input
-	const contextText = searchResults?.map((r) => r.chunk.text).join('\n\n---\n\n') ?? 'No context found.'
+	const contextText =
+		searchResults?.map((r) => r.chunk.text).join('\n\n---\n\n') ?? 'No context found.'
 	const question = await ctx.context.get('question')
 	if (!question) {
 		throw new TypeError('question is required')

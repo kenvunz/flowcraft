@@ -5,6 +5,7 @@ This example demonstrates cascading and parallel fallback strategies for resilie
 ## Overview
 
 The example shows two fallback patterns:
+
 1. **Cascading Fallback**: Try services in sequence until one succeeds
 2. **Parallel Fallback**: Run multiple services concurrently and use the first success
 
@@ -27,12 +28,14 @@ pnpm start
 ## Expected Output
 
 **Cascading Fallback:**
+
 - Attempts primary service first (50% success rate)
 - Falls back to secondary (80% success rate, 300ms delay) if primary fails
 - Falls back to tertiary (90% success rate, 500ms delay) if secondary fails
 - Shows which service ultimately succeeded
 
 **Parallel Fallback:**
+
 - Runs primary and secondary services simultaneously
 - Uses whichever completes first successfully
 - Demonstrates faster recovery through parallelism

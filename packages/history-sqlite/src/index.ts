@@ -128,8 +128,12 @@ export class SqliteHistoryAdapter implements IEventStore {
 	 * Get database statistics.
 	 */
 	getStats(): { totalEvents: number; executions: number } {
-		const eventCount = this.db.prepare('SELECT COUNT(*) as count FROM events').get() as { count: number }
-		const executionCount = this.db.prepare('SELECT COUNT(DISTINCT execution_id) as count FROM events').get() as {
+		const eventCount = this.db.prepare('SELECT COUNT(*) as count FROM events').get() as {
+			count: number
+		}
+		const executionCount = this.db
+			.prepare('SELECT COUNT(DISTINCT execution_id) as count FROM events')
+			.get() as {
 			count: number
 		}
 

@@ -5,6 +5,7 @@ This example demonstrates performance monitoring and optimization suggestions in
 ## Overview
 
 The workflow simulates a data processing pipeline with performance bottlenecks:
+
 1. Loads data from an external source (simulated I/O delay)
 2. Processes a batch of records (CPU intensive work)
 3. Validates results

@@ -16,7 +16,8 @@ async function main() {
 	const entryWorkflowId = config[ACTIVE_USE_CASE].entryWorkflowId
 	const mainBlueprint = blueprints[entryWorkflowId]
 
-	if (!mainBlueprint) throw new Error(`Main workflow blueprint with ID '${entryWorkflowId}' was not found.`)
+	if (!mainBlueprint)
+		throw new Error(`Main workflow blueprint with ID '${entryWorkflowId}' was not found.`)
 
 	const { initialContext } = config[ACTIVE_USE_CASE]
 

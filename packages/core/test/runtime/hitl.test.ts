@@ -78,12 +78,22 @@ describe('Human-in-the-Loop (HITL)', () => {
 		expect(result1.context._awaitingNodeIds).toEqual(['wait1'])
 
 		// Resume: should pause at wait2
-		const result2 = await runtime.resume(blueprint, result1.serializedContext, { output: { value: 42 } }, 'wait1')
+		const result2 = await runtime.resume(
+			blueprint,
+			result1.serializedContext,
+			{ output: { value: 42 } },
+			'wait1',
+		)
 		expect(result2.status).toBe('awaiting')
 		expect(result2.context._awaitingNodeIds).toEqual(['wait2'])
 
 		// Resume again: should complete
-		const result3 = await runtime.resume(blueprint, result2.serializedContext, { output: { value: 42 } }, 'wait2')
+		const result3 = await runtime.resume(
+			blueprint,
+			result2.serializedContext,
+			{ output: { value: 42 } },
+			'wait2',
+		)
 		expect(result3.status).toBe('completed')
 		expect(result3.context['_outputs.end'].final).toBe(52)
 	})
@@ -143,7 +153,12 @@ describe('Human-in-the-Loop (HITL)', () => {
 		expect(result1.context._awaitingNodeIds).toEqual(['subflow'])
 
 		// Resume: should complete the subflow and continue to main-end
-		const result2 = await runtime.resume(blueprint, result1.serializedContext, { output: { value: 42 } }, 'subflow')
+		const result2 = await runtime.resume(
+			blueprint,
+			result1.serializedContext,
+			{ output: { value: 42 } },
+			'subflow',
+		)
 		expect(result2.status).toBe('completed')
 		expect(result2.context['_outputs.main-end'].final).toBe(57) // 42 + 5 + 10
 	})
@@ -182,7 +197,11 @@ describe('Human-in-the-Loop (HITL)', () => {
 			.node(
 				'gather',
 				async ({ input }) => {
-					return { output: { combined: `Results: ${input.result1.result1}, ${input.result2.result2}` } }
+					return {
+						output: {
+							combined: `Results: ${input.result1.result1}, ${input.result2.result2}`,
+						},
+					}
 				},
 				{ inputs: { result1: '_outputs.process1', result2: '_outputs.process2' } },
 			)
@@ -198,13 +217,25 @@ describe('Human-in-the-Loop (HITL)', () => {
 		expect(result1.context._awaitingNodeIds).toEqual(['wait1', 'wait2'])
 
 		// Resume wait1: should still be awaiting wait2
-		const result2 = await runtime.resume(blueprint, result1.serializedContext, { output: { value: 42 } }, 'wait1')
+		const result2 = await runtime.resume(
+			blueprint,
+			result1.serializedContext,
+			{ output: { value: 42 } },
+			'wait1',
+		)
 		expect(result2.status).toBe('awaiting')
 		expect(result2.context._awaitingNodeIds).toEqual(['wait2'])
 
 		// Resume wait2: should complete the workflow
-		const result3 = await runtime.resume(blueprint, result2.serializedContext, { output: { value: 42 } }, 'wait2')
+		const result3 = await runtime.resume(
+			blueprint,
+			result2.serializedContext,
+			{ output: { value: 42 } },
+			'wait2',
+		)
 		expect(result3.status).toBe('completed')
-		expect(result3.context['_outputs.gather'].combined).toBe('Results: Branch 1: 42, Branch 2: 42')
+		expect(result3.context['_outputs.gather'].combined).toBe(
+			'Results: Branch 1: 42, Branch 2: 42',
+		)
 	})
 })

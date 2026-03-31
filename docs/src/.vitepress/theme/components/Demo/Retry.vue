@@ -2,7 +2,7 @@
 import { createFlow } from 'flowcraft'
 
 async function mockApiCall(name, delay, shouldFail = false) {
-	await new Promise(resolve => setTimeout(resolve, delay))
+	await new Promise((resolve) => setTimeout(resolve, delay))
 	if (shouldFail) {
 		throw new Error(`API call "${name}" failed.`)
 	}
@@ -13,8 +13,7 @@ async function mockApiCall(name, delay, shouldFail = false) {
 let failCount = 0
 async function flakyApi() {
 	failCount++
-	if (failCount <= 2)
-		return mockApiCall('Flaky', 500, true)
+	if (failCount <= 2) return mockApiCall('Flaky', 500, true)
 	return mockApiCall('Flaky', 500, false)
 }
 

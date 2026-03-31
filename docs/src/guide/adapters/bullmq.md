@@ -54,12 +54,16 @@ import { FlowRuntime } from 'flowcraft'
 import Redis from 'ioredis'
 
 // 1. Define your workflow blueprints and node implementations
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize the Redis client. This will be shared across components.
 const redisConnection = new Redis(process.env.REDIS_URL, {
-  maxRetriesPerRequest: null // Recommended for long-running workers
+	maxRetriesPerRequest: null, // Recommended for long-running workers
 })
 
 // 3. Create a runtime instance with your blueprints and registry
@@ -70,10 +74,10 @@ const coordinationStore = new RedisCoordinationStore(redisConnection)
 
 // 5. Initialize the adapter
 const adapter = new BullMQAdapter({
-  runtimeOptions: runtime.options,
-  coordinationStore,
-  connection: redisConnection,
-  queueName: 'my-workflow-queue', // Optional: defaults to 'flowcraft-queue'
+	runtimeOptions: runtime.options,
+	coordinationStore,
+	connection: redisConnection,
+	queueName: 'my-workflow-queue', // Optional: defaults to 'flowcraft-queue'
 })
 
 // 6. Start the worker to begin processing jobs
@@ -92,29 +96,29 @@ import { Queue } from 'bullmq'
 import Redis from 'ioredis'
 
 async function startWorkflow(blueprint, initialContext) {
-  const runId = crypto.randomUUID()
-  const redis = new Redis(process.env.REDIS_URL)
-  const queue = new Queue('my-workflow-queue', { connection: redis })
+	const runId = crypto.randomUUID()
+	const redis = new Redis(process.env.REDIS_URL)
+	const queue = new Queue('my-workflow-queue', { connection: redis })
 
-  // 1. Set the initial context in a Redis Hash
-  const contextKey = `workflow:state:${runId}`
-  await redis.hset(contextKey, initialContext)
+	// 1. Set the initial context in a Redis Hash
+	const contextKey = `workflow:state:${runId}`
+	await redis.hset(contextKey, initialContext)
 
-  // 2. Analyze the blueprint to find the starting node(s)
-  const analysis = analyzeBlueprint(blueprint)
-  const startJobs = analysis.startNodeIds.map(nodeId => ({
-    name: 'executeNode', // Default job name for the adapter
-    data: { runId, blueprintId: blueprint.id, nodeId },
-  }))
+	// 2. Analyze the blueprint to find the starting node(s)
+	const analysis = analyzeBlueprint(blueprint)
+	const startJobs = analysis.startNodeIds.map((nodeId) => ({
+		name: 'executeNode', // Default job name for the adapter
+		data: { runId, blueprintId: blueprint.id, nodeId },
+	}))
 
-  // 3. Enqueue the start jobs
-  await queue.addBulk(startJobs)
+	// 3. Enqueue the start jobs
+	await queue.addBulk(startJobs)
 
-  console.log(`Workflow ${runId} started with ${startJobs.length} initial job(s).`)
+	console.log(`Workflow ${runId} started with ${startJobs.length} initial job(s).`)
 
-  await redis.quit()
-  await queue.close()
-  return runId
+	await redis.quit()
+	await queue.close()
+	return runId
 }
 ```
 
@@ -133,15 +137,15 @@ import { createBullMQReconciler } from '@flowcraft/bullmq-adapter'
 
 // 'adapter' and 'redisConnection' should be initialized as in the worker setup
 const reconciler = createBullMQReconciler({
-  adapter,
-  redis: redisConnection,
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter,
+	redis: redisConnection,
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run this function periodically (e.g., via a cron job)
 async function reconcile() {
-  const stats = await reconciler.run()
-  console.log(`Scanned ${stats.scannedKeys} keys, reconciled ${stats.reconciledRuns} runs.`)
+	const stats = await reconciler.run()
+	console.log(`Scanned ${stats.scannedKeys} keys, reconciled ${stats.reconciledRuns} runs.`)
 }
 ```
 
@@ -158,6 +162,7 @@ Registers a webhook endpoint for the specified workflow run and node.
 - **Returns**: `Promise<{ url: string; event: string }>` - The webhook URL and event name.
 
 **Example Implementation:**
+
 ```typescript
 // In BullMQAdapter
 public async registerWebhookEndpoint(runId: string, nodeId: string): Promise<{ url: string; event: string }> {
@@ -178,19 +183,19 @@ Your application should handle POST requests to webhook URLs and publish events 
 ```typescript
 // Express.js webhook handler
 app.post('/webhooks/:runId/:nodeId', async (req, res) => {
-  const { runId, nodeId } = req.params
-  const payload = req.body
+	const { runId, nodeId } = req.params
+	const payload = req.body
 
-  // Get the event name from Redis
-  const eventName = await redis.get(`webhook:${runId}:${nodeId}`)
+	// Get the event name from Redis
+	const eventName = await redis.get(`webhook:${runId}:${nodeId}`)
 
-  if (eventName) {
-    // Publish event to BullMQ queue to resume workflow
-    await adapter.publishEvent(eventName, payload)
-    res.status(200).send('OK')
-  } else {
-    res.status(404).send('Webhook not found')
-  }
+	if (eventName) {
+		// Publish event to BullMQ queue to resume workflow
+		await adapter.publishEvent(eventName, payload)
+		res.status(200).send('OK')
+	} else {
+		res.status(404).send('Webhook not found')
+	}
 })
 ```
 

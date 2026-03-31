@@ -47,18 +47,27 @@ export class CloudflareQueueAdapter extends BaseDistributedAdapter {
 		await this.queue.send(job)
 	}
 
-	protected async onJobStart(_runId: string, _blueprintId: string, _nodeId: string): Promise<void> {
+	protected async onJobStart(
+		_runId: string,
+		_blueprintId: string,
+		_nodeId: string,
+	): Promise<void> {
 		try {
 			const statusKey = getStatusKey(_runId, this.statusPrefix)
 			const current = await this.statusKVNamespace.get(statusKey, 'text')
 			const status = current ? JSON.parse(current) : {}
 			status.status = 'running'
 			status.lastUpdated = Math.floor(Date.now() / 1000)
-			await this.statusKVNamespace.put(statusKey, JSON.stringify(status), { expirationTtl: 86400 })
-		} catch (error) {
-			this.logger.error(`[CloudflareQueueAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`, {
-				error,
+			await this.statusKVNamespace.put(statusKey, JSON.stringify(status), {
+				expirationTtl: 86400,
 			})
+		} catch (error) {
+			this.logger.error(
+				`[CloudflareQueueAdapter] Failed to update lastUpdated timestamp for Run ID ${_runId}`,
+				{
+					error,
+				},
+			)
 		}
 	}
 
@@ -72,11 +81,16 @@ export class CloudflareQueueAdapter extends BaseDistributedAdapter {
 			status: result.status,
 			lastUpdated: Math.floor(Date.now() / 1000),
 		}
-		await this.statusKVNamespace.put(statusKey, JSON.stringify(status), { expirationTtl: 86400 })
+		await this.statusKVNamespace.put(statusKey, JSON.stringify(status), {
+			expirationTtl: 86400,
+		})
 		this.logger.info(`[CloudflareQueueAdapter] Published final result for Run ID ${runId}.`)
 	}
 
-	public async registerWebhookEndpoint(_runId: string, _nodeId: string): Promise<{ url: string; event: string }> {
+	public async registerWebhookEndpoint(
+		_runId: string,
+		_nodeId: string,
+	): Promise<{ url: string; event: string }> {
 		throw new Error('registerWebhookEndpoint not implemented for CloudflareAdapter')
 	}
 
@@ -116,7 +130,8 @@ export class CloudflareQueueAdapter extends BaseDistributedAdapter {
 				'Use handleJob() in your queue handler instead.',
 		)
 		throw new Error(
-			'processJobs() is not supported in Cloudflare Workers. ' + 'Use handleJob() in your queue handler instead.',
+			'processJobs() is not supported in Cloudflare Workers. ' +
+				'Use handleJob() in your queue handler instead.',
 		)
 	}
 
@@ -129,7 +144,8 @@ export class CloudflareQueueAdapter extends BaseDistributedAdapter {
 				'Use handleJob() in your queue handler instead.',
 		)
 		throw new Error(
-			'start() is not supported in Cloudflare Workers. ' + 'Use handleJob() in your queue handler instead.',
+			'start() is not supported in Cloudflare Workers. ' +
+				'Use handleJob() in your queue handler instead.',
 		)
 	}
 

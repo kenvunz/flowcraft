@@ -22,7 +22,7 @@ This project serves two main purposes:
     ```
 
 2. **Set your OpenAI API key**:
-    Create a `.env` file in this project's root directory:
+   Create a `.env` file in this project's root directory:
 
     ```
     OPENAI_API_KEY="your-api-key-here"

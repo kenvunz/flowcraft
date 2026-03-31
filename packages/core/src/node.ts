@@ -77,7 +77,10 @@ export abstract class BaseNode<
 	 * @param _error The error that caused the failure.
 	 * @param _context The node's execution context.
 	 */
-	async recover(_error: Error, _context: NodeContext<TContext, TDependencies, TInput>): Promise<void> {
+	async recover(
+		_error: Error,
+		_context: NodeContext<TContext, TDependencies, TInput>,
+	): Promise<void> {
 		// Default no-op implementation. Subclasses can override for cleanup.
 	}
 }

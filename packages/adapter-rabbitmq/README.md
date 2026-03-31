@@ -26,11 +26,13 @@ npm install --save-dev @types/amqplib @types/pg
 ## Prerequisites
 
 To use this adapter, you must have the following infrastructure set up:
+
 - A RabbitMQ server with a queue for jobs.
 - A PostgreSQL database with a user and two tables (one for context, one for status).
 - A Redis instance accessible by your workers (required for the coordination store to handle atomic operations like fan-in joins and distributed locking).
 
 **PostgreSQL Table Schema Example:**
+
 ```sql
 -- For context data
 CREATE TABLE flowcraft_contexts (
@@ -59,8 +61,12 @@ import { Client as PgClient } from 'pg'
 
 async function main() {
 	// 1. Define your workflow blueprints and registry
-	const blueprints = { /* your workflow blueprints */ }
-	const registry = { /* your node implementations */ }
+	const blueprints = {
+		/* your workflow blueprints */
+	}
+	const registry = {
+		/* your node implementations */
+	}
 
 	// 2. Initialize service clients
 	const amqpConnection = await amqplib.connect('amqp://localhost')
@@ -116,10 +122,10 @@ import { createRabbitMqReconciler } from '@flowcraft/rabbitmq-adapter'
 
 // Create a reconciler instance
 const reconciler = createRabbitMqReconciler({
-  adapter: myRabbitMqAdapter,
-  pgClient: myPgClient,
-  statusTableName: 'flowcraft_statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter: myRabbitMqAdapter,
+	pgClient: myPgClient,
+	statusTableName: 'flowcraft_statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run reconciliation
@@ -133,9 +139,9 @@ The reconciler returns detailed statistics:
 
 ```typescript
 interface ReconciliationStats {
-  stalledRuns: number    // Number of workflows identified as stalled
-  reconciledRuns: number // Number of workflows successfully resumed
-  failedRuns: number     // Number of reconciliation attempts that failed
+	stalledRuns: number // Number of workflows identified as stalled
+	reconciledRuns: number // Number of workflows successfully resumed
+	failedRuns: number // Number of reconciliation attempts that failed
 }
 ```
 

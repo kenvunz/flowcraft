@@ -1,7 +1,10 @@
 import type ts from 'typescript'
 import type { FlowAnalyzer } from '../flow-analyzer'
 
-export function handleWhileStatement(analyzer: FlowAnalyzer, node: ts.WhileStatement): string | null {
+export function handleWhileStatement(
+	analyzer: FlowAnalyzer,
+	node: ts.WhileStatement,
+): string | null {
 	analyzer.state.pushScope({ variables: new Map() })
 
 	const exportName = 'loop-controller'
@@ -42,7 +45,9 @@ export function handleWhileStatement(analyzer: FlowAnalyzer, node: ts.WhileState
 	const nodesBeforeBody = analyzer.state.getNodes().length
 	const lastInBody = analyzer.traverse(node.statement)
 	const firstInBody =
-		analyzer.state.getNodes().length > nodesBeforeBody ? analyzer.state.getNodes()[nodesBeforeBody].id : null
+		analyzer.state.getNodes().length > nodesBeforeBody
+			? analyzer.state.getNodes()[nodesBeforeBody].id
+			: null
 
 	if (firstInBody) {
 		analyzer.state.addEdge({

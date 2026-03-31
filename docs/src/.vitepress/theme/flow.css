@@ -8,10 +8,10 @@
 		@apply text-xs font-medium rounded-md py-1 px-2 disabled:pointer-events-none disabled:opacity-50;
 
 		&.brand {
-			@apply bg-[var(--vp-button-brand-bg)] hover:bg-[var(--vp-button-brand-hover-bg)] ;
+			@apply bg-[var(--vp-button-brand-bg)] hover:bg-[var(--vp-button-brand-hover-bg)];
 		}
 		&.alt {
-			@apply bg-[var(--vp-button-alt-bg)] hover:bg-[var(--vp-button-alt-hover-bg)] ;
+			@apply bg-[var(--vp-button-alt-bg)] hover:bg-[var(--vp-button-alt-hover-bg)];
 		}
 	}
 }
@@ -64,7 +64,8 @@
 
 /* Connections */
 
-.vue-flow__edge-path, .vue-flow__connection-path {
+.vue-flow__edge-path,
+.vue-flow__connection-path {
 	stroke: var(--vf-connection-path);
 	stroke-width: 2;
 }

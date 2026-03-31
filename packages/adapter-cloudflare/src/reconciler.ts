@@ -52,7 +52,10 @@ export function createCloudflareReconciler(options: CloudflareReconcilerOptions)
 						stalledRunIds.push(runId)
 					}
 				} catch (parseError) {
-					logger?.warn(`[CloudflareReconciler] Failed to parse status for run ${runId}:`, { parseError })
+					logger?.warn(
+						`[CloudflareReconciler] Failed to parse status for run ${runId}:`,
+						{ parseError },
+					)
 				}
 			}
 
@@ -68,11 +71,15 @@ export function createCloudflareReconciler(options: CloudflareReconcilerOptions)
 					const enqueued = await (adapter as any).reconcile(runId)
 					if (enqueued.size > 0) {
 						stats.reconciledRuns++
-						logger?.info(`[CloudflareReconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`)
+						logger?.info(
+							`[CloudflareReconciler] Resumed run ${runId}, enqueued nodes: ${[...enqueued].join(', ')}`,
+						)
 					}
 				} catch (error) {
 					stats.failedRuns++
-					logger?.error(`[CloudflareReconciler] Failed to reconcile run ${runId}:`, { error })
+					logger?.error(`[CloudflareReconciler] Failed to reconcile run ${runId}:`, {
+						error,
+					})
 				}
 			}
 

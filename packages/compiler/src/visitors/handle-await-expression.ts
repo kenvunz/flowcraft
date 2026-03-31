@@ -18,7 +18,7 @@ function isDurablePrimitiveCall(
 	let symbol: ts.Symbol | undefined
 	try {
 		symbol = typeChecker.getSymbolAtLocation(callee)
-	} catch (_error) {
+	} catch {
 		return null
 	}
 	if (!symbol) {
@@ -28,8 +28,9 @@ function isDurablePrimitiveCall(
 	// original symbol (in case of aliases)
 	let originalSymbol: ts.Symbol
 	try {
-		originalSymbol = symbol.flags & ts.SymbolFlags.Alias ? typeChecker.getAliasedSymbol(symbol) : symbol
-	} catch (_error) {
+		originalSymbol =
+			symbol.flags & ts.SymbolFlags.Alias ? typeChecker.getAliasedSymbol(symbol) : symbol
+	} catch {
 		return null
 	}
 
@@ -41,7 +42,10 @@ function isDurablePrimitiveCall(
 	for (const declaration of declarations) {
 		if (ts.isImportSpecifier(declaration)) {
 			const importDeclaration = declaration.parent.parent.parent
-			if (ts.isImportDeclaration(importDeclaration) && ts.isStringLiteral(importDeclaration.moduleSpecifier)) {
+			if (
+				ts.isImportDeclaration(importDeclaration) &&
+				ts.isStringLiteral(importDeclaration.moduleSpecifier)
+			) {
 				const moduleSpecifier = importDeclaration.moduleSpecifier.text
 				if (moduleSpecifier === 'flowcraft/sdk') {
 					const primitiveName = declaration.name.text
@@ -74,7 +78,12 @@ export function handleAwaitExpression(analyzer: FlowAnalyzer, node: ts.AwaitExpr
 					uses: 'wait',
 					params: { eventName: `webhook:${variableInfo.nodeId}` },
 				}
-				analyzer.state.addNodeAndWire(waitNode, node, analyzer.sourceFile, analyzer.typeChecker)
+				analyzer.state.addNodeAndWire(
+					waitNode,
+					node,
+					analyzer.sourceFile,
+					analyzer.typeChecker,
+				)
 				return
 			}
 		}
@@ -104,7 +113,12 @@ export function handleAwaitExpression(analyzer: FlowAnalyzer, node: ts.AwaitExpr
 						uses: 'sleep',
 						params: { duration: callee.arguments[0].getText() },
 					}
-					analyzer.state.addNodeAndWire(nodeDef, node, analyzer.sourceFile, analyzer.typeChecker)
+					analyzer.state.addNodeAndWire(
+						nodeDef,
+						node,
+						analyzer.sourceFile,
+						analyzer.typeChecker,
+					)
 					break
 
 				case 'waitForEvent':
@@ -113,7 +127,12 @@ export function handleAwaitExpression(analyzer: FlowAnalyzer, node: ts.AwaitExpr
 						uses: 'wait',
 						params: { eventName: callee.arguments[0].getText() },
 					}
-					analyzer.state.addNodeAndWire(nodeDef, node, analyzer.sourceFile, analyzer.typeChecker)
+					analyzer.state.addNodeAndWire(
+						nodeDef,
+						node,
+						analyzer.sourceFile,
+						analyzer.typeChecker,
+					)
 					break
 
 				case 'createWebhook': {
@@ -122,14 +141,23 @@ export function handleAwaitExpression(analyzer: FlowAnalyzer, node: ts.AwaitExpr
 						id: `webhook_${count}`,
 						uses: 'webhook',
 					}
-					analyzer.state.addNodeAndWire(webhookNode, node, analyzer.sourceFile, analyzer.typeChecker)
+					analyzer.state.addNodeAndWire(
+						webhookNode,
+						node,
+						analyzer.sourceFile,
+						analyzer.typeChecker,
+					)
 
 					// subsequent `await webhook.request` is implicitly a `wait` node
 					break
 				}
 
 				default:
-					analyzer.addDiagnostic(node, 'error', `Unknown durable primitive '${primitiveName}'.`)
+					analyzer.addDiagnostic(
+						node,
+						'error',
+						`Unknown durable primitive '${primitiveName}'.`,
+					)
 			}
 			return
 		}

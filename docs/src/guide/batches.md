@@ -13,26 +13,24 @@ When you use `Promise.all` in your `/** @flow */` functions, the compiler automa
 ```typescript
 /** @flow */
 export async function batchWorkflow(items: number[]) {
-  // Process all items in parallel
-  const promises = items.map(item =>
-    processItem(item)
-  )
+	// Process all items in parallel
+	const promises = items.map((item) => processItem(item))
 
-  const results = await Promise.all(promises)
+	const results = await Promise.all(promises)
 
-  const sum = await sumResults(results)
+	const sum = await sumResults(results)
 
-  return sum
+	return sum
 }
 
 /** @step */
 async function processItem(item: number) {
-  return item * 2
+	return item * 2
 }
 
 /** @step */
 async function sumResults(results: number[]) {
-  return results.reduce((acc, val) => acc + val, 0)
+	return results.reduce((acc, val) => acc + val, 0)
 }
 ```
 
@@ -41,11 +39,13 @@ This imperative code compiles to the same batch processing structure as the Flue
 ## The `.batch()` Method
 
 The [`.batch()`](/api/flow#batch-tinput-toutput-taction-id-worker-options) method automatically creates the necessary nodes and logic to:
+
 1.  **Scatter**: Take an array from the context.
 2.  **Process**: Schedule a dynamic "worker" node for each item in the array, running them in parallel.
 3.  **Gather**: Wait for all worker nodes to complete and collect their results into a new array.
 
 Here's the method signature:
+
 ```typescript
 flow.batch(
 	id: string, // A base ID for the batch operation
@@ -111,12 +111,12 @@ The runtime dynamically creates and executes the worker nodes, providing a power
 During batch execution, the built-in `batch-scatter` and `batch-gather` nodes set dynamic keys in the context for advanced users:
 
 - **For `batch-scatter`**:
-  - `currentIndex`: The index of the current item being processed (number).
-  - `hasMore`: Boolean indicating if there are more items to process.
+    - `currentIndex`: The index of the current item being processed (number).
+    - `hasMore`: Boolean indicating if there are more items to process.
 
 - **For `batch-gather`**:
-  - `allWorkerIds`: Array of IDs for all worker nodes (string[]).
-  - `hasMore`: Boolean indicating if there are more batches to gather.
+    - `allWorkerIds`: Array of IDs for all worker nodes (string[]).
+    - `hasMore`: Boolean indicating if there are more batches to gather.
 
 These keys are defined in `BUILTIN_KEYS` and can be accessed in worker nodes or subsequent nodes for custom logic.
 
@@ -126,8 +126,8 @@ When running workflows with batch operations that process large arrays, you may 
 
 ```typescript
 const result = await runtime.run(blueprint, initialState, {
-   functionRegistry: flow.getFunctionRegistry(),
-   concurrency: 10, // Limit to 10 concurrent nodes
+	functionRegistry: flow.getFunctionRegistry(),
+	concurrency: 10, // Limit to 10 concurrent nodes
 })
 ```
 

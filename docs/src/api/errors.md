@@ -19,29 +19,30 @@ new FlowcraftError(message: string, options?: {
 ```
 
 ### Properties
--   **`nodeId?`** `string`: The ID of the node that failed (optional).
--   **`blueprintId?`** `string`: The ID of the blueprint being executed (optional).
--   **`executionId?`** `string`: The unique ID for the workflow run (optional).
--   **`isFatal`** `boolean`: Whether the error should halt the workflow immediately (default: `false`).
--   **`cause?`** `Error`: The underlying error that caused this failure (via standard Error chaining).
+
+- **`nodeId?`** `string`: The ID of the node that failed (optional).
+- **`blueprintId?`** `string`: The ID of the blueprint being executed (optional).
+- **`executionId?`** `string`: The unique ID for the workflow run (optional).
+- **`isFatal`** `boolean`: Whether the error should halt the workflow immediately (default: `false`).
+- **`cause?`** `Error`: The underlying error that caused this failure (via standard Error chaining).
 
 ### Usage
 
 ```typescript
 // Non-fatal error with cause
 throw new FlowcraftError('Node execution failed', {
-  cause: originalError,
-  nodeId: 'my-node',
-  blueprintId: 'my-blueprint',
-  executionId: 'exec-123',
-  isFatal: false,
-});
+	cause: originalError,
+	nodeId: 'my-node',
+	blueprintId: 'my-blueprint',
+	executionId: 'exec-123',
+	isFatal: false,
+})
 
 // Fatal error
 throw new FlowcraftError('Unrecoverable failure', {
-  nodeId: 'critical-node',
-  isFatal: true,
-});
+	nodeId: 'critical-node',
+	isFatal: true,
+})
 ```
 
 ## Runtime Validation Errors
@@ -54,10 +55,10 @@ When a loop controller node lacks a required continue edge, Flowcraft throws:
 
 ```typescript
 throw new FlowcraftError(
-  "Loop 'myLoop' has no continue edge to start node. " +
-    "Ensure edges are wired inside the loop and incoming/breaking edges point to the loop controller.",
-  { nodeId: 'myLoop', blueprintId: 'my-blueprint' }
-);
+	"Loop 'myLoop' has no continue edge to start node. " +
+		'Ensure edges are wired inside the loop and incoming/breaking edges point to the loop controller.',
+	{ nodeId: 'myLoop', blueprintId: 'my-blueprint' },
+)
 ```
 
 This validation ensures loops are properly configured and prevents silent failures during execution.

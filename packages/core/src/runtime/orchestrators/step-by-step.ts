@@ -14,7 +14,10 @@ import { executeBatch, processResults } from './utils'
  * Useful for debugging, testing, or building interactive tools.
  */
 export class StepByStepOrchestrator implements IOrchestrator {
-	public async run(context: ExecutionContext<any, any>, traverser: GraphTraverser): Promise<WorkflowResult<any>> {
+	public async run(
+		context: ExecutionContext<any, any>,
+		traverser: GraphTraverser,
+	): Promise<WorkflowResult<any>> {
 		try {
 			context.signal?.throwIfAborted()
 		} catch (error) {
@@ -27,13 +30,18 @@ export class StepByStepOrchestrator implements IOrchestrator {
 		if (!traverser.hasMoreWork()) {
 			const isTraversalComplete = !traverser.hasMoreWork()
 			const status = context.state.getStatus(isTraversalComplete)
-			const result = await context.state.toResult(context.services.serializer, context.executionId)
+			const result = await context.state.toResult(
+				context.services.serializer,
+				context.executionId,
+			)
 			result.status = status
 			return result
 		}
 
 		const allReadyNodes = traverser.getReadyNodes()
-		const nodesToExecute = context.concurrency ? allReadyNodes.slice(0, context.concurrency) : allReadyNodes
+		const nodesToExecute = context.concurrency
+			? allReadyNodes.slice(0, context.concurrency)
+			: allReadyNodes
 		const nodesToSkip = context.concurrency ? allReadyNodes.slice(context.concurrency) : []
 
 		const settledResults = await executeBatch(
@@ -60,7 +68,10 @@ export class StepByStepOrchestrator implements IOrchestrator {
 
 		const isTraversalComplete = !traverser.hasMoreWork()
 		const status = context.state.getStatus(isTraversalComplete)
-		const result = await context.state.toResult(context.services.serializer, context.executionId)
+		const result = await context.state.toResult(
+			context.services.serializer,
+			context.executionId,
+		)
 		result.status = status
 		return result
 	}

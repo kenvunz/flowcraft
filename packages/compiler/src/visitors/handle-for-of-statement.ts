@@ -1,7 +1,10 @@
 import type ts from 'typescript'
 import type { FlowAnalyzer } from '../flow-analyzer'
 
-export function handleForOfStatement(analyzer: FlowAnalyzer, node: ts.ForOfStatement): string | null {
+export function handleForOfStatement(
+	analyzer: FlowAnalyzer,
+	node: ts.ForOfStatement,
+): string | null {
 	// de-sugar for...of into a while loop pattern
 	// create iterator variable: const __iterator = items[Symbol.iterator]()
 	// create result variable: let __result
@@ -48,7 +51,9 @@ export function handleForOfStatement(analyzer: FlowAnalyzer, node: ts.ForOfState
 	const nodesBeforeBody = analyzer.state.getNodes().length
 	const lastInBody = analyzer.traverse(node.statement)
 	const firstInBody =
-		analyzer.state.getNodes().length > nodesBeforeBody ? analyzer.state.getNodes()[nodesBeforeBody].id : null
+		analyzer.state.getNodes().length > nodesBeforeBody
+			? analyzer.state.getNodes()[nodesBeforeBody].id
+			: null
 
 	if (firstInBody) {
 		analyzer.state.addEdge({

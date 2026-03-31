@@ -1,4 +1,9 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
 import { createHITLWorkflow } from './workflow.js'
 
 class HITLMiddleware implements Middleware {
@@ -35,7 +40,11 @@ async function main() {
 
 	try {
 		const workflow = createHITLWorkflow()
-		const result = await runtime.run(workflow.toBlueprint(), {}, { functionRegistry: workflow.getFunctionRegistry() })
+		const result = await runtime.run(
+			workflow.toBlueprint(),
+			{},
+			{ functionRegistry: workflow.getFunctionRegistry() },
+		)
 
 		const approved = result.context.approved
 		const executed = result.context.executed

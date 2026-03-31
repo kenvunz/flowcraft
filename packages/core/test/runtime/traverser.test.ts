@@ -230,6 +230,8 @@ describe('GraphTraverser', () => {
 		}
 
 		expect(() => new GraphTraverser(blueprint, false)).toThrow(FlowcraftError)
-		expect(() => new GraphTraverser(blueprint, false)).toThrow("Loop 'loop' has no continue edge to start node")
+		expect(() => new GraphTraverser(blueprint, false)).toThrow(
+			"Loop 'loop' has no continue edge to start node",
+		)
 	})
 })

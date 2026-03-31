@@ -10,6 +10,7 @@ The [`FlowRuntime`](/api/runtime#flowruntime-class) handles in-memory execution.
 ## The Adapter Pattern
 
 A distributed system requires three key components:
+
 1.  **A Message Queue**: To enqueue jobs for workers (e.g., RabbitMQ, BullMQ, SQS).
 2.  **A Distributed Context**: To store the shared workflow state (e.g., Redis, DynamoDB).
 3.  **A Coordination Store**: To handle complex synchronization tasks like fan-in joins (e.g., Redis, ZooKeeper).
@@ -18,10 +19,10 @@ The [`BaseDistributedAdapter`](/api/distributed-adapter#basedistributedadapter-a
 
 ## Core Concepts
 
--   **`BaseDistributedAdapter`**: The abstract class that orchestrates the distributed execution of a single node.
--   **`ICoordinationStore`**: An interface for an atomic key-value store needed for distributed locking and counters. This is crucial for correctly implementing `joinStrategy` in a distributed environment.
--   **`IAsyncContext`**: The asynchronous context interface used to manage state remotely.
--   **`JobPayload`**: The data structure for a job placed on the queue.
+- **`BaseDistributedAdapter`**: The abstract class that orchestrates the distributed execution of a single node.
+- **`ICoordinationStore`**: An interface for an atomic key-value store needed for distributed locking and counters. This is crucial for correctly implementing `joinStrategy` in a distributed environment.
+- **`IAsyncContext`**: The asynchronous context interface used to manage state remotely.
+- **`JobPayload`**: The data structure for a job placed on the queue.
 
 ## Delta-Based Persistence
 
@@ -97,6 +98,7 @@ async function startWorkflow() {
 	// ... logic to wait for the final result ...
 }
 ```
+
 This architecture decouples the core workflow logic from the distributed systems infrastructure, allowing you to scale your application without rewriting your business logic.
 
 ## Error Handling in Distributed Joins
@@ -119,14 +121,16 @@ This mechanism ensures that `any` joins fail fast when a predecessor fails, rath
 ```typescript
 // Example: A workflow with 'any' join
 const workflow = createFlow('any-join-example')
-  .node('A', async () => { throw new Error('A failed') })
-  .node('B', async () => ({ output: 'B succeeded' }))
-  .node('C', async ({ input }) => ({ output: `Result: ${input}` }), {
-    config: { joinStrategy: 'any' }
-  })
-  .edge('A', 'C')
-  .edge('B', 'C')
-  .toBlueprint()
+	.node('A', async () => {
+		throw new Error('A failed')
+	})
+	.node('B', async () => ({ output: 'B succeeded' }))
+	.node('C', async ({ input }) => ({ output: `Result: ${input}` }), {
+		config: { joinStrategy: 'any' },
+	})
+	.edge('A', 'C')
+	.edge('B', 'C')
+	.toBlueprint()
 
 // In distributed execution, if 'A' fails, 'C' will be cancelled
 // and the workflow will fail, preventing 'B' from executing 'C' alone
@@ -174,28 +178,28 @@ This ensures zero-downtime deployments where old and new versions of workflows c
 ```typescript
 // Version 1.0.0 blueprint
 const v1Blueprint: WorkflowBlueprint = {
-  id: 'payment-processor',
-  metadata: { version: '1.0.0' },
-  nodes: [
-    { id: 'validate', uses: 'validate-payment' },
-    { id: 'process', uses: 'process-payment-v1' }
-  ],
-  edges: [{ source: 'validate', target: 'process' }]
+	id: 'payment-processor',
+	metadata: { version: '1.0.0' },
+	nodes: [
+		{ id: 'validate', uses: 'validate-payment' },
+		{ id: 'process', uses: 'process-payment-v1' },
+	],
+	edges: [{ source: 'validate', target: 'process' }],
 }
 
 // Version 2.0.0 blueprint with new logic
 const v2Blueprint: WorkflowBlueprint = {
-  id: 'payment-processor',
-  metadata: { version: '2.0.0' },
-  nodes: [
-    { id: 'validate', uses: 'validate-payment' },
-    { id: 'process', uses: 'process-payment-v2' },
-    { id: 'audit', uses: 'audit-payment' }
-  ],
-  edges: [
-    { source: 'validate', target: 'process' },
-    { source: 'process', target: 'audit' }
-  ]
+	id: 'payment-processor',
+	metadata: { version: '2.0.0' },
+	nodes: [
+		{ id: 'validate', uses: 'validate-payment' },
+		{ id: 'process', uses: 'process-payment-v2' },
+		{ id: 'audit', uses: 'audit-payment' },
+	],
+	edges: [
+		{ source: 'validate', target: 'process' },
+		{ source: 'process', target: 'audit' },
+	],
 }
 ```
 

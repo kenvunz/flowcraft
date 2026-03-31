@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { InMemoryEventStore, PersistentEventBusAdapter } from '../../src/adapters/persistent-event-bus'
+import {
+	InMemoryEventStore,
+	PersistentEventBusAdapter,
+} from '../../src/adapters/persistent-event-bus'
 import { createFlow } from '../../src/flow'
 import { FlowRuntime } from '../../src/runtime/runtime'
 import { InMemoryEventLogger } from '../../src/testing/event-logger'
@@ -286,7 +289,11 @@ describe('Workflow Replay', () => {
 			const eventBus = new PersistentEventBusAdapter(eventStore)
 			const runtime = new FlowRuntime({ eventBus })
 
-			const result = await runtime.run(blueprint, { items: ['hello', 'world'] }, { functionRegistry: registry })
+			const result = await runtime.run(
+				blueprint,
+				{ items: ['hello', 'world'] },
+				{ functionRegistry: registry },
+			)
 			const executionId = result.context._executionId as string
 
 			const events = await eventStore.retrieve(executionId)
@@ -351,7 +358,9 @@ describe('Workflow Replay', () => {
 		})
 
 		it('should handle unknown event types gracefully', async () => {
-			const flow = createFlow('unknown-event-flow').node('simple', async () => ({ output: 'test' }))
+			const flow = createFlow('unknown-event-flow').node('simple', async () => ({
+				output: 'test',
+			}))
 
 			const blueprint = flow.toBlueprint()
 			const registry = flow.getFunctionRegistry()
@@ -433,7 +442,9 @@ describe('Workflow Replay', () => {
 			const events = await eventStore.retrieve(executionId)
 
 			// Run multiple replays concurrently
-			const replayPromises = Array.from({ length: 5 }, () => runtime.replay(blueprint, events, executionId))
+			const replayPromises = Array.from({ length: 5 }, () =>
+				runtime.replay(blueprint, events, executionId),
+			)
 			const results = await Promise.all(replayPromises)
 
 			results.forEach((replayResult) => {

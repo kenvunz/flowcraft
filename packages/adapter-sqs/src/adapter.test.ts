@@ -34,7 +34,9 @@ describe('SqsAdapter', () => {
 			credentials: { accessKeyId: 'test', secretAccessKey: 'test' },
 		})
 
-		const createQueueResponse = await sqsClient.send(new CreateQueueCommand({ QueueName: QUEUE_NAME }))
+		const createQueueResponse = await sqsClient.send(
+			new CreateQueueCommand({ QueueName: QUEUE_NAME }),
+		)
 		queueUrl = createQueueResponse.QueueUrl ?? ''
 
 		const createTable = (TableName: string) =>

@@ -111,21 +111,21 @@ function displayWorkflowSummary(runId: string, events: FlowcraftEvent[], replayR
 	console.log(chalk.bold.blue('\n🚀 Workflow Execution Summary'))
 	console.log(chalk.gray('─'.repeat(50)))
 
-	const startEvent = events.find((e) => e.type === 'workflow:start')
-	const finishEvent = events.find((e) => e.type === 'workflow:finish')
+	const workflowStartEvent = events.find((e) => e.type === 'workflow:start')
+	const workflowFinishEvent = events.find((e) => e.type === 'workflow:finish')
 
-	if (startEvent) {
+	if (workflowStartEvent) {
 		console.log(`${chalk.bold('Run ID:')} ${runId}`)
-		console.log(`${chalk.bold('Blueprint:')} ${startEvent.payload.blueprintId}`)
+		console.log(`${chalk.bold('Blueprint:')} ${workflowStartEvent.payload.blueprintId}`)
 	}
 
-	if (finishEvent) {
-		const status = finishEvent.payload.status
+	if (workflowFinishEvent) {
+		const status = workflowFinishEvent.payload.status
 		const statusColor = status === 'completed' ? chalk.green : chalk.red
 		console.log(`${chalk.bold('Status:')} ${statusColor(status)}`)
 
-		if (finishEvent.payload.errors && finishEvent.payload.errors.length > 0) {
-			console.log(`${chalk.bold('Errors:')} ${finishEvent.payload.errors.length}`)
+		if (workflowFinishEvent.payload.errors && workflowFinishEvent.payload.errors.length > 0) {
+			console.log(`${chalk.bold('Errors:')} ${workflowFinishEvent.payload.errors.length}`)
 		}
 	}
 
@@ -158,20 +158,20 @@ function displayWorkflowSummary(runId: string, events: FlowcraftEvent[], replayR
 			}
 		}
 
-		for (const [nodeId, nodeEvents] of nodeGroups) {
-			const startEvent = nodeEvents.find((e) => e.type === 'node:start')
-			const finishEvent = nodeEvents.find((e) => e.type === 'node:finish')
-			const errorEvent = nodeEvents.find((e) => e.type === 'node:error')
+		for (const [nodeId, nodeEventList] of nodeGroups) {
+			const nodeStart = nodeEventList.find((e) => e.type === 'node:start')
+			const nodeFinish = nodeEventList.find((e) => e.type === 'node:finish')
+			const nodeError = nodeEventList.find((e) => e.type === 'node:error')
 
 			let status = 'Unknown'
 			let duration = 'N/A'
-			if (errorEvent) {
+			if (nodeError) {
 				status = chalk.red('Failed')
-			} else if (finishEvent) {
+			} else if (nodeFinish) {
 				status = chalk.green('Completed')
 				// NOTE: no timing data in events yet
 				duration = '~'
-			} else if (startEvent) {
+			} else if (nodeStart) {
 				status = chalk.yellow('Running')
 			}
 
@@ -205,7 +205,9 @@ function displayWorkflowSummary(runId: string, events: FlowcraftEvent[], replayR
 
 		if (contextEntries.length < Object.keys(replayResult.context).length) {
 			console.log(
-				chalk.gray(`... and ${Object.keys(replayResult.context).length - contextEntries.length} more entries`),
+				chalk.gray(
+					`... and ${Object.keys(replayResult.context).length - contextEntries.length} more entries`,
+				),
 			)
 		}
 	}

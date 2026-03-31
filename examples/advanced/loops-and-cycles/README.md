@@ -28,11 +28,10 @@ pnpm start
 Use `.loop()` to create a loop controller. The controller evaluates a condition on each iteration and either continues into the body or breaks out.
 
 ```typescript
-flow
-	.node('initialize', initialize)
+flow.node('initialize', initialize)
 	.node('increment', increment)
-	.edge('initialize', 'counter')  // Entry edge to loop controller
-	.edge('counter', 'done')         // Break edge
+	.edge('initialize', 'counter') // Entry edge to loop controller
+	.edge('counter', 'done') // Break edge
 	.loop('counter', {
 		startNodeId: 'increment',
 		endNodeId: 'increment',
@@ -45,13 +44,12 @@ flow
 For loop bodies with multiple nodes, add an entry edge from the predecessor to the loop controller. The loop controller resets body nodes on each iteration so they can re-execute.
 
 ```typescript
-flow
-	.node('prepare', prepareItems)
+flow.node('prepare', prepareItems)
 	.node('process', processItem)
 	.node('markComplete', markComplete)
-	.edge('prepare', 'itemLoop')     // Entry edge to loop controller
+	.edge('prepare', 'itemLoop') // Entry edge to loop controller
 	.edge('process', 'markComplete') // Body edges
-	.edge('itemLoop', 'done')        // Break edge
+	.edge('itemLoop', 'done') // Break edge
 	.loop('itemLoop', {
 		startNodeId: 'process',
 		endNodeId: 'markComplete',
@@ -87,8 +85,7 @@ const parentFlow = createFlow('parent')
 Loop controllers support conditional edges for early exit. Combine the loop condition with a conditional edge to retry until success or a max attempt count.
 
 ```typescript
-flow
-	.node('attempt', attemptFn)
+flow.node('attempt', attemptFn)
 	.loop('retry', {
 		startNodeId: 'attempt',
 		endNodeId: 'attempt',

@@ -119,18 +119,23 @@ export async function processResults(
 			const fallbackNodeDef = blueprint.nodes.find((n) => n.id === fallbackNodeId)
 
 			if (!fallbackNodeDef) {
-				const notFoundError = new FlowcraftError(`Fallback node '${fallbackNodeId}' not found in blueprint.`, {
-					nodeId,
-					cause: error,
-				})
+				const notFoundError = new FlowcraftError(
+					`Fallback node '${fallbackNodeId}' not found in blueprint.`,
+					{
+						nodeId,
+						cause: error,
+					},
+				)
 				state.addError(nodeId, notFoundError)
 			} else {
 				state.addCompletedNode(nodeId, null)
 				state.markFallbackExecuted()
 
-				traverser.markNodeCompleted(nodeId, { action: 'fallback', output: null, _fallbackExecuted: true }, [
-					fallbackNodeDef,
-				])
+				traverser.markNodeCompleted(
+					nodeId,
+					{ action: 'fallback', output: null, _fallbackExecuted: true },
+					[fallbackNodeDef],
+				)
 			}
 		} else {
 			state.addError(nodeId, executionResult.error)

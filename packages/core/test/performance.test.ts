@@ -2,23 +2,23 @@ import { describe, expect, it } from 'vitest'
 import { createFlow } from '../src/flow'
 import { FlowRuntime } from '../src/runtime'
 
+// Helper to measure execution time
+async function measureExecutionTime(fn: () => Promise<any>): Promise<number> {
+	const start = performance.now()
+	await fn()
+	const end = performance.now()
+	return end - start
+}
+
+// Helper to estimate memory usage (rough approximation)
+function getMemoryUsage(): number {
+	if (typeof performance !== 'undefined' && (performance as any).memory) {
+		return (performance as any).memory.usedJSHeapSize
+	}
+	return 0 // Fallback for environments without memory API
+}
+
 describe('Performance and Resource Testing', () => {
-	// Helper to measure execution time
-	const measureExecutionTime = async (fn: () => Promise<any>): Promise<number> => {
-		const start = performance.now()
-		await fn()
-		const end = performance.now()
-		return end - start
-	}
-
-	// Helper to estimate memory usage (rough approximation)
-	const getMemoryUsage = (): number => {
-		if (typeof performance !== 'undefined' && (performance as any).memory) {
-			return (performance as any).memory.usedJSHeapSize
-		}
-		return 0 // Fallback for environments without memory API
-	}
-
 	describe('Execution Time Benchmarks', () => {
 		it('should execute small workflows within reasonable time', async () => {
 			const flow = createFlow('small-workflow')
@@ -28,7 +28,11 @@ describe('Performance and Resource Testing', () => {
 
 			const runtime = new FlowRuntime()
 			const executionTime = await measureExecutionTime(() =>
-				runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() }),
+				runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				),
 			)
 
 			// Should complete in less than 100ms for a simple workflow
@@ -57,7 +61,11 @@ describe('Performance and Resource Testing', () => {
 
 				const runtime = new FlowRuntime()
 				const time = await measureExecutionTime(() =>
-					runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() }),
+					runtime.run(
+						flow.toBlueprint(),
+						{},
+						{ functionRegistry: flow.getFunctionRegistry() },
+					),
 				)
 				times.push(time)
 			}
@@ -121,14 +129,20 @@ describe('Performance and Resource Testing', () => {
 				const flow = createFlow(`memory-test-${count}`)
 
 				for (let i = 0; i < count; i++) {
-					flow.node(`node${i}`, async () => ({ output: `data${i}`.repeat(10) })) // Some data
+					flow.node(`node${i}`, async () => ({
+						output: `data${i}`.repeat(10),
+					})) // Some data
 					if (i > 0) {
 						flow.edge(`node${i - 1}`, `node${i}`)
 					}
 				}
 
 				const runtime = new FlowRuntime()
-				await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 
 				const memoryAfter = getMemoryUsage()
 				memoryUsages.push(memoryAfter - initialMemory)
@@ -169,7 +183,11 @@ describe('Performance and Resource Testing', () => {
 			const runtime = new FlowRuntime()
 			const memoryBefore = getMemoryUsage()
 
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			const memoryAfter = getMemoryUsage()
 
@@ -195,7 +213,11 @@ describe('Performance and Resource Testing', () => {
 
 			// Run multiple workflows concurrently
 			const promises = Array.from({ length: concurrentRuns }, (_, i) =>
-				runtime.run(flow.toBlueprint(), { input: i }, { functionRegistry: flow.getFunctionRegistry() }),
+				runtime.run(
+					flow.toBlueprint(),
+					{ input: i },
+					{ functionRegistry: flow.getFunctionRegistry() },
+				),
 			)
 
 			const results = await Promise.all(promises)
@@ -225,7 +247,11 @@ describe('Performance and Resource Testing', () => {
 
 			// Simulate burst of requests
 			const promises = Array.from({ length: burstSize }, () =>
-				runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() }),
+				runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				),
 			)
 
 			const results = await Promise.all(promises)
@@ -259,7 +285,11 @@ describe('Performance and Resource Testing', () => {
 			const runtime = new FlowRuntime()
 			const memoryBefore = getMemoryUsage()
 
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			const memoryAfter = getMemoryUsage()
 			const memoryGrowth = memoryAfter - memoryBefore
@@ -285,7 +315,11 @@ describe('Performance and Resource Testing', () => {
 			const runtime = new FlowRuntime()
 			const startTime = performance.now()
 
-			const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			const endTime = performance.now()
 			const executionTime = endTime - startTime
@@ -316,7 +350,11 @@ describe('Performance and Resource Testing', () => {
 			const runtime = new FlowRuntime()
 			let result: any
 			const executionTime = await measureExecutionTime(async () => {
-				result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+				result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
 			})
 
 			// Establish baseline: should complete very quickly
@@ -341,7 +379,11 @@ describe('Performance and Resource Testing', () => {
 
 			const runtime = new FlowRuntime()
 			const executionTime = await measureExecutionTime(() =>
-				runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() }),
+				runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				),
 			)
 
 			// Should handle many context operations efficiently

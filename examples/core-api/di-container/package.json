@@ -1,7 +1,7 @@
 {
 	"name": "@example/di-container",
-	"type": "module",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"start": "tsx src/main.ts",
 		"test-demo": "tsx src/main.ts --test-demo",

@@ -28,7 +28,9 @@ async function retry<T>(operation: () => Promise<T>, retries = 5, delay = 3000):
 		} catch (error: any) {
 			lastError = error
 			if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
-				console.error(`Attempt ${i + 1} failed with ${error.code}. Retrying in ${delay}ms...`)
+				console.error(
+					`Attempt ${i + 1} failed with ${error.code}. Retrying in ${delay}ms...`,
+				)
 				await new Promise((res) => setTimeout(res, delay))
 			} else {
 				throw error
@@ -67,7 +69,9 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 
 		const cosmosHost = cosmosContainer?.getHost()
 		const cosmosPort = cosmosContainer?.getMappedPort(8081)
-		console.log(`Cosmos DB container started. Host: '${cosmosHost}', Mapped Port: '${cosmosPort}'`)
+		console.log(
+			`Cosmos DB container started. Host: '${cosmosHost}', Mapped Port: '${cosmosPort}'`,
+		)
 
 		const azuriteConn = azuriteContainer.getConnectionString()
 		queueClient = new QueueClient(azuriteConn, QUEUE_NAME)
@@ -107,7 +111,11 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 
 	afterAll(async () => {
 		console.log('Stopping all containers...')
-		await Promise.all([azuriteContainer?.stop(), redisContainer?.stop(), cosmosContainer?.stop()])
+		await Promise.all([
+			azuriteContainer?.stop(),
+			redisContainer?.stop(),
+			cosmosContainer?.stop(),
+		])
 		console.log('All containers stopped.')
 	})
 

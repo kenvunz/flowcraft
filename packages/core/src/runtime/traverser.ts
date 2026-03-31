@@ -61,7 +61,10 @@ export class GraphTraverser {
 	 * @param state The workflow state being resumed.
 	 * @returns A configured GraphTraverser instance.
 	 */
-	public static fromState(blueprint: WorkflowBlueprint, state: WorkflowState<any>): GraphTraverser {
+	public static fromState(
+		blueprint: WorkflowBlueprint,
+		state: WorkflowState<any>,
+	): GraphTraverser {
 		const traverser = new GraphTraverser(blueprint)
 
 		// clear auto-populated frontier from constructor
@@ -83,7 +86,9 @@ export class GraphTraverser {
 				continue
 			}
 
-			const completedPredecessors = [...requiredPredecessors].filter((p) => traverser.completedNodes.has(p))
+			const completedPredecessors = [...requiredPredecessors].filter((p) =>
+				traverser.completedNodes.has(p),
+			)
 			const isReady =
 				joinStrategy === 'any'
 					? completedPredecessors.length > 0
@@ -109,7 +114,9 @@ export class GraphTraverser {
 		blueprint.nodes.forEach((node) => {
 			if (node.uses !== 'loop-controller') return
 
-			const nextInLoopId = blueprint.edges.find((e) => e.source === node.id && e.action === 'continue')?.target
+			const nextInLoopId = blueprint.edges.find(
+				(e) => e.source === node.id && e.action === 'continue',
+			)?.target
 			if (!nextInLoopId) {
 				throw new FlowcraftError(
 					`Loop '${node.id}' has no continue edge to start node. ` +
@@ -124,7 +131,11 @@ export class GraphTraverser {
 		})
 	}
 
-	private getAllLoopSuccessors(nodeId: string, blueprint: WorkflowBlueprint, set: Set<string>): Set<string> {
+	private getAllLoopSuccessors(
+		nodeId: string,
+		blueprint: WorkflowBlueprint,
+		set: Set<string>,
+	): Set<string> {
 		this.getSuccessors(nodeId).forEach((successor) => {
 			if (set.has(successor)) return
 			const node = this.getNode(successor, blueprint)
@@ -151,7 +162,11 @@ export class GraphTraverser {
 		return this.frontier.size > 0
 	}
 
-	markNodeCompleted(nodeId: string, result: NodeResult<any, any>, nextNodes: NodeDefinition[]): void {
+	markNodeCompleted(
+		nodeId: string,
+		result: NodeResult<any, any>,
+		nextNodes: NodeDefinition[],
+	): void {
 		this.completedNodes.add(nodeId)
 
 		if (result?.dynamicNodes && result.dynamicNodes.length > 0) {
@@ -266,7 +281,12 @@ export class GraphTraverser {
 		return blueprint.nodes.find((n) => n.id === nodeId)
 	}
 
-	addDynamicNode(_nodeId: string, dynamicNode: NodeDefinition, predecessorId: string, gatherNodeId?: string): void {
+	addDynamicNode(
+		_nodeId: string,
+		dynamicNode: NodeDefinition,
+		predecessorId: string,
+		gatherNodeId?: string,
+	): void {
 		this.dynamicBlueprint.nodes.push(dynamicNode)
 		this.allPredecessors.set(dynamicNode.id, new Set([predecessorId]))
 		if (gatherNodeId) {

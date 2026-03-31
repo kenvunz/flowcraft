@@ -19,31 +19,31 @@ import { createFlow, FlowRuntime } from 'flowcraft'
 import { createStepper } from 'flowcraft/testing'
 
 it('should correctly execute step-by-step', async () => {
-  const runtime = new FlowRuntime()
-  const flow = createFlow('test')
-    .node('a', async () => ({ output: 10 }))
-    .node('b', async ({ context }) => ({
-      output: (await context.get('a')) * 2
-    }))
-    .edge('a', 'b')
+	const runtime = new FlowRuntime()
+	const flow = createFlow('test')
+		.node('a', async () => ({ output: 10 }))
+		.node('b', async ({ context }) => ({
+			output: (await context.get('a')) * 2,
+		}))
+		.edge('a', 'b')
 
-  const stepper = await createStepper(runtime, flow.toBlueprint(), flow.getFunctionRegistry())
+	const stepper = await createStepper(runtime, flow.toBlueprint(), flow.getFunctionRegistry())
 
-  // First step (executes node 'a')
-  const result1 = await stepper.next()
-  expect(stepper.isDone()).toBe(false)
-  expect(result1.status).toBe('stalled')
-  expect(await stepper.state.getContext().get('_outputs.a')).toBe(10)
+	// First step (executes node 'a')
+	const result1 = await stepper.next()
+	expect(stepper.isDone()).toBe(false)
+	expect(result1.status).toBe('stalled')
+	expect(await stepper.state.getContext().get('_outputs.a')).toBe(10)
 
-  // Second step (executes node 'b')
-  const result2 = await stepper.next()
-  expect(stepper.isDone()).toBe(true)
-  expect(result2.status).toBe('completed')
-  expect(await stepper.state.getContext().get('_outputs.b')).toBe(20)
+	// Second step (executes node 'b')
+	const result2 = await stepper.next()
+	expect(stepper.isDone()).toBe(true)
+	expect(result2.status).toBe('completed')
+	expect(await stepper.state.getContext().get('_outputs.b')).toBe(20)
 
-  // Final step (no more work)
-  const result3 = await stepper.next()
-  expect(result3).toBeNull()
+	// Final step (no more work)
+	const result3 = await stepper.next()
+	expect(result3).toBeNull()
 })
 ```
 
@@ -100,15 +100,15 @@ const errorMapper = createErrorMapper(manifest)
 
 // Wrap your runtime.run call
 try {
-  const result = await runtime.run(blueprint, initialContext)
+	const result = await runtime.run(blueprint, initialContext)
 } catch (error) {
-  // Map the error to source location
-  const mappedError = errorMapper.mapError(error)
+	// Map the error to source location
+	const mappedError = errorMapper.mapError(error)
 
-  console.error('Workflow failed:', mappedError.message)
-  console.error('Location:', mappedError.stack?.[0]) // Shows file:line:column
+	console.error('Workflow failed:', mappedError.message)
+	console.error('Location:', mappedError.stack?.[0]) // Shows file:line:column
 
-  throw mappedError
+	throw mappedError
 }
 ```
 

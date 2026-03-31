@@ -13,9 +13,13 @@ import { createFlow, generateMermaid } from 'flowcraft'
 
 const flow = createFlow('conditional-workflow')
 	.node('fetch', async () => ({ output: { value: 10 } }))
-	.node('check', async ({ input }) => ({
-		action: input.value > 5 ? 'big' : 'small'
-	}), { threshold: 5 })
+	.node(
+		'check',
+		async ({ input }) => ({
+			action: input.value > 5 ? 'big' : 'small',
+		}),
+		{ threshold: 5 },
+	)
 	.node('process-big', async () => ({}))
 	.node('process-small', async () => ({}))
 	.edge('fetch', 'check')
@@ -30,6 +34,7 @@ console.log(mermaidSyntax)
 ### Rendering the Diagram
 
 The output of [`generateMermaid`](/api/analysis#generatemermaid-blueprint) will be:
+
 ```
 flowchart TD
 	fetch["fetch"]
@@ -68,9 +73,13 @@ import { InMemoryEventLogger } from 'flowcraft/testing'
 
 const flow = createFlow('conditional-workflow')
 	.node('fetch', async () => ({ output: { value: 10 } }))
-	.node('check', async ({ input }) => ({
-		action: input.value > 5 ? 'big' : 'small'
-	}), { threshold: 5 })
+	.node(
+		'check',
+		async ({ input }) => ({
+			action: input.value > 5 ? 'big' : 'small',
+		}),
+		{ threshold: 5 },
+	)
 	.node('process-big', async () => ({}))
 	.node('process-small', async () => ({}))
 	.edge('fetch', 'check')
@@ -103,37 +112,38 @@ This provides immediate visual diagnostics for any workflow run, making it easy 
 
 For programmatic visualization in user interfaces, the [`Flow`](/api/flow#flow-class) class provides a [`.toGraphRepresentation()`](/api/flow#tographrepresentation) method that returns a [`UIGraph`](/api/flow#uigraph-interface). This method:
 
--   Simplifies complex patterns like loops and batches for cleaner UI display
--   Replaces loop controllers with direct cyclical edges
--   Replaces batch scatter/gather pairs with single representative nodes
--   Preserves all essential node and edge information
+- Simplifies complex patterns like loops and batches for cleaner UI display
+- Replaces loop controllers with direct cyclical edges
+- Replaces batch scatter/gather pairs with single representative nodes
+- Preserves all essential node and edge information
 
 ```typescript
 import { createFlow } from 'flowcraft'
 
 const flow = createFlow('my-workflow')
-  .node('start', async () => ({}))
-  .node('process', async () => ({}))
-  .node('end', async () => ({}))
-  .edge('start', 'process')
-  .edge('process', 'end')
-  .loop('my-loop', {
-    startNodeId: 'start',
-    endNodeId: 'end',
-    condition: 'i < 10'
-  })
-  .batch('my-batch', async () => ({}), { inputKey: 'items', outputKey: 'results' })
+	.node('start', async () => ({}))
+	.node('process', async () => ({}))
+	.node('end', async () => ({}))
+	.edge('start', 'process')
+	.edge('process', 'end')
+	.loop('my-loop', {
+		startNodeId: 'start',
+		endNodeId: 'end',
+		condition: 'i < 10',
+	})
+	.batch('my-batch', async () => ({}), { inputKey: 'items', outputKey: 'results' })
 
 const uiGraph = flow.toGraphRepresentation()
 // Use uiGraph.nodes and uiGraph.edges to render in your UI
 ```
 
-***
+---
 
 Visualizing your workflows is an invaluable tool for:
--   **Debugging**: Quickly spot incorrect connections or logic flows.
--   **Documentation**: Automatically generate up-to-date diagrams for your team.
--   **Onboarding**: Help new team members understand the structure of complex processes.
--   **UI Integration**: Build interactive workflow editors and visual debuggers.
+
+- **Debugging**: Quickly spot incorrect connections or logic flows.
+- **Documentation**: Automatically generate up-to-date diagrams for your team.
+- **Onboarding**: Help new team members understand the structure of complex processes.
+- **UI Integration**: Build interactive workflow editors and visual debuggers.
 
 Choose [`generateMermaid`](/api/analysis#generatemermaid-blueprint) for static documentation and sharing, or [`toGraphRepresentation`](/api/flow#tographrepresentation) for dynamic, programmatic visualization in your applications.

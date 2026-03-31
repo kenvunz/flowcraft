@@ -22,8 +22,13 @@ async function analyzeStructure(ctx: NodeContext<WorkflowContext>) {
 	const analysis = {
 		nodes: nodes.length,
 		edges: edges.length,
-		connectedNodes: new Set([...edges.map((e: any) => e.source), ...edges.map((e: any) => e.target)]).size,
-		isolatedNodes: nodes.filter((n: any) => !edges.some((e: any) => e.source === n.id || e.target === n.id)).length,
+		connectedNodes: new Set([
+			...edges.map((e: any) => e.source),
+			...edges.map((e: any) => e.target),
+		]).size,
+		isolatedNodes: nodes.filter(
+			(n: any) => !edges.some((e: any) => e.source === n.id || e.target === n.id),
+		).length,
 	}
 
 	await context.set('analysis', analysis)

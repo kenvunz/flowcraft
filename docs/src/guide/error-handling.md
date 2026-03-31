@@ -12,19 +12,23 @@ To configure retries, add a `config` object to your node definition with `maxRet
 let attempts = 0
 
 const flow = createFlow('retry-workflow')
-	.node('risky-operation', async () => {
-		attempts++
-		console.log(`Attempt #${attempts}...`)
-		if (attempts < 3) {
-			throw new Error('Temporary failure!')
-		}
-		return { output: 'Succeeded on attempt 3' }
-	}, {
-		config: {
-			// The node will be executed up to 3 times in total.
-			maxRetries: 3
-		}
-	})
+	.node(
+		'risky-operation',
+		async () => {
+			attempts++
+			console.log(`Attempt #${attempts}...`)
+			if (attempts < 3) {
+				throw new Error('Temporary failure!')
+			}
+			return { output: 'Succeeded on attempt 3' }
+		},
+		{
+			config: {
+				// The node will be executed up to 3 times in total.
+				maxRetries: 3,
+			},
+		},
+	)
 	.toBlueprint()
 ```
 
@@ -42,15 +46,19 @@ To configure a fallback, specify the ID of another node in the `fallback` proper
 
 ```typescript
 const flow = createFlow('fallback-workflow')
-	.node('primary-api', async () => {
-		// This will always fail
-		throw new Error('Primary API is down')
-	}, {
-		config: {
-			maxRetries: 2,
-			fallback: 'secondary-api' // If 'primary-api' fails, run this node.
-		}
-	})
+	.node(
+		'primary-api',
+		async () => {
+			// This will always fail
+			throw new Error('Primary API is down')
+		},
+		{
+			config: {
+				maxRetries: 2,
+				fallback: 'secondary-api', // If 'primary-api' fails, run this node.
+			},
+		},
+	)
 	.node('secondary-api', async () => {
 		console.log('Executing fallback to secondary API...')
 		return { output: 'Data from secondary API' }
@@ -66,6 +74,7 @@ const flow = createFlow('fallback-workflow')
 ```
 
 In this example:
+
 1. `primary-api` will be attempted twice and will fail both times.
 2. The runtime will then execute the `secondary-api` node as a fallback.
 3. The output of `secondary-api` will be passed to `process-data`.
@@ -83,24 +92,26 @@ For class-based nodes extending [`BaseNode`](/api/nodes-and-edges#basenode-abstr
 import { BaseNode, NodeContext, NodeResult } from 'flowcraft'
 
 class DatabaseNode extends BaseNode {
-  private connection: any // Mock database connection
+	private connection: any // Mock database connection
 
-  async prep(context: NodeContext) {
-    this.connection = await openDatabaseConnection()
-    return { /* prep data */ }
-  }
+	async prep(context: NodeContext) {
+		this.connection = await openDatabaseConnection()
+		return {
+			/* prep data */
+		}
+	}
 
-  async exec(prepResult: any, context: NodeContext): Promise<Omit<NodeResult, 'error'>> {
-    // Core logic using this.connection
-    return { output: 'data' }
-  }
+	async exec(prepResult: any, context: NodeContext): Promise<Omit<NodeResult, 'error'>> {
+		// Core logic using this.connection
+		return { output: 'data' }
+	}
 
-  async recover(error: Error, context: NodeContext): Promise<void> {
-    if (this.connection) {
-      await this.connection.close()
-      console.log('Database connection closed due to error')
-    }
-  }
+	async recover(error: Error, context: NodeContext): Promise<void> {
+		if (this.connection) {
+			await this.connection.close()
+			console.log('Database connection closed due to error')
+		}
+	}
 }
 ```
 
@@ -115,6 +126,7 @@ Flowcraft uses a centralized error handling system with `FlowcraftError` to prov
 The primary error class for all workflow-related failures. Use this for throwing errors from your nodes or handling failures in the runtime.
 
 #### Key Features:
+
 - **Unified Structure**: All errors have the same shape with optional metadata.
 - **Cause Chaining**: Uses the standard `cause` property for proper error chaining.
 - **Fatal vs Non-Fatal**: The `isFatal` flag controls whether the workflow should halt immediately.
@@ -125,18 +137,18 @@ The primary error class for all workflow-related failures. Use this for throwing
 ```typescript
 // Non-fatal error with cause
 throw new FlowcraftError('API call failed', {
-  cause: originalError,
-  nodeId: 'my-node',
-  blueprintId: 'my-blueprint',
-  executionId: 'exec-123',
-  isFatal: false,
-});
+	cause: originalError,
+	nodeId: 'my-node',
+	blueprintId: 'my-blueprint',
+	executionId: 'exec-123',
+	isFatal: false,
+})
 
 // Fatal error (halts workflow immediately)
 throw new FlowcraftError('Critical system failure', {
-  nodeId: 'critical-node',
-  isFatal: true,
-});
+	nodeId: 'critical-node',
+	isFatal: true,
+})
 ```
 
 #### Enhanced Subflow Error Propagation
@@ -178,21 +190,23 @@ try {
 1. **Pre-processing**: The mapper builds a lookup table from the compiled manifest, mapping node IDs to their source locations (`file`, `line`, `column`).
 
 2. **Error Enhancement**: When an error occurs, the mapper:
-   - Checks if the error is a `FlowcraftError` with a `nodeId` property
-   - Falls back to extracting node IDs from error messages using regex patterns
-   - Looks up the source location for the identified node
-   - Returns a new error with the source location prepended to the original message
+    - Checks if the error is a `FlowcraftError` with a `nodeId` property
+    - Falls back to extracting node IDs from error messages using regex patterns
+    - Looks up the source location for the identified node
+    - Returns a new error with the source location prepended to the original message
 
 3. **Fallback**: If no node ID can be identified or no source location is found, the original error is returned unchanged.
 
 #### Example Output
 
 **Before** (runtime error):
+
 ```
 FlowcraftError: Node execution failed: database connection timeout
 ```
 
 **After** (source-mapped error):
+
 ```
 Error: Workflow error at /app/src/workflows/user-flow.ts:42:8. Original error: Node execution failed: database connection timeout
 ```

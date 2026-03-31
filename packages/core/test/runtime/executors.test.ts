@@ -29,7 +29,10 @@ describe('FunctionNodeExecutor', () => {
 	})
 
 	it('should handle retries on failure', async () => {
-		const mockFunction = vi.fn().mockRejectedValueOnce(new Error('Fail')).mockResolvedValueOnce({ output: 'success' })
+		const mockFunction = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Fail'))
+			.mockResolvedValueOnce({ output: 'success' })
 		const executor = new FunctionNodeExecutor(mockFunction, 2, {
 			emit: vi.fn(),
 		})
@@ -75,7 +78,9 @@ describe('FunctionNodeExecutor', () => {
 			dependencies: { logger: { info: vi.fn() } },
 			signal: controller.signal,
 		} as any
-		await expect(executor.execute(nodeDef, context, undefined, controller.signal)).rejects.toThrow('Workflow cancelled')
+		await expect(
+			executor.execute(nodeDef, context, undefined, controller.signal),
+		).rejects.toThrow('Workflow cancelled')
 	})
 
 	it('should stop on fatal errors', async () => {
@@ -193,7 +198,9 @@ describe('ClassNodeExecutor', () => {
 				this.prep = vi.fn().mockResolvedValue(null)
 				this.exec = vi.fn().mockRejectedValue(new Error('Fail'))
 				this.fallback = vi.fn().mockResolvedValue({ output: 'fallback' })
-				this.post = vi.fn().mockResolvedValue({ output: 'fallback', _fallbackExecuted: true })
+				this.post = vi
+					.fn()
+					.mockResolvedValue({ output: 'fallback', _fallbackExecuted: true })
 			}
 		}
 		const executor = new ClassNodeExecutor(mockImplementation as any, 1, {
@@ -252,6 +259,8 @@ describe('ClassNodeExecutor', () => {
 			dependencies: { logger: { info: vi.fn(), warn: vi.fn() } },
 			signal: controller.signal,
 		} as any
-		await expect(executor.execute(nodeDef, context, undefined, controller.signal)).rejects.toThrow('Workflow cancelled')
+		await expect(
+			executor.execute(nodeDef, context, undefined, controller.signal),
+		).rejects.toThrow('Workflow cancelled')
 	})
 })

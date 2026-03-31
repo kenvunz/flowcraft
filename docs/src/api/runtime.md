@@ -10,21 +10,21 @@ Creates a new runtime instance using a Dependency Injection (DI) container or le
 
 #### DI Constructor (Recommended)
 
--   **`container`** [`DIContainer`](/api/container#dicontainer-class): A pre-configured dependency injection container that provides all runtime services.
--   **`options?`** `RuntimeOptions<TDependencies>`: Optional legacy configuration (for backward compatibility).
+- **`container`** [`DIContainer`](/api/container#dicontainer-class): A pre-configured dependency injection container that provides all runtime services.
+- **`options?`** `RuntimeOptions<TDependencies>`: Optional legacy configuration (for backward compatibility).
 
 #### Legacy Constructor (Backward Compatible)
 
--   **`options`** `RuntimeOptions<TDependencies>`: Configuration for the runtime.
-     -   **`registry?`**: A record of globally available node implementations.
-     -   **`blueprints?`**: A record of all available blueprints, required for subflow execution.
-     -   **`dependencies?`**: Shared dependencies to be injected into every node's context.
-     -   **`logger?`**: A pluggable logger instance (defaults to `NullLogger`).
-     -   **`eventBus?`**: A pluggable event bus for observability. See [Event Bus](#event-bus) for details on available events.
-     -   **`evaluator?`**: A pluggable expression evaluator (defaults to `PropertyEvaluator`).
-     -   **`middleware?`**: An array of middleware to wrap node execution.
-     -   **`serializer?`**: A pluggable serializer (defaults to `JsonSerializer`).
-     -   **`strict?`**: If `true`, the runtime will throw an error if a workflow contains cycles.
+- **`options`** `RuntimeOptions<TDependencies>`: Configuration for the runtime.
+    - **`registry?`**: A record of globally available node implementations.
+    - **`blueprints?`**: A record of all available blueprints, required for subflow execution.
+    - **`dependencies?`**: Shared dependencies to be injected into every node's context.
+    - **`logger?`**: A pluggable logger instance (defaults to `NullLogger`).
+    - **`eventBus?`**: A pluggable event bus for observability. See [Event Bus](#event-bus) for details on available events.
+    - **`evaluator?`**: A pluggable expression evaluator (defaults to `PropertyEvaluator`).
+    - **`middleware?`**: An array of middleware to wrap node execution.
+    - **`serializer?`**: A pluggable serializer (defaults to `JsonSerializer`).
+    - **`strict?`**: If `true`, the runtime will throw an error if a workflow contains cycles.
 
 **Note:** The legacy constructor is maintained for backward compatibility. For new code, use the DI container approach for better modularity and testability.
 
@@ -38,31 +38,93 @@ All events follow this structured format:
 
 ```typescript
 export type FlowcraftEvent =
-  | { type: 'workflow:start'; payload: { blueprintId: string; executionId: string } }
-  | { type: 'workflow:finish'; payload: { blueprintId: string; executionId: string; status: string; errors?: WorkflowError[] } }
-  | { type: 'workflow:stall'; payload: { blueprintId: string; executionId: string; remainingNodes: number } }
-  | { type: 'workflow:pause'; payload: { blueprintId: string; executionId: string } }
-  | { type: 'workflow:resume'; payload: { blueprintId: string; executionId: string } }
-  | { type: 'node:start'; payload: { nodeId: string; executionId: string; input: any; blueprintId: string } }
-  | { type: 'node:finish'; payload: { nodeId: string; result: NodeResult; executionId: string; blueprintId: string } }
-  | { type: 'node:error'; payload: { nodeId: string; error: FlowcraftError; executionId: string; blueprintId: string } }
-  | { type: 'node:fallback'; payload: { nodeId: string; executionId: string; fallback: string; blueprintId: string } }
-  | { type: 'node:retry'; payload: { nodeId: string; attempt: number; executionId: string; blueprintId: string } }
-  | { type: 'node:skipped'; payload: { nodeId: string; edge: EdgeDefinition; executionId: string; blueprintId: string } }
-  | { type: 'edge:evaluate'; payload: { source: string; target: string; condition?: string; result: boolean } }
-  | { type: 'context:change'; payload: { sourceNode: string; key: string; op: 'set' | 'delete'; value?: any } }
-  | { type: 'batch:start'; payload: { batchId: string; scatterNodeId: string; workerNodeIds: string[] } }
-  | { type: 'batch:finish'; payload: { batchId: string; gatherNodeId: string; results: any[] } }
-  | { type: 'job:enqueued'; payload: { runId: string; blueprintId: string; nodeId: string; queueName?: string } }
-  | { type: 'job:processed'; payload: { runId: string; blueprintId: string; nodeId: string; result: NodeResult } }
-  | { type: 'job:failed'; payload: { runId: string; blueprintId: string; nodeId: string; error: FlowcraftError } }
+	| { type: 'workflow:start'; payload: { blueprintId: string; executionId: string } }
+	| {
+			type: 'workflow:finish'
+			payload: {
+				blueprintId: string
+				executionId: string
+				status: string
+				errors?: WorkflowError[]
+			}
+	  }
+	| {
+			type: 'workflow:stall'
+			payload: { blueprintId: string; executionId: string; remainingNodes: number }
+	  }
+	| { type: 'workflow:pause'; payload: { blueprintId: string; executionId: string } }
+	| { type: 'workflow:resume'; payload: { blueprintId: string; executionId: string } }
+	| {
+			type: 'node:start'
+			payload: { nodeId: string; executionId: string; input: any; blueprintId: string }
+	  }
+	| {
+			type: 'node:finish'
+			payload: {
+				nodeId: string
+				result: NodeResult
+				executionId: string
+				blueprintId: string
+			}
+	  }
+	| {
+			type: 'node:error'
+			payload: {
+				nodeId: string
+				error: FlowcraftError
+				executionId: string
+				blueprintId: string
+			}
+	  }
+	| {
+			type: 'node:fallback'
+			payload: { nodeId: string; executionId: string; fallback: string; blueprintId: string }
+	  }
+	| {
+			type: 'node:retry'
+			payload: { nodeId: string; attempt: number; executionId: string; blueprintId: string }
+	  }
+	| {
+			type: 'node:skipped'
+			payload: {
+				nodeId: string
+				edge: EdgeDefinition
+				executionId: string
+				blueprintId: string
+			}
+	  }
+	| {
+			type: 'edge:evaluate'
+			payload: { source: string; target: string; condition?: string; result: boolean }
+	  }
+	| {
+			type: 'context:change'
+			payload: { sourceNode: string; key: string; op: 'set' | 'delete'; value?: any }
+	  }
+	| {
+			type: 'batch:start'
+			payload: { batchId: string; scatterNodeId: string; workerNodeIds: string[] }
+	  }
+	| { type: 'batch:finish'; payload: { batchId: string; gatherNodeId: string; results: any[] } }
+	| {
+			type: 'job:enqueued'
+			payload: { runId: string; blueprintId: string; nodeId: string; queueName?: string }
+	  }
+	| {
+			type: 'job:processed'
+			payload: { runId: string; blueprintId: string; nodeId: string; result: NodeResult }
+	  }
+	| {
+			type: 'job:failed'
+			payload: { runId: string; blueprintId: string; nodeId: string; error: FlowcraftError }
+	  }
 ```
 
 ### `IEventBus` Interface
 
 ```typescript
 export interface IEventBus {
-  emit: (event: FlowcraftEvent) => void | Promise<void>
+	emit: (event: FlowcraftEvent) => void | Promise<void>
 }
 ```
 
@@ -91,35 +153,36 @@ export interface IEventBus {
 
 Executes a workflow using the `DefaultOrchestrator`, which can handle both standard and Human-in-the-Loop (HITL) workflows.
 
--   **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow to execute.
--   **`initialState?`** `Partial<TContext> | string`: The initial state for the workflow's context. Can be an object or a serialized string.
-  -   **`options?`**:
-      -   **`functionRegistry?`**: A `Map` of node implementations, typically from `flow.getFunctionRegistry()`.
-      -   **`strict?`**: Overrides the runtime's strict mode setting for this run.
-      -   **`signal?`**: An `AbortSignal` to gracefully cancel the workflow execution.
-      -   **`concurrency?`**: Limits the number of nodes that can execute simultaneously.
--   **Returns**: `Promise<WorkflowResult<TContext>>`
+- **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow to execute.
+- **`initialState?`** `Partial<TContext> | string`: The initial state for the workflow's context. Can be an object or a serialized string.
+- **`options?`**:
+    - **`functionRegistry?`**: A `Map` of node implementations, typically from `flow.getFunctionRegistry()`.
+    - **`strict?`**: Overrides the runtime's strict mode setting for this run.
+    - **`signal?`**: An `AbortSignal` to gracefully cancel the workflow execution.
+    - **`concurrency?`**: Limits the number of nodes that can execute simultaneously.
+- **Returns**: `Promise<WorkflowResult<TContext>>`
 
 ### `.resume(blueprint, serializedContext, resumeData, options?)`
 
 Resumes an awaiting workflow from its pause point.
 
--   **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow blueprint.
--   **`serializedContext`** `string`: The serialized context from an awaiting workflow result.
--   **`resumeData`** `{ output?: any; action?: string }`: Data to provide to the awaiting node.
--   **`options?`**: Same as for `.run()`.
--   **Returns**: `Promise<WorkflowResult<TContext>>`
+- **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow blueprint.
+- **`serializedContext`** `string`: The serialized context from an awaiting workflow result.
+- **`resumeData`** `{ output?: any; action?: string }`: Data to provide to the awaiting node.
+- **`options?`**: Same as for `.run()`.
+- **Returns**: `Promise<WorkflowResult<TContext>>`
 
 ### `.replay(blueprint, events, executionId?)`
 
 Replays a workflow execution from a pre-recorded event history, reconstructing the final workflow state without re-executing node logic. This enables time-travel debugging and post-mortem analysis.
 
--   **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow blueprint.
--   **`events`** `FlowcraftEvent[]`: The recorded event history for the execution.
--   **`executionId?`** `string`: Optional execution ID to filter events (if events contain multiple executions).
--   **Returns**: `Promise<WorkflowResult<TContext>>`
+- **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow blueprint.
+- **`events`** `FlowcraftEvent[]`: The recorded event history for the execution.
+- **`executionId?`** `string`: Optional execution ID to filter events (if events contain multiple executions).
+- **Returns**: `Promise<WorkflowResult<TContext>>`
 
 The replay system processes these event types to reconstruct state:
+
 - `node:finish`: Applies completed node outputs to context
 - `context:change`: Applies context modifications (including user `context.set()` and `context.delete()` calls)
 - `node:error`: Records errors in the workflow state
@@ -131,7 +194,7 @@ Replay always produces a "completed" status since it reconstructs the final stat
 
 Starts the internal [`WorkflowScheduler`](/api/runtime#workflowscheduler) that monitors awaiting workflows and automatically resumes them when their timers expire. Required for `sleep` nodes to function in in-memory workflows.
 
--   **`checkIntervalMs?`** `number`: How often (in ms) to check for expired timers. Defaults to `1000`.
+- **`checkIntervalMs?`** `number`: How often (in ms) to check for expired timers. Defaults to `1000`.
 
 ```typescript
 const runtime = new FlowRuntime()
@@ -155,14 +218,14 @@ Manages awaiting workflows that have timer-based pauses (sleep nodes). The sched
 
 Returns a list of currently awaiting workflows being tracked by the scheduler.
 
--   **Returns**: `AwaitingWorkflow[]`
+- **Returns**: `AwaitingWorkflow[]`
 
 ### `.getResumeResult(executionId)`
 
 Retrieves the `WorkflowResult` from a workflow that was automatically resumed by the scheduler. Results are stored after each auto-resume and can be looked up by execution ID.
 
--   **`executionId`** `string`: The execution ID, available from `result.context._executionId` after the initial `run()`.
--   **Returns**: `WorkflowResult | undefined`
+- **`executionId`** `string`: The execution ID, available from `result.context._executionId` after the initial `run()`.
+- **Returns**: `WorkflowResult | undefined`
 
 ```typescript
 const result = await flow.run(runtime)
@@ -183,12 +246,12 @@ A lower-level method to execute a single node within a workflow's state. This is
 
 Determines which nodes should run next based on the result of a completed node and the graph's structure.
 
--   **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow blueprint.
--   **`nodeId`** `string`: The ID of the completed node.
--   **`result`** [`NodeResult`](/api/flow#noderesult-interface): The result of the completed node.
--   **`context`** [`ContextImplementation`](/api/context): The current context.
--   **`executionId?`** `string`: Optional execution ID for observability events.
--   **Returns**: `Promise<{ node: NodeDefinition; edge: EdgeDefinition }[]>`
+- **`blueprint`** [`WorkflowBlueprint`](/api/flow#workflowblueprint-interface): The workflow blueprint.
+- **`nodeId`** `string`: The ID of the completed node.
+- **`result`** [`NodeResult`](/api/flow#noderesult-interface): The result of the completed node.
+- **`context`** [`ContextImplementation`](/api/context): The current context.
+- **`executionId?`** `string`: Optional execution ID for observability events.
+- **Returns**: `Promise<{ node: NodeDefinition; edge: EdgeDefinition }[]>`
 
 ### `.applyEdgeTransform(...)`
 

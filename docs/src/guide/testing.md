@@ -17,17 +17,16 @@ import { createFlow, FlowRuntime } from 'flowcraft'
 import { InMemoryEventLogger } from 'flowcraft/testing'
 
 it('should capture events for a workflow run', async () => {
-  const eventLogger = new InMemoryEventLogger()
-  const runtime = new FlowRuntime({ eventBus: eventLogger })
+	const eventLogger = new InMemoryEventLogger()
+	const runtime = new FlowRuntime({ eventBus: eventLogger })
 
-  const flow = createFlow('my-workflow')
-    .node('a', () => ({ output: 'done' }))
+	const flow = createFlow('my-workflow').node('a', () => ({ output: 'done' }))
 
-  await runtime.run(flow.toBlueprint())
+	await runtime.run(flow.toBlueprint())
 
-  // You can now inspect the captured events
-  const startEvent = eventLogger.find('workflow:start')
-  expect(startEvent.payload.blueprintId).toBe('my-workflow')
+	// You can now inspect the captured events
+	const startEvent = eventLogger.find('workflow:start')
+	expect(startEvent.payload.blueprintId).toBe('my-workflow')
 })
 ```
 
@@ -41,7 +40,7 @@ it('should capture events for a workflow run', async () => {
 
 The `runWithTrace` helper is the ideal tool for most workflow integration tests. It executes a workflow and automatically prints a detailed execution trace to the console if, and only if, the run fails.
 
-To enable tracing for *all* executions (including successful ones) for deeper debugging, you can set the `DEBUG` environment variable to `true`.
+To enable tracing for _all_ executions (including successful ones) for deeper debugging, you can set the `DEBUG` environment variable to `true`.
 
 ### Usage
 
@@ -51,27 +50,27 @@ import { runWithTrace } from 'flowcraft/testing'
 import { describe, expect, it } from 'vitest'
 
 describe('User Processing Workflow', () => {
-  it('should format user data correctly', async () => {
-    const flow = createFlow('user-flow')
-      .node('fetch', () => ({ output: { name: 'Alice' } }))
-      .node('format', ({ input }) => ({
-        // Intentionally introduce a bug for demonstration
-        output: `Formatted: ${input.name.toUppercase()}`,
-      }))
-      .edge('fetch', 'format')
+	it('should format user data correctly', async () => {
+		const flow = createFlow('user-flow')
+			.node('fetch', () => ({ output: { name: 'Alice' } }))
+			.node('format', ({ input }) => ({
+				// Intentionally introduce a bug for demonstration
+				output: `Formatted: ${input.name.toUppercase()}`,
+			}))
+			.edge('fetch', 'format')
 
-    const runtime = new FlowRuntime()
+		const runtime = new FlowRuntime()
 
-    // The 'runWithTrace' helper will catch the error from the 'format' node
-    // and print a full execution trace before the test fails.
-    try {
-      await runWithTrace(runtime, flow.toBlueprint())
-    } catch (error) {
-      // In a real test, you might assert on the error type or message
-      expect(error).toBeInstanceOf(Error)
-      expect(error.message).toContain('toUppercase is not a function')
-    }
-  })
+		// The 'runWithTrace' helper will catch the error from the 'format' node
+		// and print a full execution trace before the test fails.
+		try {
+			await runWithTrace(runtime, flow.toBlueprint())
+		} catch (error) {
+			// In a real test, you might assert on the error type or message
+			expect(error).toBeInstanceOf(Error)
+			expect(error.message).toContain('toUppercase is not a function')
+		}
+	})
 })
 ```
 
@@ -132,23 +131,23 @@ import { createDefaultContainer, FlowRuntime, ServiceTokens } from 'flowcraft'
 import { vi } from 'vitest'
 
 it('should use mock logger in tests', async () => {
-  const mockLogger = {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }
+	const mockLogger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+	}
 
-  const container = createDefaultContainer({
-    registry: { fetchData, processData },
-    logger: mockLogger,
-  })
+	const container = createDefaultContainer({
+		registry: { fetchData, processData },
+		logger: mockLogger,
+	})
 
-  const runtime = new FlowRuntime(container)
-  await runtime.run(blueprint)
+	const runtime = new FlowRuntime(container)
+	await runtime.run(blueprint)
 
-  // Verify logging calls
-  expect(mockLogger.info).toHaveBeenCalledWith('Starting workflow execution', expect.any(Object))
+	// Verify logging calls
+	expect(mockLogger.info).toHaveBeenCalledWith('Starting workflow execution', expect.any(Object))
 })
 ```
 
@@ -171,19 +170,19 @@ import { describe, it, expect } from 'vitest'
 import { InMemoryEventLogger, runWithTrace } from 'flowcraft/testing'
 
 describe('My Workflow', () => {
-  it('should execute correctly', async () => {
-    const logger = new InMemoryEventLogger()
-    const result = await runWorkflow(workflow, context, { logger })
+	it('should execute correctly', async () => {
+		const logger = new InMemoryEventLogger()
+		const result = await runWorkflow(workflow, context, { logger })
 
-    expect(result).toBeDefined()
-    expect(logger.events.some(e => e.type === 'node:success')).toBe(true)
-  })
+		expect(result).toBeDefined()
+		expect(logger.events.some((e) => e.type === 'node:success')).toBe(true)
+	})
 
-  it('should print trace when DEBUG is set', async () => {
-    process.env.DEBUG = 'true'
-    await runWithTrace(workflow, context)
-    // Trace will be printed to console
-  })
+	it('should print trace when DEBUG is set', async () => {
+		process.env.DEBUG = 'true'
+		await runWithTrace(workflow, context)
+		// Trace will be printed to console
+	})
 })
 ```
 

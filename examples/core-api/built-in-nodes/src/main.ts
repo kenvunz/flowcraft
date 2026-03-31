@@ -52,7 +52,9 @@ async function main() {
 		console.log(`   Premium quality items: ${batchStats.premiumItems}`)
 		console.log(`   Sample processed items:`)
 		processedItems.slice(0, 3).forEach((item: any, index: number) => {
-			console.log(`     ${index + 1}. ${item.name} (${item.status}) - ${item.metadata.quality}`)
+			console.log(
+				`     ${index + 1}. ${item.name} (${item.status}) - ${item.metadata.quality}`,
+			)
 		})
 
 		console.log('✅ Batch processing completed successfully\n')
@@ -108,7 +110,10 @@ async function main() {
 			console.log(`   Duration: ${waitResults.durationMs}ms`)
 		} else {
 			console.log('   Wait results not found in context')
-			console.log('   _outputs.processAfterWait:', (waitResult.context as any)._outputs?.processAfterWait)
+			console.log(
+				'   _outputs.processAfterWait:',
+				(waitResult.context as any)._outputs?.processAfterWait,
+			)
 		}
 
 		console.log('✅ Wait processing completed successfully\n')
@@ -124,9 +129,14 @@ async function main() {
 	console.log('='.repeat(60))
 
 	try {
-		const { blueprint: subflowBlueprint, functionRegistry: subflowRegistry } = createSubflowWorkflow()
+		const { blueprint: subflowBlueprint, functionRegistry: subflowRegistry } =
+			createSubflowWorkflow()
 
-		const combinedRegistry = new Map([...subflowRegistry, ...validationRegistry, ...enrichmentRegistry])
+		const combinedRegistry = new Map([
+			...subflowRegistry,
+			...validationRegistry,
+			...enrichmentRegistry,
+		])
 
 		const subflowResult = await runtime.run(
 			subflowBlueprint,
@@ -151,14 +161,19 @@ async function main() {
 		const finalResult = subflowResult.context.finalResult
 
 		if (finalResult) {
-			console.log(`   Original data: ${finalResult.originalData.name} (${finalResult.originalData.email})`)
+			console.log(
+				`   Original data: ${finalResult.originalData.name} (${finalResult.originalData.email})`,
+			)
 			console.log(`   Validation score: ${finalResult.validation.score}/3`)
 			console.log(`   Age group: ${finalResult.enriched.insights.ageGroup}`)
 			console.log(`   Email domain: ${finalResult.enriched.insights.emailDomain}`)
 			console.log(`   Processing completed: ${finalResult.completedAt}`)
 		} else {
 			console.log('   Final result not found in context')
-			console.log('   _outputs.processResults:', (subflowResult.context as any)._outputs?.processResults)
+			console.log(
+				'   _outputs.processResults:',
+				(subflowResult.context as any)._outputs?.processResults,
+			)
 		}
 
 		console.log('✅ Subflow processing completed successfully\n')

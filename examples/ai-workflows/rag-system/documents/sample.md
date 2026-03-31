@@ -4,10 +4,10 @@ While Flowcraft's fluent `.node()` and `.edge()` API is great for defining workf
 
 This decouples your business logic from the workflow's structure, enabling you to:
 
--   Build visual drag-and-drop workflow editors.
--   Allow non-developers to configure or modify business processes.
--   Store workflow definitions in a database.
--   Dynamically generate and execute workflows in AI agent systems.
+- Build visual drag-and-drop workflow editors.
+- Allow non-developers to configure or modify business processes.
+- Store workflow definitions in a database.
+- Dynamically generate and execute workflows in AI agent systems.
 
 ## Registry + Blueprint + Runtime
 
@@ -36,14 +36,14 @@ A node in the JSON looks like this:
 
 ```json
 {
-  "id": "check_for_pii",
-  "uses": "llm-condition", // Key from our Node Registry
-  "data": {
-    "promptTemplate": "Does this text contain PII? Respond 'true' or 'false'.\n\nText: \"{{userPost}}\"",
-    "inputs": {
-      "userPost": "userPost" // Read 'userPost' from the context
-    }
-  }
+	"id": "check_for_pii",
+	"uses": "llm-condition", // Key from our Node Registry
+	"data": {
+		"promptTemplate": "Does this text contain PII? Respond 'true' or 'false'.\n\nText: \"{{userPost}}\"",
+		"inputs": {
+			"userPost": "userPost" // Read 'userPost' from the context
+		}
+	}
 }
 ```
 

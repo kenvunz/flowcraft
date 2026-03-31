@@ -17,8 +17,8 @@ interface ILogger {
 }
 ```
 
--   `message`: The log message string.
--   `meta`: An optional object containing structured metadata (e.g., `nodeId`, `executionId`). The [`FlowRuntime`](/api/runtime#flowruntime-class) automatically provides this where applicable.
+- `message`: The log message string.
+- `meta`: An optional object containing structured metadata (e.g., `nodeId`, `executionId`). The [`FlowRuntime`](/api/runtime#flowruntime-class) automatically provides this where applicable.
 
 ## Example: A Simple File Logger
 

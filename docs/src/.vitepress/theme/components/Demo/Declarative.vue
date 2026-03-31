@@ -33,15 +33,15 @@ const blueprint: WorkflowBlueprint = {
 
 const registry: NodeRegistry = {
 	takeOrderFn: async () => {
-		await new Promise(r => setTimeout(r, 1000))
+		await new Promise((r) => setTimeout(r, 1000))
 		return { output: { item: 'Coffee', size: 'Medium' } }
 	},
 	makeDrinkFn: async ({ input }) => {
-		await new Promise(r => setTimeout(r, 1000))
+		await new Promise((r) => setTimeout(r, 1000))
 		return { output: `Made ${input.size} ${input.item}` }
 	},
 	serveCustomerFn: async ({ input }) => {
-		await new Promise(r => setTimeout(r, 1000))
+		await new Promise((r) => setTimeout(r, 1000))
 		return { output: `Served: ${input}` }
 	},
 }

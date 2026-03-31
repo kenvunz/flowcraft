@@ -37,15 +37,15 @@ You can provide a custom event bus when creating the runtime:
 import type { IEventBus } from 'flowcraft'
 
 const eventBus: IEventBus = {
-  async emit(event) {
-    console.log(`Event: ${event.type}`, event.payload)
-    // Send to monitoring service, etc.
-  }
+	async emit(event) {
+		console.log(`Event: ${event.type}`, event.payload)
+		// Send to monitoring service, etc.
+	},
 }
 
 const runtime = new FlowRuntime({
-  registry: myNodeRegistry,
-  eventBus,
+	registry: myNodeRegistry,
+	eventBus,
 })
 ```
 
@@ -65,11 +65,10 @@ import { InMemoryEventLogger } from 'flowcraft/testing'
 
 const eventLogger = new InMemoryEventLogger()
 const runtime = new FlowRuntime({
-	eventBus: eventLogger
+	eventBus: eventLogger,
 })
 
-const flow = createFlow('my-workflow')
-	.node('a', () => ({ output: 'done' }))
+const flow = createFlow('my-workflow').node('a', () => ({ output: 'done' }))
 
 await runtime.run(flow.toBlueprint())
 
@@ -108,13 +107,16 @@ const eventBus = new PersistentEventBusAdapter(eventStore)
 const runtime = new FlowRuntime({ eventBus })
 
 // Create and run a workflow
-const flow = createFlow('my-workflow')
-	.node('process-data', async ({ context }) => {
-		await context.set('result', 'processed')
-		return { output: 'done' }
-	})
+const flow = createFlow('my-workflow').node('process-data', async ({ context }) => {
+	await context.set('result', 'processed')
+	return { output: 'done' }
+})
 
-const result = await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+const result = await runtime.run(
+	flow.toBlueprint(),
+	{},
+	{ functionRegistry: flow.getFunctionRegistry() },
+)
 
 // Later, replay the execution for debugging
 const executionId = result.context._executionId
@@ -142,9 +144,9 @@ The replay system is designed to work with any event storage backend. Flowcraft 
 
 ```typescript
 interface IEventStore {
-  store(event: FlowcraftEvent, executionId: string): Promise<void>
-  retrieve(executionId: string): Promise<FlowcraftEvent[]>
-  retrieveMultiple(executionIds: string[]): Promise<Map<string, FlowcraftEvent[]>>
+	store(event: FlowcraftEvent, executionId: string): Promise<void>
+	retrieve(executionId: string): Promise<FlowcraftEvent[]>
+	retrieveMultiple(executionIds: string[]): Promise<Map<string, FlowcraftEvent[]>>
 }
 ```
 
@@ -170,8 +172,8 @@ import { PersistentEventBusAdapter } from 'flowcraft'
 
 // Create SQLite event store
 const eventStore = new SqliteHistoryAdapter({
-  databasePath: './workflow-events.db',
-  walMode: true, // Enable WAL mode for better concurrent access
+	databasePath: './workflow-events.db',
+	walMode: true, // Enable WAL mode for better concurrent access
 })
 
 // Create persistent event bus
@@ -214,12 +216,12 @@ import { PersistentEventBusAdapter } from 'flowcraft'
 
 // Create PostgreSQL event store
 const eventStore = new PostgresHistoryAdapter({
-  host: 'localhost',
-  port: 5432,
-  database: 'flowcraft',
-  user: 'flowcraft',
-  password: 'password',
-  tableName: 'workflow_events', // optional, defaults to 'flowcraft_events'
+	host: 'localhost',
+	port: 5432,
+	database: 'flowcraft',
+	user: 'flowcraft',
+	password: 'password',
+	tableName: 'workflow_events', // optional, defaults to 'flowcraft_events'
 })
 
 // Create persistent event bus
@@ -250,8 +252,6 @@ All standard `pg.PoolConfig` options are supported:
 
 Both adapters automatically create the necessary database schema on first use and support efficient querying by execution ID.
 
-
-
 For CLI tools to inspect and debug workflow executions, see the [CLI Guide](/guide/cli).
 
 ## OpenTelemetry
@@ -265,7 +265,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 // Set up OpenTelemetry SDK (standard OTel setup)
 const sdk = new NodeSDK({
-  traceExporter: new OTLPTraceExporter(), // Point to Jaeger, Datadog, etc.
+	traceExporter: new OTLPTraceExporter(), // Point to Jaeger, Datadog, etc.
 })
 sdk.start()
 
@@ -274,9 +274,8 @@ const otelMiddleware = new OpenTelemetryMiddleware('flowcraft-worker')
 
 // Add to runtime
 const runtime = new FlowRuntime({
-  middleware: [otelMiddleware],
+	middleware: [otelMiddleware],
 })
 ```
 
 This middleware automatically creates spans for each node execution, propagates context between nodes, and records errors, enabling full observability in distributed environments.
-

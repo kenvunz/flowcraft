@@ -26,9 +26,9 @@ export interface ContainerOptions<TDependencies extends RuntimeDependencies = Ru
 	dependencies?: TDependencies
 }
 
-export function createDefaultContainer<TDependencies extends RuntimeDependencies = RuntimeDependencies>(
-	options: ContainerOptions<TDependencies> = {},
-): DIContainer {
+export function createDefaultContainer<
+	TDependencies extends RuntimeDependencies = RuntimeDependencies,
+>(options: ContainerOptions<TDependencies> = {}): DIContainer {
 	const container = new DIContainer()
 
 	container.register(ServiceTokens.Logger, options.logger || new NullLogger())

@@ -35,14 +35,18 @@ export async function buildFlows(pluginOptions: CompileFlowsOptions = {}) {
 			diagnostics
 				.filter((d) => d.severity === 'error')
 				.forEach((d) => {
-					console.error(`  - ${path.relative(projectRoot, d.file)}:${d.line}:${d.column} - ${d.message}`)
+					console.error(
+						`  - ${path.relative(projectRoot, d.file)}:${d.line}:${d.column} - ${d.message}`,
+					)
 				})
 			throw new Error('Flowcraft compilation failed.')
 		}
 
 		await fs.mkdir(path.dirname(manifestPath), { recursive: true })
 		await fs.writeFile(manifestPath, manifestSource)
-		console.log(`✅ Flowcraft compilation successful! Manifest: ${path.relative(projectRoot, manifestPath)}`)
+		console.log(
+			`✅ Flowcraft compilation successful! Manifest: ${path.relative(projectRoot, manifestPath)}`,
+		)
 	} catch (error) {
 		console.error('❌ An unexpected error occurred during Flowcraft compilation:')
 		console.error(error instanceof Error ? error.message : String(error))

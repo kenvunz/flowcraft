@@ -29,11 +29,11 @@ Add a `transform` string to any edge. The `input` variable in the expression ref
 import { createFlow } from 'flowcraft'
 
 const workflow = createFlow('my-workflow')
-  .node('fetch', fetchOrder)
-  .node('ship', shipOrder)
-  .edge('fetch', 'ship', {
-    transform: 'input.shipping.address',
-  })
+	.node('fetch', fetchOrder)
+	.node('ship', shipOrder)
+	.edge('fetch', 'ship', {
+		transform: 'input.shipping.address',
+	})
 ```
 
 In this example, `fetch` returns an order object. The edge transform extracts `order.shipping.address` so that `ship` receives only the address string.
@@ -44,13 +44,13 @@ When a target node has an `inputs` mapping, the transform is evaluated against t
 
 ```typescript
 const workflow = createFlow('my-workflow')
-  .node('enrich', enrichOrder)   // returns { items, loyaltyDiscount, ... }
-  .node('parse', parseOrder)
-  .node('price', applyPricing, { inputs: 'enrich' })
-  .edge('enrich', 'parse')
-  .edge('parse', 'price', {
-    transform: 'input.loyaltyDiscount',
-  })
+	.node('enrich', enrichOrder) // returns { items, loyaltyDiscount, ... }
+	.node('parse', parseOrder)
+	.node('price', applyPricing, { inputs: 'enrich' })
+	.edge('enrich', 'parse')
+	.edge('parse', 'price', {
+		transform: 'input.loyaltyDiscount',
+	})
 ```
 
 Here `price` has `inputs: 'enrich'`. Even though the incoming edge comes from `parse`, the transform resolves `enrich`'s output and evaluates `input.loyaltyDiscount` against it. `price` receives the discount value directly.
@@ -63,13 +63,13 @@ The default `PropertyEvaluator` supports dot-path expressions only. For arithmet
 import { FlowRuntime, UnsafeEvaluator } from 'flowcraft'
 
 const runtime = new FlowRuntime({
-  evaluator: new UnsafeEvaluator(),
+	evaluator: new UnsafeEvaluator(),
 })
 
-// Now edge transforms can use JS expressions:
-.edge('fetch', 'applyDiscount', {
-  transform: 'Math.round((input.subtotal + input.tax) * 0.9 * 100) / 100',
-})
+	// Now edge transforms can use JS expressions:
+	.edge('fetch', 'applyDiscount', {
+		transform: 'Math.round((input.subtotal + input.tax) * 0.9 * 100) / 100',
+	})
 ```
 
 > **Note:** Only use `UnsafeEvaluator` with trusted workflow definitions, as it executes arbitrary expressions.
@@ -154,6 +154,7 @@ Workflow demonstrates:
 ## Next Steps
 
 After understanding edge transforms, explore:
+
 - `context-state-management` — Advanced context manipulation and data flow
 - `built-in-nodes` — Flowcraft's built-in node types
 - `function-class-nodes` — Different ways to define node logic

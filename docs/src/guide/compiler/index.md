@@ -14,14 +14,14 @@ When building complex workflows with the Fluent API, you often need to manually 
 import { createFlow } from 'flowcraft'
 
 const workflow = createFlow()
-  .node('fetchData', async () => {
-    // ... fetch logic
-  })
-  .node('processData', async (ctx) => {
-    // ... process logic
-  })
-  .edge('fetchData', 'processData')
-  .edge('processData', 'fetchData', { condition: 'retryCount < 3' })
+	.node('fetchData', async () => {
+		// ... fetch logic
+	})
+	.node('processData', async (ctx) => {
+		// ... process logic
+	})
+	.edge('fetchData', 'processData')
+	.edge('processData', 'fetchData', { condition: 'retryCount < 3' })
 ```
 
 While powerful, this approach can become verbose and error-prone for complex orchestrations.
@@ -33,17 +33,17 @@ With the compiler, you write familiar imperative code, and it automatically gene
 ```typescript
 /** @flow */
 export async function myWorkflow(input: string) {
-  let retryCount = 0
-  while (retryCount < 3) {
-    try {
-      const data = await fetchData(input)
-      const result = await processData(data)
-      return result
-    } catch (error) {
-      retryCount++
-    }
-  }
-  throw new Error('Max retries exceeded')
+	let retryCount = 0
+	while (retryCount < 3) {
+		try {
+			const data = await fetchData(input)
+			const result = await processData(data)
+			return result
+		} catch (error) {
+			retryCount++
+		}
+	}
+	throw new Error('Max retries exceeded')
 }
 ```
 

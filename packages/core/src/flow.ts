@@ -14,7 +14,9 @@ import type {
  * Generates a deterministic hash for a function based on its source code and a unique counter.
  */
 let hashCounter = 0
-function _hashFunction(fn: NodeFunction<any, any, any, any, any> | NodeClass<any, any, any, any, any>): string {
+function _hashFunction(
+	fn: NodeFunction<any, any, any, any, any> | NodeClass<any, any, any, any, any>,
+): string {
 	const source = fn.toString()
 	let hash = 0
 	for (let i = 0; i < source.length; i++) {
@@ -81,7 +83,11 @@ export class FlowBuilder<
 		return this
 	}
 
-	edge(source: string, target: string, options?: Omit<EdgeDefinition, 'source' | 'target'>): this {
+	edge(
+		source: string,
+		target: string,
+		options?: Omit<EdgeDefinition, 'source' | 'target'>,
+	): this {
 		const edgeDef: EdgeDefinition = { source, target, ...options }
 		this.blueprint.edges?.push(edgeDef)
 		return this
@@ -120,7 +126,9 @@ export class FlowBuilder<
 		let workerUsesKey: string
 		if (isNodeClass(worker)) {
 			workerUsesKey =
-				worker.name && worker.name !== 'BaseNode' ? worker.name : `class_batch_worker_${_hashFunction(worker)}`
+				worker.name && worker.name !== 'BaseNode'
+					? worker.name
+					: `class_batch_worker_${_hashFunction(worker)}`
 			this.functionRegistry.set(workerUsesKey, worker)
 		} else {
 			workerUsesKey = `fn_batch_worker_${_hashFunction(worker)}`
@@ -131,7 +139,12 @@ export class FlowBuilder<
 			id: scatterId,
 			uses: 'batch-scatter',
 			inputs: inputKey as string,
-			params: { workerUsesKey, outputKey: outputKey as string, gatherNodeId: gatherId, chunkSize: options.chunkSize },
+			params: {
+				workerUsesKey,
+				outputKey: outputKey as string,
+				gatherNodeId: gatherId,
+				chunkSize: options.chunkSize,
+			},
 		})
 
 		this.blueprint.nodes?.push({
@@ -143,7 +156,10 @@ export class FlowBuilder<
 
 		this.edge(scatterId, gatherId)
 
-		return this as unknown as FlowBuilder<TContext & { [K in TOutputKey]: TWorkerOutput[] }, TDependencies>
+		return this as unknown as FlowBuilder<
+			TContext & { [K in TOutputKey]: TWorkerOutput[] },
+			TDependencies
+		>
 	}
 
 	/**
@@ -236,9 +252,15 @@ export class FlowBuilder<
 
 		// loop edge re-wiring
 		for (const loopDef of this.loopDefinitions) {
-			const edgesToRewire = allOriginalEdges.filter((e) => e.source === loopDef.id && e.target !== loopDef.startNodeId)
+			const edgesToRewire = allOriginalEdges.filter(
+				(e) => e.source === loopDef.id && e.target !== loopDef.startNodeId,
+			)
 			for (const edge of edgesToRewire) {
-				finalEdges.push({ ...edge, action: edge.action || 'break', transform: `context.${loopDef.endNodeId}` })
+				finalEdges.push({
+					...edge,
+					action: edge.action || 'break',
+					transform: `context.${loopDef.endNodeId}`,
+				})
 				processedOriginalEdges.add(edge)
 			}
 		}
@@ -271,10 +293,14 @@ export class FlowBuilder<
 			const endNode = this.blueprint.nodes?.find((n) => n.id === loopDef.endNodeId)
 
 			if (!startNode) {
-				throw new Error(`Loop '${loopDef.id}' references non-existent start node '${loopDef.startNodeId}'.`)
+				throw new Error(
+					`Loop '${loopDef.id}' references non-existent start node '${loopDef.startNodeId}'.`,
+				)
 			}
 			if (!endNode) {
-				throw new Error(`Loop '${loopDef.id}' references non-existent end node '${loopDef.endNodeId}'.`)
+				throw new Error(
+					`Loop '${loopDef.id}' references non-existent end node '${loopDef.endNodeId}'.`,
+				)
 			}
 		}
 
@@ -356,7 +382,9 @@ export class FlowBuilder<
 			})
 
 			// re-wire any 'break' edges
-			const breakEdges = blueprint.edges.filter((edge) => edge.source === id && edge.action === 'break')
+			const breakEdges = blueprint.edges.filter(
+				(edge) => edge.source === id && edge.action === 'break',
+			)
 			for (const breakEdge of breakEdges) {
 				uiEdges.push({
 					...breakEdge,
@@ -365,7 +393,9 @@ export class FlowBuilder<
 			}
 
 			// re-wire any 'incoming' edges
-			const incomingEdges = blueprint.edges.filter((edge) => edge.target === id && edge.source !== loopDef.endNodeId)
+			const incomingEdges = blueprint.edges.filter(
+				(edge) => edge.target === id && edge.source !== loopDef.endNodeId,
+			)
 			for (const incomingEdge of incomingEdges) {
 				uiEdges.push({
 					...incomingEdge,
@@ -422,7 +452,10 @@ export class FlowBuilder<
 		for (const edge of blueprint.edges) {
 			if (!ignoredNodeIds.has(edge.source) && !ignoredNodeIds.has(edge.target)) {
 				const alreadyAdded = uiEdges.some(
-					(e) => e.source === edge.source && e.target === edge.target && e.action === edge.action,
+					(e) =>
+						e.source === edge.source &&
+						e.target === edge.target &&
+						e.action === edge.action,
 				)
 				if (!alreadyAdded) {
 					uiEdges.push(edge)

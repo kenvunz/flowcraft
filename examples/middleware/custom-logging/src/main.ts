@@ -1,5 +1,14 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
-import { createBasicLoggingWorkflow, createErrorLoggingWorkflow, createStructuredLoggingWorkflow } from './workflow.js'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
+import {
+	createBasicLoggingWorkflow,
+	createErrorLoggingWorkflow,
+	createStructuredLoggingWorkflow,
+} from './workflow.js'
 
 class LoggingMiddleware implements Middleware {
 	async aroundNode(

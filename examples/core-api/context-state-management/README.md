@@ -23,66 +23,71 @@ pnpm start
 ## Context Fundamentals
 
 ### Reading from Context
+
 ```typescript
 async function readData({ context }: any) {
-  // Read initial input
-  const input = await context.get('input')
+	// Read initial input
+	const input = await context.get('input')
 
-  // Read workflow data
-  const data = await context.get('workflowData')
+	// Read workflow data
+	const data = await context.get('workflowData')
 
-  return { output: 'Data read' }
+	return { output: 'Data read' }
 }
 ```
 
 ### Writing to Context
+
 ```typescript
 async function processData({ context }: any) {
-  const input = await context.get('input')
+	const input = await context.get('input')
 
-  // Transform data
-  const processed = { ...input, processed: true }
+	// Transform data
+	const processed = { ...input, processed: true }
 
-  // Store result
-  await context.set('processedData', processed)
+	// Store result
+	await context.set('processedData', processed)
 
-  return { output: 'Data processed' }
+	return { output: 'Data processed' }
 }
 ```
 
 ### Conditional Context Access
+
 ```typescript
 async function checkData({ context }: any) {
-  const existing = await context.get('existingData')
+	const existing = await context.get('existingData')
 
-  if (existing) {
-    // Use existing data
-    return { output: 'Using cached data' }
-  } else {
-    // Initialize new data
-    await context.set('needsInit', true)
-    return { output: 'Need initialization' }
-  }
+	if (existing) {
+		// Use existing data
+		return { output: 'Using cached data' }
+	} else {
+		// Initialize new data
+		await context.set('needsInit', true)
+		return { output: 'Need initialization' }
+	}
 }
 ```
 
 ## Advanced Patterns
 
 ### Nested Data Structures
+
 ```typescript
 // Create complex nested objects
 const nestedData = {
-  user: {
-    profile: { basic: {}, preferences: {} },
-    activity: { sessions: [] }
-  },
-  system: { config: {}, metrics: {} }
+	user: {
+		profile: { basic: {}, preferences: {} },
+		activity: { sessions: [] },
+	},
+	system: { config: {}, metrics: {} },
 }
 
 await context.set('complexData', nestedData)
 ```
 
 ### Deep Data Access
+
 ```typescript
 const nested = await context.get('complexData')
 
@@ -93,13 +98,14 @@ const sessionCount = nested.user.activity.sessions.length
 ```
 
 ### Context Accumulation
+
 ```typescript
 // Combine multiple context values
 const result = {
-  original: await context.get('input'),
-  processed: await context.get('processedData'),
-  metadata: await context.get('metadata'),
-  final: true
+	original: await context.get('input'),
+	processed: await context.get('processedData'),
+	metadata: await context.get('metadata'),
+	final: true,
 }
 
 await context.set('finalResult', result)
@@ -182,21 +188,25 @@ Input Data: {
 ## Key Concepts Demonstrated
 
 ### Context as Workflow State
+
 - **Persistence**: Context maintains state throughout workflow execution
 - **Isolation**: Each workflow run has its own context
 - **Immutability**: Context updates don't affect other executions
 
 ### Data Flow Patterns
+
 - **Sequential**: Data flows from node to node through context
 - **Conditional**: Nodes can make decisions based on context state
 - **Accumulative**: Multiple nodes can contribute to final results
 
 ### Advanced Data Management
+
 - **Nested Structures**: Organize complex data hierarchically
 - **Deep Access**: Query deeply nested properties
 - **Transformation**: Modify data as it flows through the workflow
 
 ### Context Lifecycle
+
 - **Initialization**: Initial context from workflow input
 - **Updates**: Nodes read and write context throughout execution
 - **Finalization**: Clean up and prepare final output
@@ -205,16 +215,19 @@ Input Data: {
 ## Context Best Practices
 
 ### Organization
+
 - Use consistent key naming conventions
 - Group related data under nested objects
 - Document context structure in workflow definitions
 
 ### Performance
+
 - Avoid storing large objects unnecessarily
 - Clean up intermediate data when possible
 - Consider memory usage for long-running workflows
 
 ### Debugging
+
 - Log context state at key points
 - Use descriptive keys for easy debugging
 - Validate context structure in critical nodes
@@ -229,6 +242,7 @@ Input Data: {
 ## Next Steps
 
 After understanding context management, explore:
+
 - `built-in-nodes` - Flowcraft's built-in node types
 - `error-handling` - Error handling and recovery patterns
 - `reliability/retry-patterns` - Resilience patterns

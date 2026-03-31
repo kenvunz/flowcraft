@@ -1,4 +1,9 @@
-import { type ContextImplementation, FlowRuntime, type Middleware, type NodeResult } from 'flowcraft'
+import {
+	type ContextImplementation,
+	FlowRuntime,
+	type Middleware,
+	type NodeResult,
+} from 'flowcraft'
 import {
 	createCircuitBreakerWorkflow,
 	createExponentialBackoffRetryWorkflow,
@@ -17,17 +22,23 @@ class FixedDelayRetryMiddleware implements Middleware {
 
 		while (attempts < maxRetries) {
 			try {
-				console.log(`[FIXED-RETRY] Attempting ${nodeId} (attempt ${attempts + 1}/${maxRetries})`)
+				console.log(
+					`[FIXED-RETRY] Attempting ${nodeId} (attempt ${attempts + 1}/${maxRetries})`,
+				)
 				const result = await next()
 				console.log(`[FIXED-RETRY] ${nodeId} succeeded on attempt ${attempts + 1}`)
 				return result
 			} catch (error: any) {
 				attempts++
 				if (attempts < maxRetries) {
-					console.log(`[FIXED-RETRY] ${nodeId} failed: ${error.message} - retrying in ${delay}ms...`)
+					console.log(
+						`[FIXED-RETRY] ${nodeId} failed: ${error.message} - retrying in ${delay}ms...`,
+					)
 					await new Promise((resolve) => setTimeout(resolve, delay))
 				} else {
-					console.log(`[FIXED-RETRY] ${nodeId} failed permanently after ${maxRetries} attempts`)
+					console.log(
+						`[FIXED-RETRY] ${nodeId} failed permanently after ${maxRetries} attempts`,
+					)
 					throw error
 				}
 			}
@@ -48,7 +59,9 @@ class ExponentialBackoffRetryMiddleware implements Middleware {
 
 		while (attempts < maxRetries) {
 			try {
-				console.log(`[EXPO-RETRY] Attempting ${nodeId} (attempt ${attempts + 1}/${maxRetries})`)
+				console.log(
+					`[EXPO-RETRY] Attempting ${nodeId} (attempt ${attempts + 1}/${maxRetries})`,
+				)
 				const result = await next()
 				console.log(`[EXPO-RETRY] ${nodeId} succeeded on attempt ${attempts + 1}`)
 				return result
@@ -56,10 +69,14 @@ class ExponentialBackoffRetryMiddleware implements Middleware {
 				attempts++
 				if (attempts < maxRetries) {
 					const delay = baseDelay * 2 ** (attempts - 1) // Exponential backoff
-					console.log(`[EXPO-RETRY] ${nodeId} failed: ${error.message} - retrying in ${delay}ms...`)
+					console.log(
+						`[EXPO-RETRY] ${nodeId} failed: ${error.message} - retrying in ${delay}ms...`,
+					)
 					await new Promise((resolve) => setTimeout(resolve, delay))
 				} else {
-					console.log(`[EXPO-RETRY] ${nodeId} failed permanently after ${maxRetries} attempts`)
+					console.log(
+						`[EXPO-RETRY] ${nodeId} failed permanently after ${maxRetries} attempts`,
+					)
 					throw error
 				}
 			}
@@ -82,7 +99,10 @@ class CircuitBreakerMiddleware implements Middleware {
 		const now = Date.now()
 
 		// Check if circuit breaker is open
-		if (this.failureCount >= this.failureThreshold && now - this.lastFailureTime < this.timeout) {
+		if (
+			this.failureCount >= this.failureThreshold &&
+			now - this.lastFailureTime < this.timeout
+		) {
 			console.log(`[CIRCUIT] Circuit breaker OPEN for ${nodeId} - failing fast`)
 			throw new Error('Circuit breaker is open')
 		}
@@ -97,7 +117,9 @@ class CircuitBreakerMiddleware implements Middleware {
 		} catch (error: any) {
 			this.failureCount++
 			this.lastFailureTime = now
-			console.log(`[CIRCUIT] ${nodeId} failed (${this.failureCount}/${this.failureThreshold}): ${error.message}`)
+			console.log(
+				`[CIRCUIT] ${nodeId} failed (${this.failureCount}/${this.failureThreshold}): ${error.message}`,
+			)
 			throw error
 		}
 	}

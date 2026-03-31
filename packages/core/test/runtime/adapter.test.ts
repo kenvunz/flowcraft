@@ -142,7 +142,11 @@ describe('BaseDistributedAdapter', () => {
 
 			await jobHandler(job)
 
-			expect(runtime.executeNode).toHaveBeenCalledWith(linearBlueprint, 'A', expect.any(Object))
+			expect(runtime.executeNode).toHaveBeenCalledWith(
+				linearBlueprint,
+				'A',
+				expect.any(Object),
+			)
 			expect(mockContext.set).toHaveBeenCalledWith('_outputs.A', 'Result from A')
 			expect(adapter.enqueueJob).toHaveBeenCalledWith({
 				runId: 'run1',
@@ -167,7 +171,11 @@ describe('BaseDistributedAdapter', () => {
 
 			await jobHandler(job)
 
-			expect(runtime.executeNode).toHaveBeenCalledWith(linearBlueprint, 'B', expect.any(Object))
+			expect(runtime.executeNode).toHaveBeenCalledWith(
+				linearBlueprint,
+				'B',
+				expect.any(Object),
+			)
 			expect(mockContext.set).toHaveBeenCalledWith('_outputs.B', 'Final Result')
 			expect(adapter.enqueueJob).not.toHaveBeenCalled()
 			expect(adapter.publishFinalResult).toHaveBeenCalledWith(
@@ -255,7 +263,10 @@ describe('BaseDistributedAdapter', () => {
 
 			await jobHandler(job)
 
-			expect(mockCoordinationStore.increment).toHaveBeenCalledWith('flowcraft:fanin:run1:C', 3600)
+			expect(mockCoordinationStore.increment).toHaveBeenCalledWith(
+				'flowcraft:fanin:run1:C',
+				3600,
+			)
 			expect(adapter.enqueueJob).not.toHaveBeenCalled()
 		})
 
@@ -274,7 +285,10 @@ describe('BaseDistributedAdapter', () => {
 
 			await jobHandler(job)
 
-			expect(mockCoordinationStore.increment).toHaveBeenCalledWith('flowcraft:fanin:run1:C', 3600)
+			expect(mockCoordinationStore.increment).toHaveBeenCalledWith(
+				'flowcraft:fanin:run1:C',
+				3600,
+			)
 			expect(mockCoordinationStore.delete).toHaveBeenCalledWith('flowcraft:fanin:run1:C')
 			expect(adapter.enqueueJob).toHaveBeenCalledWith({
 				runId: 'run1',
@@ -298,7 +312,11 @@ describe('BaseDistributedAdapter', () => {
 
 			await jobHandler(job)
 
-			expect(mockCoordinationStore.setIfNotExist).toHaveBeenCalledWith('flowcraft:joinlock:run1:C', 'locked', 3600)
+			expect(mockCoordinationStore.setIfNotExist).toHaveBeenCalledWith(
+				'flowcraft:joinlock:run1:C',
+				'locked',
+				3600,
+			)
 			expect(adapter.enqueueJob).toHaveBeenCalledWith({
 				runId: 'run1',
 				blueprintId: 'fan-in-any',
@@ -323,7 +341,11 @@ describe('BaseDistributedAdapter', () => {
 			await jobHandler(job)
 
 			const joinLockKey = 'flowcraft:joinlock:run2:C'
-			expect(mockCoordinationStore.setIfNotExist).toHaveBeenCalledWith(joinLockKey, 'locked', 3600)
+			expect(mockCoordinationStore.setIfNotExist).toHaveBeenCalledWith(
+				joinLockKey,
+				'locked',
+				3600,
+			)
 			expect(adapter.enqueueJob).not.toHaveBeenCalled()
 		})
 
@@ -578,7 +600,10 @@ describe('BaseDistributedAdapter', () => {
 		it('should reconcile a fan-in workflow with all predecessors completed', async () => {
 			// Simulate a workflow state where both A and B are completed
 			vi.mocked(mockContext.get).mockResolvedValue('fan-in')
-			vi.mocked(mockContext.toJSON).mockResolvedValue({ '_outputs.A': 'result from A', '_outputs.B': 'result from B' })
+			vi.mocked(mockContext.toJSON).mockResolvedValue({
+				'_outputs.A': 'result from A',
+				'_outputs.B': 'result from B',
+			})
 
 			const enqueuedNodes = await adapter.reconcile('run1')
 
@@ -647,7 +672,9 @@ describe('BaseDistributedAdapter', () => {
 			const enqueuedNodes = await adapter.reconcile('run1')
 
 			expect(enqueuedNodes).toEqual(new Set())
-			expect(adapter.enqueueJob).not.toHaveBeenCalledWith(expect.objectContaining({ nodeId: 'C' }))
+			expect(adapter.enqueueJob).not.toHaveBeenCalledWith(
+				expect.objectContaining({ nodeId: 'C' }),
+			)
 		})
 
 		it('should throw error if blueprintId is not found in context', async () => {

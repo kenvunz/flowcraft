@@ -41,7 +41,9 @@ function loadAndProcessBlueprint(filePath: string): WorkflowBlueprint {
 		if (predecessors && predecessors.length > 1) {
 			const firstPredecessor = predecessors[0]
 			if (predecessors.every((p) => p === firstPredecessor)) {
-				console.log(`[Blueprint Loader] Automatically setting joinStrategy='any' for convergence node '${node.id}'`)
+				console.log(
+					`[Blueprint Loader] Automatically setting joinStrategy='any' for convergence node '${node.id}'`,
+				)
 				node.config = { ...node.config, joinStrategy: 'any' }
 			}
 		}
@@ -53,7 +55,12 @@ function loadAndProcessBlueprint(filePath: string): WorkflowBlueprint {
 // Load all blueprints from the data directory
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dataDir = path.join(__dirname, '..', 'data')
-const useCaseDirs = ['1.blog-post', '2.job-application', '3.customer-review', '4.content-moderation']
+const useCaseDirs = [
+	'1.blog-post',
+	'2.job-application',
+	'3.customer-review',
+	'4.content-moderation',
+]
 
 export const blueprints: Record<string, WorkflowBlueprint> = {}
 

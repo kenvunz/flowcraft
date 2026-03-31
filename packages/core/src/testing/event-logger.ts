@@ -46,8 +46,12 @@ export class InMemoryEventLogger implements IEventBus {
 	 * @param type The event type to find (e.g., 'node:error').
 	 * @returns The first matching event, or undefined if not found.
 	 */
-	public find<T extends FlowcraftEvent['type']>(type: T): Extract<FlowcraftEvent, { type: T }> | undefined {
-		return this.events.find((e) => e.type === type) as Extract<FlowcraftEvent, { type: T }> | undefined
+	public find<T extends FlowcraftEvent['type']>(
+		type: T,
+	): Extract<FlowcraftEvent, { type: T }> | undefined {
+		return this.events.find((e) => e.type === type) as
+			| Extract<FlowcraftEvent, { type: T }>
+			| undefined
 	}
 
 	/**
@@ -55,7 +59,9 @@ export class InMemoryEventLogger implements IEventBus {
 	 * @param type The event type to filter by.
 	 * @returns An array of matching events.
 	 */
-	public filter<T extends FlowcraftEvent['type']>(type: T): Extract<FlowcraftEvent, { type: T }>[] {
+	public filter<T extends FlowcraftEvent['type']>(
+		type: T,
+	): Extract<FlowcraftEvent, { type: T }>[] {
 		return this.events.filter((e) => e.type === type) as Extract<FlowcraftEvent, { type: T }>[]
 	}
 
@@ -79,11 +85,15 @@ export class InMemoryEventLogger implements IEventBus {
 			// Custom formatting for a more intuitive trace
 			switch (type) {
 				case 'node:start':
-					console.log(`  - Node: "${payload.nodeId}" | Input: ${JSON.stringify(payload.input)}`)
+					console.log(
+						`  - Node: "${payload.nodeId}" | Input: ${JSON.stringify(payload.input)}`,
+					)
 					break
 				case 'edge:evaluate':
 					console.log(`  - Edge: "${payload.source}" -> "${payload.target}"`)
-					console.log(`  - Condition: ${payload.condition || 'N/A'} | Result: ${payload.result}`)
+					console.log(
+						`  - Condition: ${payload.condition || 'N/A'} | Result: ${payload.result}`,
+					)
 					break
 				case 'context:change':
 					if (payload.op === 'set') {
@@ -91,11 +101,15 @@ export class InMemoryEventLogger implements IEventBus {
 							`  - Node "${payload.sourceNode}" wrote to context -> Key: "${payload.key}" | Value: ${JSON.stringify(payload.value)}`,
 						)
 					} else if (payload.op === 'delete') {
-						console.log(`  - Node "${payload.sourceNode}" deleted from context -> Key: "${payload.key}"`)
+						console.log(
+							`  - Node "${payload.sourceNode}" deleted from context -> Key: "${payload.key}"`,
+						)
 					}
 					break
 				case 'node:finish':
-					console.log(`  - Node: "${payload.nodeId}" | Result: ${JSON.stringify(payload.result)}`)
+					console.log(
+						`  - Node: "${payload.nodeId}" | Result: ${JSON.stringify(payload.result)}`,
+					)
 					break
 				case 'node:error':
 					console.log(`  - Node: "${payload.nodeId}"`)

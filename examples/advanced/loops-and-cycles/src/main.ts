@@ -1,5 +1,10 @@
 import { FlowRuntime, UnsafeEvaluator } from 'flowcraft'
-import { createMultiNodeLoop, createRetryLoop, createSimpleLoop, createSubflowDemo } from './workflow'
+import {
+	createMultiNodeLoop,
+	createRetryLoop,
+	createSimpleLoop,
+	createSubflowDemo,
+} from './workflow'
 
 async function main() {
 	console.log('🚀 Flowcraft Loops, Cycles & Subflows Example\n')
@@ -59,7 +64,10 @@ async function main() {
 
 	try {
 		const { parentFlow, processingSubflow } = createSubflowDemo()
-		const combinedRegistry = new Map([...parentFlow.getFunctionRegistry(), ...processingSubflow.getFunctionRegistry()])
+		const combinedRegistry = new Map([
+			...parentFlow.getFunctionRegistry(),
+			...processingSubflow.getFunctionRegistry(),
+		])
 		const runtime = new FlowRuntime({
 			evaluator: new UnsafeEvaluator(),
 			blueprints: { 'processing-pipeline': processingSubflow.toBlueprint() },

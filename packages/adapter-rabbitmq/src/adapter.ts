@@ -40,7 +40,9 @@ export class RabbitMqAdapter extends BaseDistributedAdapter {
 
 	protected async enqueueJob(job: JobPayload): Promise<void> {
 		if (!this.channel) {
-			throw new Error('RabbitMQ channel is not available. Ensure the worker has been started.')
+			throw new Error(
+				'RabbitMQ channel is not available. Ensure the worker has been started.',
+			)
 		}
 		const jobBuffer = Buffer.from(JSON.stringify(job), 'utf-8')
 		this.channel.sendToQueue(this.queueName, jobBuffer, { persistent: true })
@@ -59,7 +61,10 @@ export class RabbitMqAdapter extends BaseDistributedAdapter {
 		this.logger.info(`[RabbitMqAdapter] Published final result for Run ID ${runId}.`)
 	}
 
-	public async registerWebhookEndpoint(_runId: string, _nodeId: string): Promise<{ url: string; event: string }> {
+	public async registerWebhookEndpoint(
+		_runId: string,
+		_nodeId: string,
+	): Promise<{ url: string; event: string }> {
 		// TODO: Implement webhook endpoint registration for RabbitMQ adapter
 		// This would typically involve setting up an HTTP endpoint that publishes to RabbitMQ
 		throw new Error('registerWebhookEndpoint not implemented for RabbitMQAdapter')
@@ -76,18 +81,24 @@ export class RabbitMqAdapter extends BaseDistributedAdapter {
 			await this.channel.assertQueue(this.queueName, { durable: true })
 			await this.channel.prefetch(1)
 
-			this.logger.info(`[RabbitMqAdapter] Worker listening for jobs on queue: "${this.queueName}"`)
+			this.logger.info(
+				`[RabbitMqAdapter] Worker listening for jobs on queue: "${this.queueName}"`,
+			)
 
 			await this.channel.consume(this.queueName, async (msg: ConsumeMessage | null) => {
 				// Add a guard to ensure the channel hasn't been closed by a concurrent stop() call
 				if (msg !== null && this.channel) {
 					try {
 						const job = JSON.parse(msg.content.toString('utf-8')) as JobPayload
-						this.logger.info(`[RabbitMqAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`)
+						this.logger.info(
+							`[RabbitMqAdapter] ==> Picked up job for Node: ${job.nodeId}, Run: ${job.runId}`,
+						)
 						await handler(job)
 						this.channel.ack(msg)
 					} catch (error) {
-						this.logger.error('[RabbitMqAdapter] Error processing message, nacking:', { error })
+						this.logger.error('[RabbitMqAdapter] Error processing message, nacking:', {
+							error,
+						})
 						this.channel.nack(msg, false, false)
 					}
 				}

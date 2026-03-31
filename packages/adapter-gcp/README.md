@@ -24,6 +24,7 @@ npm install flowcraft @flowcraft/gcp-adapter @google-cloud/pubsub @google-cloud/
 ## Prerequisites
 
 To use this adapter, you must have the following Google Cloud and Redis resources provisioned:
+
 - A Google Cloud project with the Pub/Sub and Firestore APIs enabled.
 - A Pub/Sub topic and a corresponding subscription.
 - A Firestore database with two collections: one for context and one for final status.
@@ -41,8 +42,12 @@ import { FlowRuntime } from 'flowcraft'
 import Redis from 'ioredis'
 
 // 1. Define your workflow blueprints and registry
-const blueprints = { /* your workflow blueprints */ }
-const registry = { /* your node implementations */ }
+const blueprints = {
+	/* your workflow blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
 
 // 2. Initialize service clients
 const pubsubClient = new PubSub({ projectId: 'your-gcp-project-id' })
@@ -95,10 +100,10 @@ import { createGcpReconciler } from '@flowcraft/gcp-adapter'
 
 // Create a reconciler instance
 const reconciler = createGcpReconciler({
-  adapter: myGcpAdapter,
-  firestoreClient: myFirestoreClient,
-  statusCollectionName: 'workflow-statuses',
-  stalledThresholdSeconds: 300, // 5 minutes
+	adapter: myGcpAdapter,
+	firestoreClient: myFirestoreClient,
+	statusCollectionName: 'workflow-statuses',
+	stalledThresholdSeconds: 300, // 5 minutes
 })
 
 // Run reconciliation
@@ -112,9 +117,9 @@ The reconciler returns detailed statistics:
 
 ```typescript
 interface ReconciliationStats {
-  stalledRuns: number    // Number of workflows identified as stalled
-  reconciledRuns: number // Number of workflows successfully resumed
-  failedRuns: number     // Number of reconciliation attempts that failed
+	stalledRuns: number // Number of workflows identified as stalled
+	reconciledRuns: number // Number of workflows successfully resumed
+	failedRuns: number // Number of reconciliation attempts that failed
 }
 ```
 
