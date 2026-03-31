@@ -1,5 +1,11 @@
 # flowcraft
 
+## 2.9.2
+
+### Patch Changes
+
+- Allow FlowRuntime instantiation without arguments
+
 ## 2.9.1
 
 ### Patch Changes
