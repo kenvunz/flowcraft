@@ -76,6 +76,54 @@ adapter.start()
 console.log('Flowcraft worker with Azure adapter is running...')
 ```
 
+### Serverless Usage (Azure Functions)
+
+You can also run workflows serverlessly by deploying an Azure Function triggered by Queue Storage. The adapter exposes a public `handleJob()` method for per-invocation processing:
+
+```typescript
+import { app, InvocationContext } from '@azure/functions'
+import { AzureQueueAdapter, RedisCoordinationStore } from '@flowcraft/azure-adapter'
+
+const adapter = new AzureQueueAdapter({
+	/* ... */
+})
+
+export async function workflowWorker(queueItem: unknown, context: InvocationContext) {
+	const job = JSON.parse(queueItem as string)
+	await adapter.handleJob(job)
+}
+
+app.storageQueue('workflow-worker', {
+	connection: 'AZURE_STORAGE_CONNECTION_STRING',
+	queueName: 'flowcraft-jobs',
+	handler: workflowWorker,
+})
+```
+
+### Serverless Usage (Azure Functions)
+
+You can also run workflows serverlessly by deploying an Azure Function triggered by Queue Storage. The adapter exposes a public `handleJob()` method for per-invocation processing:
+
+```typescript
+import { app, InvocationContext } from '@azure/functions'
+import { AzureQueueAdapter, RedisCoordinationStore } from '@flowcraft/azure-adapter'
+
+const adapter = new AzureQueueAdapter({
+	/* ... */
+})
+
+export async function workflowWorker(queueItem: unknown, context: InvocationContext) {
+	const job = JSON.parse(queueItem as string)
+	await adapter.handleJob(job)
+}
+
+app.storageQueue('workflow-worker', {
+	connection: 'AZURE_STORAGE_CONNECTION_STRING',
+	queueName: 'flowcraft-jobs',
+	handler: workflowWorker,
+})
+```
+
 ## Components
 
 - **`AzureQueueAdapter`**: The main adapter class that orchestrates job dequeuing, execution via the `FlowRuntime`, and enqueuing of subsequent jobs.

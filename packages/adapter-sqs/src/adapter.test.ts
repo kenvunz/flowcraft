@@ -129,4 +129,49 @@ describe('SqsAdapter', () => {
 			status: 'completed',
 		})
 	})
+
+	it('should expose handleJob() as a public method for serverless usage', async () => {
+		const mockCoordinationStore = {
+			increment: () => Promise.resolve(1),
+			setIfNotExist: () => Promise.resolve(true),
+			extendTTL: () => Promise.resolve(true),
+			delete: () => Promise.resolve(),
+			get: () => Promise.resolve(undefined),
+		}
+		const adapter = new SqsAdapter({
+			sqsClient,
+			dynamoDbClient: dynamoClient,
+			queueUrl,
+			contextTableName: CONTEXT_TABLE,
+			statusTableName: STATUS_TABLE,
+			coordinationStore: mockCoordinationStore,
+			runtimeOptions: {
+				blueprints: {
+					test: {
+						id: 'test',
+						nodes: [{ id: 'A', uses: 'test' }],
+						edges: [],
+					},
+				},
+				registry: {
+					test: async () => ({ output: 'done' }),
+				},
+			},
+		})
+
+		// handleJob should be publicly accessible (not just via processJobs)
+		expect(typeof adapter.handleJob).toBe('function')
+
+		// Calling handleJob should not throw (it will process the job via the base class)
+		// Since we don't have a real context set up for this runId, it will fail gracefully
+		// but the important thing is that the method is publicly callable
+		const job: JobPayload = {
+			runId: 'serverless-test-run',
+			blueprintId: 'test',
+			nodeId: 'A',
+		}
+
+		// This should not throw a "method not found" error
+		await expect(adapter.handleJob(job)).resolves.not.toThrow()
+	})
 })

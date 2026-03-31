@@ -146,6 +146,21 @@ export class AzureQueueAdapter extends BaseDistributedAdapter {
 		}
 	}
 
+	/**
+	 * Process a single job. This is called by the Azure Function handler.
+	 * Use this in your Azure Function Queue Storage event handler for serverless execution:
+	 *
+	 * ```typescript
+	 * export default async function queueTrigger(queueItem: unknown, context: InvocationContext) {
+	 *   const job = JSON.parse(queueItem as string) as JobPayload
+	 *   await adapter.handleJob(job)
+	 * }
+	 * ```
+	 */
+	public async handleJob(job: JobPayload): Promise<void> {
+		await super.handleJob(job)
+	}
+
 	public stop(): void {
 		console.log('[AzureQueueAdapter] Stopping worker polling.')
 		this.isPolling = false

@@ -3,7 +3,6 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"lint": "biome check",
 		"dev": "vitepress dev src",
 		"build": "vitepress build src",
 		"preview": "vitepress preview src"

@@ -130,6 +130,21 @@ export class PubSubAdapter extends BaseDistributedAdapter {
 		)
 	}
 
+	/**
+	 * Process a single job. This is called by the Cloud Function handler.
+	 * Use this in your Cloud Function Pub/Sub event handler for serverless execution:
+	 *
+	 * ```typescript
+	 * export const handler = async (cloudEvent: CloudEvent) => {
+	 *   const job = JSON.parse(Buffer.from(cloudEvent.data.message.data, 'base64').toString())
+	 *   await adapter.handleJob(job)
+	 * }
+	 * ```
+	 */
+	public async handleJob(job: JobPayload): Promise<void> {
+		await super.handleJob(job)
+	}
+
 	public async stop(): Promise<void> {
 		if (this.subscription) {
 			this.logger.info('[PubSubAdapter] Stopping worker listener.')

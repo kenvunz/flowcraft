@@ -149,6 +149,128 @@ adapter.start()
 console.log('Flowcraft worker with SQS adapter is running...')
 ```
 
+## Serverless Usage (AWS Lambda + SQS)
+
+Instead of running a persistent worker process, you can deploy your workflow processing as a Lambda function triggered by SQS. The adapter exposes a public `handleJob()` method that processes a single job per invocation.
+
+### Lambda Handler
+
+```typescript
+// lambda/workflow-worker.ts
+import type { SQSEvent, SQSHandler } from 'aws-lambda'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { SQSClient } from '@aws-sdk/client-sqs'
+import { DynamoDbCoordinationStore, SqsAdapter } from '@flowcraft/sqs-adapter'
+
+const blueprints = {
+	/* your blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
+
+const sqsClient = new SQSClient({ region: process.env.AWS_REGION })
+const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION })
+
+const coordinationStore = new DynamoDbCoordinationStore({
+	client: dynamoDbClient,
+	tableName: process.env.COORDINATION_TABLE!,
+})
+
+const adapter = new SqsAdapter({
+	runtimeOptions: { blueprints, registry },
+	coordinationStore,
+	sqsClient,
+	dynamoDbClient,
+	queueUrl: process.env.SQS_QUEUE_URL!,
+	contextTableName: process.env.CONTEXT_TABLE!,
+	statusTableName: process.env.STATUS_TABLE!,
+})
+
+// Export the Lambda handler
+export const handler: SQSHandler = async (event) => {
+	for (const record of event.Records) {
+		const job = JSON.parse(record.body || '{}')
+		await adapter.handleJob(job)
+	}
+}
+```
+
+### Infrastructure: SQS Event Source Mapping
+
+Configure your Lambda to be triggered by SQS messages:
+
+```hcl
+resource "aws_lambda_event_source_mapping" "workflow_worker" {
+  event_source_arn = aws_sqs_queue.jobs.arn
+  function_name    = aws_lambda_function.workflow_worker.function_name
+  batch_size       = 1
+}
+```
+
+Set `batch_size = 1` so each Lambda invocation processes a single job, keeping execution stateless and simplifying error handling.
+
+## Serverless Usage (AWS Lambda + SQS)
+
+Instead of running a persistent worker process, you can deploy your workflow processing as a Lambda function triggered by SQS. The adapter exposes a public `handleJob()` method that processes a single job per invocation.
+
+### Lambda Handler
+
+```typescript
+// lambda/workflow-worker.ts
+import type { SQSEvent, SQSHandler } from 'aws-lambda'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { SQSClient } from '@aws-sdk/client-sqs'
+import { DynamoDbCoordinationStore, SqsAdapter } from '@flowcraft/sqs-adapter'
+
+const blueprints = {
+	/* your blueprints */
+}
+const registry = {
+	/* your node implementations */
+}
+
+const sqsClient = new SQSClient({ region: process.env.AWS_REGION })
+const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION })
+
+const coordinationStore = new DynamoDbCoordinationStore({
+	client: dynamoDbClient,
+	tableName: process.env.COORDINATION_TABLE!,
+})
+
+const adapter = new SqsAdapter({
+	runtimeOptions: { blueprints, registry },
+	coordinationStore,
+	sqsClient,
+	dynamoDbClient,
+	queueUrl: process.env.SQS_QUEUE_URL!,
+	contextTableName: process.env.CONTEXT_TABLE!,
+	statusTableName: process.env.STATUS_TABLE!,
+})
+
+// Export the Lambda handler
+export const handler: SQSHandler = async (event) => {
+	for (const record of event.Records) {
+		const job = JSON.parse(record.body || '{}')
+		await adapter.handleJob(job)
+	}
+}
+```
+
+### Infrastructure: SQS Event Source Mapping
+
+Configure your Lambda to be triggered by SQS messages:
+
+```hcl
+resource "aws_lambda_event_source_mapping" "workflow_worker" {
+  event_source_arn = aws_sqs_queue.jobs.arn
+  function_name    = aws_lambda_function.workflow_worker.function_name
+  batch_size       = 1
+}
+```
+
+Set `batch_size = 1` so each Lambda invocation processes a single job, keeping execution stateless and simplifying error handling.
+
 ## Starting a Workflow (Client-Side)
 
 A client starts a workflow by setting the initial state in DynamoDB and sending the first job(s) to SQS.

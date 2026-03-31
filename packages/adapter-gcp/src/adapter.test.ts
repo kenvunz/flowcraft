@@ -148,4 +148,47 @@ describe('PubSubAdapter - Testcontainers Integration', () => {
 			status: 'completed',
 		})
 	})
+
+	it('should expose handleJob() as a public method for serverless usage', async () => {
+		const mockCoordinationStore = {
+			increment: () => Promise.resolve(1),
+			setIfNotExist: () => Promise.resolve(true),
+			extendTTL: () => Promise.resolve(true),
+			delete: () => Promise.resolve(),
+			get: () => Promise.resolve(undefined),
+		}
+		const adapter = new PubSubAdapter({
+			pubsubClient: pubsub,
+			firestoreClient: firestore,
+			redisClient: redis,
+			topicName: TOPIC_NAME,
+			subscriptionName: SUBSCRIPTION_NAME,
+			contextCollectionName: CONTEXT_COLLECTION,
+			statusCollectionName: STATUS_COLLECTION,
+			coordinationStore: mockCoordinationStore,
+			runtimeOptions: {
+				blueprints: {
+					test: {
+						id: 'test',
+						nodes: [{ id: 'A', uses: 'test' }],
+						edges: [],
+					},
+				},
+				registry: {
+					test: async () => ({ output: 'done' }),
+				},
+			},
+		})
+
+		// handleJob should be publicly accessible (not just via processJobs)
+		expect(typeof adapter.handleJob).toBe('function')
+
+		const job: JobPayload = {
+			runId: 'serverless-test-run',
+			blueprintId: 'test',
+			nodeId: 'A',
+		}
+
+		await expect(adapter.handleJob(job)).resolves.not.toThrow()
+	})
 })

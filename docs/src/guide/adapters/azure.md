@@ -149,6 +149,55 @@ adapter.start()
 console.log('Flowcraft worker with Azure adapter is running...')
 ```
 
+## Serverless Usage (Azure Functions + Queue Storage)
+
+Instead of running a persistent worker, you can deploy an Azure Function triggered by Queue Storage messages. The adapter exposes a public `handleJob()` method for per-invocation processing.
+
+### Azure Function Handler
+
+```typescript
+// functions/workflow-worker.ts
+import { app, InvocationContext } from '@azure/functions'
+import { CosmosClient } from '@azure/cosmos'
+import { QueueClient } from '@azure/storage-queue'
+import { AzureQueueAdapter, RedisCoordinationStore } from '@flowcraft/azure-adapter'
+import Redis from 'ioredis'
+
+const queueClient = new QueueClient(process.env.AZURE_STORAGE_CONNECTION_STRING!, 'flowcraft-jobs')
+const cosmosClient = new CosmosClient(process.env.COSMOS_DB_CONNECTION_STRING!)
+const redisClient = new Redis(process.env.REDIS_CONNECTION_STRING!)
+
+const coordinationStore = new RedisCoordinationStore(redisClient)
+
+const adapter = new AzureQueueAdapter({
+	runtimeOptions: {
+		blueprints: {
+			/* your blueprints */
+		},
+		registry: {
+			/* your node implementations */
+		},
+	},
+	coordinationStore,
+	queueClient,
+	cosmosClient,
+	cosmosDatabaseName: process.env.COSMOS_DB_NAME!,
+	contextContainerName: 'workflow-contexts',
+	statusContainerName: 'workflow-statuses',
+})
+
+export async function workflowWorker(queueItem: unknown, context: InvocationContext) {
+	const job = JSON.parse(queueItem as string)
+	await adapter.handleJob(job)
+}
+
+app.storageQueue('workflow-worker', {
+	connection: 'AZURE_STORAGE_CONNECTION_STRING',
+	queueName: 'flowcraft-jobs',
+	handler: workflowWorker,
+})
+```
+
 ## Starting a Workflow (Client-Side)
 
 A client starts a workflow by creating the initial state in Cosmos DB and enqueuing the first job(s).

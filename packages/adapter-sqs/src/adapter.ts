@@ -141,6 +141,23 @@ export class SqsAdapter extends BaseDistributedAdapter {
 		this.consumer.start()
 	}
 
+	/**
+	 * Process a single job. This is called by the Lambda handler.
+	 * Use this in your Lambda SQS event handler for serverless execution:
+	 *
+	 * ```typescript
+	 * export const handler: SQSHandler = async (event) => {
+	 *   for (const record of event.Records) {
+	 *     const job = JSON.parse(record.body) as JobPayload
+	 *     await adapter.handleJob(job)
+	 *   }
+	 * }
+	 * ```
+	 */
+	public async handleJob(job: JobPayload): Promise<void> {
+		await super.handleJob(job)
+	}
+
 	public stop(): void {
 		this.logger.info('[SqsAdapter] Stopping worker polling.')
 		if (this.consumer) {

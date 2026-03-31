@@ -75,7 +75,49 @@ const adapter = new SqsAdapter({
 adapter.start();
 
 console.log('Flowcraft worker with SQS adapter is running...');
-````
+```
+
+### Serverless Usage (AWS Lambda)
+
+You can also run workflows serverlessly by deploying a Lambda function triggered by SQS. The adapter exposes a public `handleJob()` method for per-invocation processing:
+
+```typescript
+import type { SQSEvent, SQSHandler } from 'aws-lambda'
+import { SqsAdapter, DynamoDbCoordinationStore } from '@flowcraft/sqs-adapter'
+
+// Initialize adapter (same as above)
+const adapter = new SqsAdapter({ /* ... */ })
+
+export const handler: SQSHandler = async (event) => {
+  for (const record of event.Records) {
+    const job = JSON.parse(record.body || '{}')
+    await adapter.handleJob(job)
+  }
+}
+```
+
+Set your Lambda's SQS event source mapping to `batch_size = 1` for stateless processing.
+
+### Serverless Usage (AWS Lambda)
+
+You can also run workflows serverlessly by deploying a Lambda function triggered by SQS. The adapter exposes a public `handleJob()` method for per-invocation processing:
+
+```typescript
+import type { SQSEvent, SQSHandler } from 'aws-lambda'
+import { SqsAdapter, DynamoDbCoordinationStore } from '@flowcraft/sqs-adapter'
+
+// Initialize adapter (same as above)
+const adapter = new SqsAdapter({ /* ... */ })
+
+export const handler: SQSHandler = async (event) => {
+  for (const record of event.Records) {
+    const job = JSON.parse(record.body || '{}')
+    await adapter.handleJob(job)
+  }
+}
+```
+
+Set your Lambda's SQS event source mapping to `batch_size = 1` for stateless processing.`
 
 ## Components
 
@@ -139,3 +181,4 @@ This ensures that workflows can be resumed even after worker failures or restart
 ## License
 
 This package is licensed under the [MIT License](LICENSE).
+````

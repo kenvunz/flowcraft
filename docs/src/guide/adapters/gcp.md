@@ -132,6 +132,62 @@ adapter.start()
 console.log('Flowcraft worker with GCP adapter is running...')
 ```
 
+## Serverless Usage (Cloud Functions + Pub/Sub)
+
+Instead of running a persistent worker, you can deploy a Cloud Function triggered by Pub/Sub messages. The adapter exposes a public `handleJob()` method for per-invocation processing.
+
+### Cloud Function Handler
+
+```typescript
+// functions/workflow-worker.ts
+import type { CloudEvent } from '@google-cloud/functions-framework'
+import { PubSubAdapter, RedisCoordinationStore } from '@flowcraft/gcp-adapter'
+import { Firestore } from '@google-cloud/firestore'
+import { PubSub } from '@google-cloud/pubsub'
+import Redis from 'ioredis'
+
+const pubsubClient = new PubSub({ projectId: process.env.GCP_PROJECT_ID })
+const firestoreClient = new Firestore({ projectId: process.env.GCP_PROJECT_ID })
+const redisClient = new Redis(process.env.REDIS_URL)
+
+const coordinationStore = new RedisCoordinationStore(redisClient)
+
+const adapter = new PubSubAdapter({
+	runtimeOptions: {
+		blueprints: {
+			/* your blueprints */
+		},
+		registry: {
+			/* your node implementations */
+		},
+	},
+	coordinationStore,
+	pubsubClient,
+	firestoreClient,
+	topicName: 'flowcraft-jobs',
+	subscriptionName: 'flowcraft-workers',
+	contextCollectionName: 'workflow-contexts',
+	statusCollectionName: 'workflow-statuses',
+})
+
+export const workflowWorker = async (cloudEvent: CloudEvent) => {
+	const data = Buffer.from(cloudEvent.data.message.data, 'base64').toString()
+	const job = JSON.parse(data)
+	await adapter.handleJob(job)
+}
+```
+
+### Deploy with gcloud
+
+```bash
+gcloud functions deploy workflow-worker \
+  --gen2 \
+  --runtime nodejs20 \
+  --trigger-topic flowcraft-jobs \
+  --entry-point workflowWorker \
+  --region us-central1
+```
+
 ## Starting a Workflow (Client-Side)
 
 A client starts a workflow by creating the initial state in Firestore and publishing the first job(s) to Pub/Sub.

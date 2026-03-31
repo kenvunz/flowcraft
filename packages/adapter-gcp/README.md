@@ -78,6 +78,44 @@ adapter.start()
 console.log('Flowcraft worker with GCP adapter is running...')
 ```
 
+### Serverless Usage (Cloud Functions)
+
+You can also run workflows serverlessly by deploying a Cloud Function triggered by Pub/Sub. The adapter exposes a public `handleJob()` method for per-invocation processing:
+
+```typescript
+import type { CloudEvent } from '@google-cloud/functions-framework'
+import { PubSubAdapter, RedisCoordinationStore } from '@flowcraft/gcp-adapter'
+
+const adapter = new PubSubAdapter({
+	/* ... */
+})
+
+export const workflowWorker = async (cloudEvent: CloudEvent) => {
+	const data = Buffer.from(cloudEvent.data.message.data, 'base64').toString()
+	const job = JSON.parse(data)
+	await adapter.handleJob(job)
+}
+```
+
+### Serverless Usage (Cloud Functions)
+
+You can also run workflows serverlessly by deploying a Cloud Function triggered by Pub/Sub. The adapter exposes a public `handleJob()` method for per-invocation processing:
+
+```typescript
+import type { CloudEvent } from '@google-cloud/functions-framework'
+import { PubSubAdapter, RedisCoordinationStore } from '@flowcraft/gcp-adapter'
+
+const adapter = new PubSubAdapter({
+	/* ... */
+})
+
+export const workflowWorker = async (cloudEvent: CloudEvent) => {
+	const data = Buffer.from(cloudEvent.data.message.data, 'base64').toString()
+	const job = JSON.parse(data)
+	await adapter.handleJob(job)
+}
+```
+
 ## Components
 
 - **`PubSubAdapter`**: The main adapter class that subscribes to a Pub/Sub topic, processes messages using the `FlowRuntime`, and publishes new jobs as the workflow progresses.
