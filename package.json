@@ -6,8 +6,8 @@
 		"lint": "oxlint --fix && oxfmt --check",
 		"lint:fix": "oxlint --fix && oxfmt",
 		"format": "oxfmt",
-		"changeset": "changeset",
-		"release": "turbo build && changeset publish"
+		"build": "turbo build",
+		"test": "turbo test"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.30.0",
