@@ -15,10 +15,10 @@ Inspect a completed workflow execution to see its timeline, node executions, and
 
 ```bash
 # Inspect using SQLite history
-flowcraft inspect <run-id> --database ./workflow-events.db
+flowcraft inspect <run_id> --database ./workflow-events.db
 
 # Inspect using PostgreSQL history
-flowcraft inspect <run-id> \
+flowcraft inspect <run_id> \
   --host localhost \
   --port 5432 \
   --user flowcraft \
@@ -26,7 +26,7 @@ flowcraft inspect <run-id> \
   --dbname flowcraft
 
 # Output in JSON format
-flowcraft inspect <run-id> --database ./events.db --json
+flowcraft inspect <run_id> --database ./events.db --json
 ```
 
 ## Example Output
@@ -67,7 +67,7 @@ customerEmail: customer@example.com
 
 ## Commands
 
-### `flowcraft inspect <run-id>`
+### `flowcraft inspect <run_id>`
 
 Inspect a workflow execution and display detailed information including:
 
@@ -96,13 +96,13 @@ The CLI connects to your history backend to retrieve workflow events. You can co
 #### SQLite Backend
 
 ```bash
-flowcraft inspect <run-id> --database ./workflow-events.db
+flowcraft inspect <run_id> --database ./workflow-events.db
 ```
 
 #### PostgreSQL Backend
 
 ```bash
-flowcraft inspect <run-id> \
+flowcraft inspect <run_id> \
   --host localhost \
   --port 5432 \
   --user flowcraft \
@@ -171,6 +171,6 @@ Create a `.flowcraft.json` file in your project directory or `~/.flowcraft/confi
 
 - Track duration of workflow executions
 - `flowcraft list`: List recent workflow executions
-- `flowcraft reconcile <run-id>`: Trigger reconciliation for stuck workflows
+- `flowcraft reconcile <run_id>`: Trigger reconciliation for stuck workflows
 - `flowcraft inspect --web`: Launch web UI for richer visualization
-- `flowcraft compare <run-id-1> <run-id-2>`: Compare two workflow executions
+- `flowcraft compare <run_id-1> <run_id-2>`: Compare two workflow executions
