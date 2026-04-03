@@ -17,7 +17,8 @@ This package provides a distributed adapter for [Flowcraft](https://www.npmjs.co
 You need to install the core `flowcraft` package along with this adapter and the required AWS SDK v3 modules.
 
 ````bash
-npm install flowcraft @flowcraft/sqs-adapter @aws-sdk/client-sqs @aws-sdk/client-dynamodb @aws-sdk/util-dynamodb```
+npm install flowcraft @flowcraft/sqs-adapter @aws-sdk/client-sqs @aws-sdk/client-dynamodb @aws-sdk/util-dynamodb
+```
 
 ## Prerequisites
 
