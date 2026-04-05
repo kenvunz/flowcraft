@@ -78,6 +78,7 @@ const adapter = new BullMQAdapter({
 	coordinationStore,
 	connection: redisConnection,
 	queueName: 'my-workflow-queue', // Optional: defaults to 'flowcraft-queue'
+	stateTtlSeconds: 86400, // Optional: TTL for state/status keys after run completion (default: 86400 / 24h). Set to 0 to persist indefinitely
 })
 
 // 6. Start the worker to begin processing jobs
@@ -198,6 +199,14 @@ app.post('/webhooks/:runId/:nodeId', async (req, res) => {
 	}
 })
 ```
+
+## Key Retention
+
+After a workflow run completes or fails, the adapter applies a TTL to both `workflow:state:${runId}` and `workflow:status:${runId}` keys to prevent memory leaks.
+
+- **`stateTtlSeconds`**: Controls how long (in seconds) state and status keys are retained. Defaults to `86400` (24 hours).
+- Set to `0` to persist keys indefinitely (not recommended for production).
+- Coordination keys (`fanin:*`, `joinlock:*`, `blueprint:*`) already use their own TTLs and are unaffected.
 
 ## Key Components
 
