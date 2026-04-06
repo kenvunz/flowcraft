@@ -1,5 +1,11 @@
 # @flowcraft/bullmq-adapter
 
+## 1.5.0
+
+### Minor Changes
+
+- Add configurable TTL status key
+
 ## 1.4.3
 
 ### Patch Changes
