@@ -17,6 +17,7 @@ declare module 'vue' {
     DemoFallback: typeof import('./.vitepress/theme/components/Demo/Fallback.vue')['default']
     DemoGettingStarted: typeof import('./.vitepress/theme/components/Demo/GettingStarted.vue')['default']
     DemoHitl: typeof import('./.vitepress/theme/components/Demo/Hitl.vue')['default']
+    DemoIntro: typeof import('./.vitepress/theme/components/Demo/Intro.vue')['default']
     DemoLoop: typeof import('./.vitepress/theme/components/Demo/Loop.vue')['default']
     DemoParallel: typeof import('./.vitepress/theme/components/Demo/Parallel.vue')['default']
     DemoProgrammatic: typeof import('./.vitepress/theme/components/Demo/Programmatic.vue')['default']

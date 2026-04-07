@@ -2,7 +2,7 @@
 import { Background } from '@vue-flow/background'
 import type { Edge, Node } from '@vue-flow/core'
 import { Position, useVueFlow, VueFlow } from '@vue-flow/core'
-import type { Flow, NodeRegistry, UIGraph, WorkflowBlueprint } from 'flowcraft'
+import type { FlowBuilder, NodeRegistry, UIGraph, WorkflowBlueprint } from 'flowcraft'
 import { ConsoleLogger, FlowRuntime, UnsafeEvaluator } from 'flowcraft'
 import { useEventBus } from '../composables/event-bus'
 import { useLayout } from '../composables/layout'
@@ -10,7 +10,7 @@ import { useLayout } from '../composables/layout'
 export type NodeDataStatus = 'idle' | 'pending' | 'completed' | 'failed'
 
 const props = defineProps<{
-	flow?: Flow<any, Record<string, any>>
+	flow?: FlowBuilder<Record<string, any>, Record<string, any>>
 	init?: Record<string, any>
 	blueprint?: WorkflowBlueprint
 	registry?: NodeRegistry
@@ -207,9 +207,9 @@ function toggleLayout() {
 </script>
 
 <template>
-	<div class="relative flex flex-col h-full rounded-[8px] overflow-hidden">
+	<div class="relative flex flex-col h-full rounded-lg overflow-hidden">
 		<header
-			class="flex items-center gap-2 p-2 bg-[var(--vp-c-bg-alt)] border-b border-[var(--vp-c-divider)]"
+			class="flex items-center gap-2 p-2 bg-(--vp-c-bg-alt) border-b border-(--vp-c-divider)"
 		>
 			<button @click="runWorkflow" class="brand">
 				{{ executionResult ? 'Restart' : 'Run' }}
@@ -221,7 +221,7 @@ function toggleLayout() {
 				Layout: {{ direction }}
 			</button> -->
 			<div v-if="awaitingNodes.length > 0" class="flex items-center gap-2">
-				<span class="border-l border-[var(--vp-c-divider)] h-4 mx-4" />
+				<span class="border-l border-(--vp-c-divider) h-4 mx-4" />
 				<span class="text-sm font-medium">Resume:</span>
 				<button
 					v-for="nodeId in awaitingNodes"
@@ -248,7 +248,7 @@ function toggleLayout() {
 		</header>
 		<pre
 			v-show="viewContext"
-			class="absolute inset-0 top-[45px] z-10 overflow-auto p-4 text-sm flex-auto bg-[var(--vp-code-block-bg)]"
+			class="absolute inset-0 top-11.25 z-10 overflow-auto p-4 text-sm flex-auto bg-(--vp-code-block-bg)"
 			>{{ JSON.stringify(executionResult, null, 2) }}</pre
 		>
 		<VueFlow fit-view-on-init :max-zoom="1.25">

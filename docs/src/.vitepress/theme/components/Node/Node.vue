@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { NodeProps } from '@vue-flow/core'
-import { computed } from 'vue'
 import { NodeDataStatus } from '../Flow.vue'
 import Status from './Status.vue'
 

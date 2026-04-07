@@ -19,8 +19,8 @@ const loopFlow = createFlow('loop-example')
 		condition: 'count < 5',
 	})
 	.node('finalize', async () => ({ output: 'Finalized' }))
-	.edge('initialize', 'increment')
-	.edge('increment', 'finalize')
+	.edge('initialize', 'counter')
+	.edge('counter', 'finalize')
 
 const positionsMap = {
 	initialize: { x: 0, y: 100 },

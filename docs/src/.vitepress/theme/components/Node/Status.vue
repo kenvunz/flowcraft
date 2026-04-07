@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { TransitionPresets, useTransition } from '@vueuse/core'
-import { computed } from 'vue'
 
 type Status = 'pending' | 'completed' | 'failed' | 'idle'
 

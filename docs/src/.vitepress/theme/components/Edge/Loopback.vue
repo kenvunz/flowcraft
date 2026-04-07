@@ -6,7 +6,6 @@ export default {
 
 <script setup>
 import { getBezierPath, getSmoothStepPath, Position } from '@vue-flow/core'
-import { computed } from 'vue'
 
 const props = defineProps({
 	id: {
