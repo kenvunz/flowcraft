@@ -76,7 +76,7 @@ export async function processResults(
 		if (executionResult.status === 'success') {
 			const result = executionResult.result
 			if (result) {
-				state.addCompletedNode(nodeId, result.output)
+				await state.addCompletedNode(nodeId, result.output)
 				if (result._fallbackExecuted) {
 					state.markFallbackExecuted()
 				}
