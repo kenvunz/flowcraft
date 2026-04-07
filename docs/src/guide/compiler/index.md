@@ -1,4 +1,7 @@
-# Imperative Workflows
+# Imperative Workflows (Alpha)
+
+> [!WARNING]
+> The Flowcraft Compiler is currently in alpha. [Contributions are welcome](https://github.com/gorango/flowcraft/fork)!
 
 Flowcraft's compiler enables writing workflows using familiar imperative TypeScript code. Instead of manually constructing graph structures, you write async functions with control flow statements that the compiler transforms into declarative blueprints at build time.
 

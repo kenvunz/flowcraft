@@ -66,9 +66,9 @@ This workflow can be visualized and run in the demo below:
 
 <DemoGettingStarted />
 
-## Compiler Alternative
+## Compiler Alternative (Alpha)
 
-For a more imperative approach, you can write the same workflow using the Flowcraft Compiler:
+We are currently experimenting with a more imperative approach to write the same workflow using the Flowcraft Compiler:
 
 ```typescript
 /** @flow */
