@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import type { NodeProps } from '@vue-flow/core'
-import { Handle, Position } from '@vue-flow/core'
+import { Handle } from '@vue-flow/core'
 import FlowNode, { FlowcraftNodeProps } from './Node.vue'
+import { useHandlePositions } from '../../composables/handlePositions'
 
 const props = defineProps<NodeProps & FlowcraftNodeProps>()
 
-const sourcePosition = computed(() => (props.direction === 'TB' ? Position.Bottom : Position.Right))
+const edges = computed(
+	() => props.flow?.getEdges.value.map((e) => ({ source: e.source, target: e.target })) ?? [],
+)
+const { sourcePosition } = useHandlePositions(props.id, props.flow, edges)
 </script>
 
 <template>

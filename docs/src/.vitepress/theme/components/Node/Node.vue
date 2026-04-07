@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { NodeProps } from '@vue-flow/core'
+import type { UseVueFlow } from '@vue-flow/core'
 import { NodeDataStatus } from '../Flow.vue'
 import Status from './Status.vue'
 
 export interface FlowcraftNodeProps {
 	direction?: 'TB' | 'LR'
+	flow?: ReturnType<UseVueFlow>
 	nodeData: {
 		inputs?: Record<string, any> | string
 		outputs?: Record<string, any> | string

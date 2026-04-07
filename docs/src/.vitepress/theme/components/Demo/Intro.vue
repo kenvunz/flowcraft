@@ -4,7 +4,7 @@ import { createFlow } from 'flowcraft'
 // Expense Report Processing Pipeline
 // Demonstrates: batches, loops, conditionals, and HITL
 
-const LAG = 500
+const LAG = 800
 
 const expenseFlow = createFlow('expense-report-pipeline')
 	// 1. Fetch expense report line items (array output for batch)
@@ -113,13 +113,13 @@ const positionsMap = {
 	'fetch-report': { x: 0, y: 150 },
 	'validate-items': { x: 0, y: 300 },
 	'compute-total': { x: 0, y: 450 },
-	'enhance-ocr': { x: 250, y: 300 },
-	'route-by-total': { x: 500, y: 100 },
-	'wait-manager': { x: 500, y: 300 },
-	'process-approval': { x: 750, y: 250 },
-	'auto-approve': { x: 500, y: 420 },
-	'auto-reject': { x: 500, y: 540 },
-	'send-notification': { x: 900, y: 450 },
+	'enhance-ocr': { x: 150, y: 650 },
+	'route-by-total': { x: 450, y: 500 },
+	'wait-manager': { x: 700, y: 300 },
+	'process-approval': { x: 950, y: 280 },
+	'auto-approve': { x: 700, y: 430 },
+	'auto-reject': { x: 700, y: 540 },
+	'send-notification': { x: 1100, y: 480 },
 }
 const typesMap = {
 	'fetch-report': 'input',
@@ -136,7 +136,7 @@ const typesMap = {
 </script>
 
 <template>
-	<div class="flowcraft-flow h-100!">
+	<div class="flowcraft-flow h-120!">
 		<Flow :flow="expenseFlow" :positions-map :types-map />
 	</div>
 </template>

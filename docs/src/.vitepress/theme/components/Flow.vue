@@ -254,13 +254,28 @@ function toggleLayout() {
 		<VueFlow fit-view-on-init :max-zoom="1.25">
 			<Background />
 			<template #node-input="nodeProps">
-				<NodeInput v-bind="nodeProps" :node-data="getNodeData(nodeProps.id)" :direction />
+				<NodeInput
+					v-bind="nodeProps"
+					:flow
+					:node-data="getNodeData(nodeProps.id)"
+					:direction
+				/>
 			</template>
 			<template #node-default="nodeProps">
-				<NodeDefault v-bind="nodeProps" :node-data="getNodeData(nodeProps.id)" :direction />
+				<NodeDefault
+					v-bind="nodeProps"
+					:flow
+					:node-data="getNodeData(nodeProps.id)"
+					:direction
+				/>
 			</template>
 			<template #node-output="nodeProps">
-				<NodeOutput v-bind="nodeProps" :node-data="getNodeData(nodeProps.id)" :direction />
+				<NodeOutput
+					v-bind="nodeProps"
+					:flow
+					:node-data="getNodeData(nodeProps.id)"
+					:direction
+				/>
 			</template>
 			<template #edge-loopback="edgeProps">
 				<EdgeLoopback v-bind="edgeProps" />
