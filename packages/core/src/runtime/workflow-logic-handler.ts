@@ -145,13 +145,9 @@ export class WorkflowLogicHandler {
 	): Promise<void> {
 		const asyncContext = context.type === 'sync' ? new AsyncContextView(context) : context
 		const predecessors = allPredecessors?.get(targetNode.id)
-		const hasSinglePredecessor = predecessors && predecessors.size === 1
+		const _hasSinglePredecessor = predecessors && predecessors.size === 1
 		const hasExplicitInputs = targetNode.inputs !== undefined
 		const hasEdgeTransform = edge.transform !== undefined
-
-		if (!hasExplicitInputs && !hasSinglePredecessor && !hasEdgeTransform) {
-			return
-		}
 
 		let sourceOutput = sourceResult.output
 
@@ -164,7 +160,7 @@ export class WorkflowLogicHandler {
 			}
 		}
 
-		const finalInput = edge.transform
+		const finalInput = hasEdgeTransform
 			? this.evaluator.evaluate(edge.transform, {
 					input: sourceOutput,
 					context: await asyncContext.toJSON(),

@@ -60,8 +60,8 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			)
 
 			expect(result.status).toBe('completed')
-			// A fan-in node with no explicit `inputs` mapping receives `undefined` as input.
-			expect(result.context['_outputs.D']).toBe('input was undefined')
+			// A fan-in node receives input from the last predecessor that triggered it.
+			expect(result.context['_outputs.D']).toBe('input was C')
 		})
 
 		it('should fail the workflow if a branch fails in a fan-in scenario', async () => {
@@ -107,8 +107,8 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			)
 
 			expect(result.status).toBe('completed')
-			// A fan-in node with no explicit `inputs` mapping receives `undefined` as input.
-			expect(result.context['_outputs.C']).toBe('input was undefined')
+			// A fan-in node receives input from the last predecessor that triggered it.
+			expect(result.context['_outputs.C']).toBe('input was B')
 		})
 
 		it('should correctly execute a graph with a cycle when strict mode is off', async () => {
@@ -597,7 +597,7 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 				{ functionRegistry: flow.getFunctionRegistry() },
 			)
 
-			expect(result.context['_outputs.C']).toBe('no-input')
+			expect(result.context['_outputs.C']).toBe('had-input')
 		})
 	})
 
@@ -676,6 +676,92 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 
 			expect(result.context['_outputs.B']).toBeUndefined()
 			expect(result.context['_outputs.C']).toBe('C')
+		})
+
+		it('should only follow ONE conditional edge when multiple conditions are mutually exclusive', async () => {
+			const autoApproveMock = vi.fn(async () => ({ output: { status: 'approved' } }))
+			const waitManagerMock = vi.fn(async () => ({ output: { status: 'pending' } }))
+			const rejectMock = vi.fn(async () => ({ output: { status: 'rejected' } }))
+
+			const flow = createFlow('conditional-routing')
+			flow.node('route', async ({ context }) => {
+				await context.set('total', 1665)
+				return { output: { total: 1665 } }
+			})
+				.node('autoApprove', autoApproveMock)
+				.node('waitManager', waitManagerMock)
+				.node('reject', rejectMock)
+				.edge('route', 'autoApprove', { condition: 'route.total < 500' })
+				.edge('route', 'waitManager', {
+					condition: 'route.total >= 500 && route.total <= 2000',
+				})
+				.edge('route', 'reject', { condition: 'route.total > 2000' })
+
+			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
+
+			expect(result.status).toBe('completed')
+			// Only waitManager should have executed (1665 is in 500-2000 range)
+			expect(autoApproveMock).not.toHaveBeenCalled()
+			expect(waitManagerMock).toHaveBeenCalledTimes(1)
+			expect(rejectMock).not.toHaveBeenCalled()
+			expect(result.context['_outputs.waitManager']).toEqual({ status: 'pending' })
+		})
+
+		it('should only follow the matching conditional edge after resuming from a .wait() node', async () => {
+			const autoApproveMock = vi.fn(async () => ({ output: { status: 'approved' } }))
+			const rejectMock = vi.fn(async () => ({ output: { status: 'rejected' } }))
+
+			const flow = createFlow('conditional-hitl')
+			flow.node('route', async ({ context }) => {
+				await context.set('total', 1665)
+				return { output: { total: 1665 } }
+			})
+				.node('autoApprove', autoApproveMock)
+				.wait('waitManager')
+				.node('processApproval', async ({ input }) => {
+					return { output: { status: input?.approved ? 'approved' : 'denied' } }
+				})
+				.node('reject', rejectMock)
+				.edge('route', 'autoApprove', { condition: 'route.total < 500' })
+				.edge('route', 'waitManager', {
+					condition: 'route.total >= 500 && route.total <= 2000',
+				})
+				.edge('route', 'reject', { condition: 'route.total > 2000' })
+				.edge('waitManager', 'processApproval')
+
+			const runtime = new FlowRuntime({ evaluator: new UnsafeEvaluator() })
+			const result = await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
+
+			// Should be awaiting at waitManager
+			expect(result.status).toBe('awaiting')
+			expect(autoApproveMock).not.toHaveBeenCalled()
+			expect(rejectMock).not.toHaveBeenCalled()
+			expect(result.context['_outputs.autoApprove']).toBeUndefined()
+			expect(result.context['_outputs.reject']).toBeUndefined()
+
+			// Resume with approval
+			const resumeResult = await runtime.resume(
+				flow.toBlueprint(),
+				result.serializedContext,
+				{ output: { approved: true } },
+				'waitManager',
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
+
+			expect(resumeResult.status).toBe('completed')
+			// After resume, still only processApproval should have run
+			expect(autoApproveMock).not.toHaveBeenCalled()
+			expect(rejectMock).not.toHaveBeenCalled()
+			expect(resumeResult.context['_outputs.processApproval']).toEqual({ status: 'approved' })
 		})
 	})
 
