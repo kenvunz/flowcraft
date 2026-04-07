@@ -226,7 +226,7 @@ export class FlowBuilder<
 		this.edge(endNodeId, id)
 		this.edge(id, startNodeId, {
 			action: 'continue',
-			transform: `context.${endNodeId}`,
+			transform: `context["${endNodeId}"]`,
 		})
 
 		return this
@@ -259,7 +259,7 @@ export class FlowBuilder<
 				finalEdges.push({
 					...edge,
 					action: edge.action || 'break',
-					transform: `context.${loopDef.endNodeId}`,
+					transform: `context["${loopDef.endNodeId}"]`,
 				})
 				processedOriginalEdges.add(edge)
 			}

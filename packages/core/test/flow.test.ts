@@ -214,13 +214,13 @@ describe('Flow Builder', () => {
 				source: 'loop',
 				target: 'inner',
 				action: 'continue',
-				transform: 'context.inner',
+				transform: 'context["inner"]',
 			})
 			expect(blueprint.edges[0]).toEqual({
 				source: 'loop',
 				target: 'end',
 				action: 'break',
-				transform: 'context.inner',
+				transform: 'context["inner"]',
 			})
 		})
 
