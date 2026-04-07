@@ -399,7 +399,7 @@ export class FlowBuilder<
 			for (const incomingEdge of incomingEdges) {
 				uiEdges.push({
 					...incomingEdge,
-					source: loopDef.startNodeId,
+					target: loopDef.startNodeId,
 				})
 			}
 		}
