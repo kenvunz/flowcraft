@@ -96,6 +96,14 @@ export abstract class BaseDistributedAdapter {
 	}
 
 	/**
+	 * Returns queue-level retry options for enqueuing successor jobs.
+	 * Only used when shouldRetryInProcess() returns false.
+	 */
+	protected getQueueRetryOptions(_nodeDef: NodeDefinition): Record<string, any> | undefined {
+		return undefined
+	}
+
+	/**
 	 * Creates a technology-specific distributed context for a given workflow run.
 	 * @param runId The unique ID for the workflow execution.
 	 */
@@ -207,13 +215,21 @@ export abstract class BaseDistributedAdapter {
 
 			let result: NodeResult<any, any>
 
-			const alreadyCompleted = await context.has(`_outputs.${nodeId}`)
+			const alreadyCompleted = await context.has(`_outputs.${nodeId}` as any)
+
 			if (alreadyCompleted) {
 				this.logger.info(
 					`[Adapter] Node '${nodeId}' already completed, skipping re-execution.`,
 				)
-				result = { output: await context.get(`_outputs.${nodeId}`) }
+				result = { output: await context.get(`_outputs.${nodeId}` as any) }
 			} else {
+				const nodeDef = blueprint.nodes.find((n) => n.id === nodeId)
+				if (nodeDef && !this.shouldRetryInProcess(nodeDef)) {
+					if (nodeDef.config?.maxRetries && nodeDef.config.maxRetries > 1) {
+						nodeDef.config.maxRetries = 1
+					}
+				}
+
 				result = await this.runtime.executeNode(blueprint, nodeId, state)
 				await context.set(`_outputs.${nodeId}` as any, result.output)
 
@@ -227,96 +243,17 @@ export abstract class BaseDistributedAdapter {
 				}
 			}
 
-			const analysis = analyzeBlueprint(blueprint)
-			const isTerminalNode = analysis.terminalNodeIds.includes(nodeId)
-
-			if (isTerminalNode) {
-				const allContextKeys = Object.keys(await context.toJSON())
-				const completedNodes = new Set<string>()
-				for (const key of allContextKeys) {
-					if (key.startsWith('_outputs.')) {
-						completedNodes.add(key.substring('_outputs.'.length))
-					}
-				}
-				const allTerminalNodesCompleted = analysis.terminalNodeIds.every((terminalId) =>
-					completedNodes.has(terminalId),
-				)
-
-				if (allTerminalNodesCompleted) {
-					this.logger.info(
-						`[Adapter] All terminal nodes completed for Run ID: ${runId}. Declaring workflow complete.`,
-					)
-					const finalContext = await context.toJSON()
-					const finalResult: WorkflowResult = {
-						context: finalContext,
-						serializedContext: this.serializer.serialize(finalContext),
-						status: 'completed',
-					}
-					await this.publishFinalResult(runId, {
-						status: 'completed',
-						payload: finalResult,
-					})
-					clearInterval(heartbeatInterval)
-					return
-				} else {
-					this.logger.info(
-						`[Adapter] Terminal node '${nodeId}' completed for Run ID '${runId}', but other terminal nodes are still running.`,
-					)
-				}
-			}
-
-			const nextNodes = await this.runtime.determineNextNodes(
-				blueprint,
+			await this.handleNodeCompletion({
+				runId,
+				blueprintId,
 				nodeId,
+				blueprint,
 				result,
 				context,
-				runId,
-			)
-
-			// stop if a branch terminates but it wasn't a terminal node
-			if (nextNodes.length === 0 && !isTerminalNode) {
-				this.logger.info(
-					`[Adapter] Non-terminal node '${nodeId}' reached end of branch for Run ID '${runId}'. This branch will now terminate.`,
-				)
-				clearInterval(heartbeatInterval)
-				return
-			}
-
-			for (const { node: nextNodeDef, edge } of nextNodes) {
-				await this.runtime.applyEdgeTransform(
-					edge,
-					result,
-					nextNodeDef,
-					context,
-					undefined,
-					runId,
-				)
-				const isReady = await this.isReadyForFanIn(runId, blueprint, nextNodeDef.id)
-				if (isReady) {
-					this.logger.info(`[Adapter] Node '${nextNodeDef.id}' is ready. Enqueuing job.`)
-					await this.enqueueJob({ runId, blueprintId, nodeId: nextNodeDef.id })
-					if (this.eventBus) {
-						await this.eventBus.emit({
-							type: 'job:enqueued',
-							payload: { runId, blueprintId, nodeId: nextNodeDef.id },
-						})
-					}
-				} else {
-					this.logger.info(
-						`[Adapter] Node '${nextNodeDef.id}' is waiting for other predecessors to complete.`,
-					)
-				}
-			}
-
-			const duration = Date.now() - startTime
-			if (this.eventBus) {
-				await this.eventBus.emit({
-					type: 'job:processed',
-					payload: { runId, blueprintId, nodeId, duration, success: true },
-				})
-			}
+				startTime,
+				heartbeatInterval,
+			})
 		} catch (error: any) {
-
 			const reason = error.message || 'Unknown execution error'
 			this.logger.error(
 				`[Adapter] FATAL: Job for node '${nodeId}' failed for Run ID '${runId}': ${reason}`,
@@ -340,6 +277,121 @@ export abstract class BaseDistributedAdapter {
 			await this.writePoisonPillForSuccessors(runId, blueprint, nodeId)
 		} finally {
 			clearInterval(heartbeatInterval)
+		}
+	}
+
+	/**
+	 * Handles post-execution logic: terminal node checks, successor determination,
+	 * and enqueueing of ready nodes. Extracted to support the idempotency guard.
+	 */
+	private async handleNodeCompletion(params: {
+		runId: string
+		blueprintId: string
+		nodeId: string
+		blueprint: WorkflowBlueprint
+		result: NodeResult<any, any>
+		context: IAsyncContext<Record<string, any>>
+		startTime: number
+		heartbeatInterval: ReturnType<typeof setInterval>
+	}): Promise<void> {
+		const {
+			runId,
+			blueprintId,
+			nodeId,
+			blueprint,
+			result,
+			context,
+			startTime,
+			heartbeatInterval,
+		} = params
+
+		const analysis = analyzeBlueprint(blueprint)
+		const isTerminalNode = analysis.terminalNodeIds.includes(nodeId)
+
+		if (isTerminalNode) {
+			const allContextKeys = Object.keys(await context.toJSON())
+			const completedNodes = new Set<string>()
+			for (const key of allContextKeys) {
+				if (key.startsWith('_outputs.')) {
+					completedNodes.add(key.substring('_outputs.'.length))
+				}
+			}
+			const allTerminalNodesCompleted = analysis.terminalNodeIds.every((terminalId) =>
+				completedNodes.has(terminalId),
+			)
+
+			if (allTerminalNodesCompleted) {
+				this.logger.info(
+					`[Adapter] All terminal nodes completed for Run ID: ${runId}. Declaring workflow complete.`,
+				)
+				const finalContext = await context.toJSON()
+				const finalResult: WorkflowResult = {
+					context: finalContext,
+					serializedContext: this.serializer.serialize(finalContext),
+					status: 'completed',
+				}
+				await this.publishFinalResult(runId, {
+					status: 'completed',
+					payload: finalResult,
+				})
+				clearInterval(heartbeatInterval)
+				return
+			} else {
+				this.logger.info(
+					`[Adapter] Terminal node '${nodeId}' completed for Run ID '${runId}', but other terminal nodes are still running.`,
+				)
+			}
+		}
+
+		const nextNodes = await this.runtime.determineNextNodes(
+			blueprint,
+			nodeId,
+			result,
+			context,
+			runId,
+		)
+
+		// stop if a branch terminates but it wasn't a terminal node
+		if (nextNodes.length === 0 && !isTerminalNode) {
+			this.logger.info(
+				`[Adapter] Non-terminal node '${nodeId}' reached end of branch for Run ID '${runId}'. This branch will now terminate.`,
+			)
+			clearInterval(heartbeatInterval)
+			return
+		}
+
+		for (const { node: nextNodeDef, edge } of nextNodes) {
+			await this.runtime.applyEdgeTransform(
+				edge,
+				result,
+				nextNodeDef,
+				context,
+				undefined,
+				runId,
+			)
+			const isReady = await this.isReadyForFanIn(runId, blueprint, nextNodeDef.id)
+			if (isReady) {
+				this.logger.info(`[Adapter] Node '${nextNodeDef.id}' is ready. Enqueuing job.`)
+				await this.enqueueJob({ runId, blueprintId, nodeId: nextNodeDef.id })
+				if (this.eventBus) {
+					await this.eventBus.emit({
+						type: 'job:enqueued',
+						payload: { runId, blueprintId, nodeId: nextNodeDef.id },
+					})
+				}
+			} else {
+				this.logger.info(
+					`[Adapter] Node '${nextNodeDef.id}' is waiting for other predecessors to complete.`,
+				)
+			}
+		}
+
+		const duration = Date.now() - startTime
+		if (this.eventBus) {
+			await this.eventBus.emit({
+				type: 'job:processed',
+				payload: { runId, blueprintId, nodeId, duration, success: true },
+			})
 		}
 	}
 

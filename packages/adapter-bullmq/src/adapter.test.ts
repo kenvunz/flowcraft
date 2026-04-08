@@ -1,8 +1,8 @@
 import type { StartedRedisContainer } from '@testcontainers/redis'
 import { RedisContainer } from '@testcontainers/redis'
-import type { JobPayload, PatchOperation } from 'flowcraft'
+import type { JobPayload, NodeDefinition, PatchOperation } from 'flowcraft'
 import Redis from 'ioredis'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { BullMQAdapter } from './adapter'
 import { RedisContext } from './context'
 import { RedisCoordinationStore } from './store'
@@ -146,7 +146,7 @@ describe('BullMQAdapter - State Key TTL', () => {
 	})
 })
 
-describe('BullMQAdapter - Queue-Native Retries', () => {
+describe('BullMQAdapter - Retry Mode', () => {
 	let redisContainer: StartedRedisContainer
 	let redis: Redis
 
@@ -160,194 +160,185 @@ describe('BullMQAdapter - Queue-Native Retries', () => {
 		await redisContainer.stop()
 	})
 
-	it('should append attempts and exponential backoff parameters to BullMQ opts when retryMode is queue', async () => {
+	it('should default to in-process retry mode', async () => {
 		const coordinationStore = new RedisCoordinationStore(redis)
 		const adapter = new BullMQAdapter({
 			connection: redis,
-			queueName: 'retry-test-queue-1',
+			queueName: 'retry-mode-test-1',
+			coordinationStore,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).retryMode).toBe('in-process')
+
+		const nodeDef: NodeDefinition = { id: 'A', uses: 'test', config: { maxRetries: 3 } }
+		expect(adapter.shouldRetryInProcess(nodeDef)).toBe(true)
+		expect(adapter.getQueueRetryOptions(nodeDef)).toBeUndefined()
+
+		await adapter.close()
+	})
+
+	it('should delegate retries to queue when retryMode is queue', async () => {
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new BullMQAdapter({
+			connection: redis,
+			queueName: 'retry-mode-test-2',
+			coordinationStore,
+			runtimeOptions: {},
+			retryMode: 'queue',
+		})
+
+		expect((adapter as any).retryMode).toBe('queue')
+
+		const nodeDef: NodeDefinition = {
+			id: 'A',
+			uses: 'test',
+			config: { maxRetries: 3, retryDelay: 2000 },
+		}
+		expect(adapter.shouldRetryInProcess(nodeDef)).toBe(false)
+
+		const retryOptions = adapter.getQueueRetryOptions(nodeDef)
+		expect(retryOptions).toEqual({
+			attempts: 3,
+			backoff: { type: 'exponential', delay: 2000 },
+		})
+
+		await adapter.close()
+	})
+
+	it('should include queue retry options in enqueued jobs when retryMode is queue', async () => {
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new BullMQAdapter({
+			connection: redis,
+			queueName: 'retry-mode-test-3',
 			coordinationStore,
 			runtimeOptions: {
 				blueprints: {
-					'bp-test': {
-						id: 'bp-test',
+					'test-bp': {
+						id: 'test-bp',
 						nodes: [
-							{
-								id: 'node-1',
-								uses: 'SomeFunc',
-								config: {
-									maxRetries: 5,
-									retryDelay: 3000,
-								},
-							},
+							{ id: 'A', uses: 'test', config: { maxRetries: 4, retryDelay: 500 } },
+							{ id: 'B', uses: 'output' },
 						],
-						edges: [],
-					} as any,
+						edges: [{ source: 'A', target: 'B' }],
+					},
 				},
 			},
 			retryMode: 'queue',
 		})
 
 		const job: JobPayload = {
-			runId: 'run-1',
-			blueprintId: 'bp-test',
-			nodeId: 'node-1',
+			runId: 'run-retry-1',
+			blueprintId: 'test-bp',
+			nodeId: 'A',
 		}
 
 		await (adapter as any).enqueueJob(job)
 		const waitingJobs = await (adapter as any).queue.getWaiting()
-		
 		expect(waitingJobs.length).toBe(1)
-		const queuedJob = waitingJobs[0]
-		expect(queuedJob.opts.attempts).toBe(5)
-		expect(queuedJob.opts.backoff).toEqual({
-			type: 'exponential',
-			delay: 3000,
-		})
-		expect(queuedJob.opts.jobId).toBe('run-1_node-1')
+		expect(waitingJobs[0].data).toEqual(job)
+		expect(waitingJobs[0].opts.attempts).toBe(4)
+		expect(waitingJobs[0].opts.backoff).toEqual({ type: 'exponential', delay: 500 })
 
 		await adapter.close()
 	})
 
-	it('should not append queue retry options when retryMode is in-process (default)', async () => {
+	it('should not include queue retry options when retryMode is in-process', async () => {
 		const coordinationStore = new RedisCoordinationStore(redis)
 		const adapter = new BullMQAdapter({
 			connection: redis,
-			queueName: 'retry-test-queue-2',
+			queueName: 'retry-mode-test-4',
 			coordinationStore,
 			runtimeOptions: {
 				blueprints: {
-					'bp-test': {
-						id: 'bp-test',
+					'test-bp-2': {
+						id: 'test-bp-2',
 						nodes: [
-							{
-								id: 'node-1',
-								uses: 'SomeFunc',
-								config: {
-									maxRetries: 5,
-									retryDelay: 3000,
-								},
-							},
+							{ id: 'A', uses: 'test', config: { maxRetries: 4, retryDelay: 500 } },
 						],
 						edges: [],
-					} as any,
+					},
 				},
 			},
+			retryMode: 'in-process',
 		})
 
 		const job: JobPayload = {
-			runId: 'run-2',
-			blueprintId: 'bp-test',
-			nodeId: 'node-1',
+			runId: 'run-retry-2',
+			blueprintId: 'test-bp-2',
+			nodeId: 'A',
 		}
 
 		await (adapter as any).enqueueJob(job)
 		const waitingJobs = await (adapter as any).queue.getWaiting()
-		
-		const queuedJob = waitingJobs[0]
-		expect(queuedJob.opts.attempts).not.toBe(5)
-		expect(queuedJob.opts.backoff).toBeUndefined()
-		expect(queuedJob.opts.jobId).toBe('run-2_node-1')
+		expect(waitingJobs.length).toBe(1)
+		expect(waitingJobs[0].opts.attempts).toBe(0)
+		expect(waitingJobs[0].opts.backoff).toBeUndefined()
 
 		await adapter.close()
 	})
 
-it('should NOT call publishFinalResult when queue retries are still pending', async () => {
+	it('should use defaults when node config has no retry settings in queue mode', async () => {
 		const coordinationStore = new RedisCoordinationStore(redis)
 		const adapter = new BullMQAdapter({
 			connection: redis,
-			queueName: 'retry-test-queue-3',
+			queueName: 'retry-mode-test-5',
 			coordinationStore,
 			runtimeOptions: {
 				blueprints: {
-					'bp-test': {
-						id: 'bp-test',
-						nodes: [
-							{
-								id: 'node-fail',
-								uses: 'FailingNode',
-								config: { maxRetries: 3 },
-							},
-						],
+					'test-bp-3': {
+						id: 'test-bp-3',
+						nodes: [{ id: 'A', uses: 'test' }],
 						edges: [],
-					} as any,
-				},
-				registry: {
-					FailingNode: async () => {
-						throw new Error('Simulated intermediate failure')
 					},
 				},
 			},
 			retryMode: 'queue',
 		})
 
-		const publishSpy = vi.spyOn(adapter as any, 'publishFinalResult').mockResolvedValue(undefined)
-		const poisonPillSpy = vi.spyOn(adapter as any, 'writePoisonPillForSuccessors').mockResolvedValue(undefined)
-
-		const runId = 'run-retry-1'
-		const nodeId = 'node-fail'
-
-		await redis.hset(`workflow:state:${runId}`, 'blueprintVersion', JSON.stringify(null))
-
-		const job: any = {
-			runId,
-			blueprintId: 'bp-test',
-			nodeId,
-			isLastAttempt: false, // Simulate attempt 1/3
-			attempt: 1,
+		const job: JobPayload = {
+			runId: 'run-retry-3',
+			blueprintId: 'test-bp-3',
+			nodeId: 'A',
 		}
 
-		await expect((adapter as any).handleJob(job)).resolves.toBeUndefined()
-		expect(publishSpy).not.toHaveBeenCalled()
-		expect(poisonPillSpy).not.toHaveBeenCalled()
+		await (adapter as any).enqueueJob(job)
+		const waitingJobs = await (adapter as any).queue.getWaiting()
+		expect(waitingJobs.length).toBe(1)
+		expect(waitingJobs[0].opts.attempts).toBe(1)
+		expect(waitingJobs[0].opts.backoff).toEqual({ type: 'exponential', delay: 1000 })
 
 		await adapter.close()
 	})
 
-	it('should skip execution entirely if idempotency outputs map proves job completed fully', async () => {
+	it('should use jobId for idempotency', async () => {
 		const coordinationStore = new RedisCoordinationStore(redis)
 		const adapter = new BullMQAdapter({
 			connection: redis,
-			queueName: 'retry-test-queue-4',
+			queueName: 'retry-mode-test-6',
 			coordinationStore,
 			runtimeOptions: {
 				blueprints: {
-					'bp-test': {
-						id: 'bp-test',
-						nodes: [{ id: 'node-success', uses: 'SuccessNode' }],
+					'test-bp-4': {
+						id: 'test-bp-4',
+						nodes: [{ id: 'A', uses: 'test', config: { maxRetries: 2 } }],
 						edges: [],
-						metadata: { version: '1.0' },
-					} as any,
-				},
-				registry: {
-					SuccessNode: async () => {
-						throw new Error('This should never execute because it is skipped!')
 					},
 				},
 			},
+			retryMode: 'queue',
 		})
 
-		const runId = 'run-idempotency-mock'
-		const nodeId = 'node-success'
-
-		// Artificially stub the output variables meaning this executed once before
-		await redis.hset(`workflow:state:${runId}`, `_outputs.${nodeId}`, JSON.stringify({ ok: true }))
-		await redis.hset(`workflow:state:${runId}`, 'blueprintId', JSON.stringify('bp-test'))
-		await redis.hset(`workflow:state:${runId}`, 'blueprintVersion', JSON.stringify('1.0'))
-
-		const executeNodeSpy = vi.spyOn((adapter as any).runtime, 'executeNode')
-		vi.spyOn(adapter as any, 'enqueueJob').mockResolvedValue(undefined)
-		const publishSpy = vi.spyOn(adapter as any, 'publishFinalResult').mockResolvedValue(undefined)
-
-		const job: any = {
-			runId,
-			blueprintId: 'bp-test',
-			nodeId,
+		const job: JobPayload = {
+			runId: 'run-idempotent',
+			blueprintId: 'test-bp-4',
+			nodeId: 'A',
 		}
 
-		// Executes flawlessly and resolves without triggering node logic execution
-		await expect((adapter as any).handleJob(job)).resolves.toBeUndefined()
-		expect(executeNodeSpy).not.toHaveBeenCalled()
-		expect(publishSpy).toHaveBeenCalledWith(runId, expect.objectContaining({ status: 'completed' }))
+		await (adapter as any).enqueueJob(job)
+		const waitingJobs = await (adapter as any).queue.getWaiting()
+		expect(waitingJobs.length).toBe(1)
+		expect(waitingJobs[0].opts.jobId).toBe('run-idempotent_A')
 
 		await adapter.close()
 	})

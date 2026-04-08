@@ -78,7 +78,7 @@ console.log('Flowcraft worker with BullMQ adapter is running...')
 
 By default, Flowcraft retries failing nodes synchronously inside the worker process. In distributed environments, this can hold worker concurrency slots hostage during backoff delays.
 
-You can offload retries to BullMQ's native attempts and backoff scheduling by setting `retryMode: 'queue'` in the adapter configuration. 
+You can offload retries to BullMQ's native attempts and backoff scheduling by setting `retryMode: 'queue'` in the adapter configuration.
 When enabled, BullMQ will apply exponential backoff according to your node's `maxRetries` and `retryDelay` configs without stalling the Node.js process. It supports full idempotency, effectively resuming exactly where the crash or stall occurred.
 
 ## Reconciliation

@@ -5,13 +5,6 @@ import type { AdapterOptions, ICoordinationStore, JobPayload } from '../../src/r
 import { BaseDistributedAdapter } from '../../src/runtime'
 import type { IAsyncContext, NodeDefinition, WorkflowBlueprint } from '../../src/types'
 
-const _mockRuntime = {
-	executeNode: vi.fn(),
-	determineNextNodes: vi.fn(),
-	applyEdgeTransform: vi.fn(),
-	options: { blueprints: {} as Record<string, any> },
-}
-
 vi.mock('../../src/runtime/runtime.ts', () => {
 	const FlowRuntime = vi.fn(
 		class FakeFlowRuntime {
@@ -36,6 +29,35 @@ class MockAdapter extends BaseDistributedAdapter {
 	enqueueJob = vi.fn()
 	publishFinalResult = vi.fn()
 	registerWebhookEndpoint = vi.fn()
+}
+
+class RetryAwareMockAdapter extends BaseDistributedAdapter {
+	createContext = vi.fn()
+	processJobs = vi.fn()
+	enqueueJob = vi.fn()
+	publishFinalResult = vi.fn()
+	registerWebhookEndpoint = vi.fn()
+
+	private _shouldRetryInProcess: boolean
+	private _queueRetryOptions: Record<string, any> | undefined
+
+	constructor(
+		options: AdapterOptions,
+		shouldRetryInProcess = true,
+		queueRetryOptions?: Record<string, any>,
+	) {
+		super(options)
+		this._shouldRetryInProcess = shouldRetryInProcess
+		this._queueRetryOptions = queueRetryOptions
+	}
+
+	protected shouldRetryInProcess(_nodeDef: NodeDefinition): boolean {
+		return this._shouldRetryInProcess
+	}
+
+	protected getQueueRetryOptions(_nodeDef: NodeDefinition): Record<string, any> | undefined {
+		return this._queueRetryOptions
+	}
 }
 
 describe('BaseDistributedAdapter', () => {
@@ -761,8 +783,11 @@ describe('BaseDistributedAdapter', () => {
 				nodeId: 'A',
 			}
 
-			// Mock context to return a different version
-			vi.mocked(mockContext.has).mockResolvedValue(true)
+			vi.mocked(mockContext.has).mockImplementation(async (key: string) => {
+				if (key === 'blueprintId') return true
+				if (key === '_outputs.A') return false
+				return true
+			})
 			vi.mocked(mockContext.get).mockImplementation(async (key: string) => {
 				if (key === 'blueprintVersion') return '1.0'
 				return undefined
@@ -770,7 +795,6 @@ describe('BaseDistributedAdapter', () => {
 
 			await jobHandler(job)
 
-			// Should not execute the node or enqueue anything
 			expect(runtime.executeNode).not.toHaveBeenCalled()
 			expect(adapter.enqueueJob).not.toHaveBeenCalled()
 			expect(adapter.publishFinalResult).not.toHaveBeenCalled()
@@ -793,7 +817,11 @@ describe('BaseDistributedAdapter', () => {
 				nodeId: 'A',
 			}
 
-			vi.mocked(mockContext.has).mockResolvedValue(true)
+			vi.mocked(mockContext.has).mockImplementation(async (key: string) => {
+				if (key === 'blueprintId') return true
+				if (key === '_outputs.A') return false
+				return true
+			})
 			vi.mocked(mockContext.get).mockImplementation(async (key: string) => {
 				if (key === 'blueprintVersion') return '1.0'
 				return undefined
@@ -822,7 +850,11 @@ describe('BaseDistributedAdapter', () => {
 				nodeId: 'A',
 			}
 
-			vi.mocked(mockContext.has).mockResolvedValue(true)
+			vi.mocked(mockContext.has).mockImplementation(async (key: string) => {
+				if (key === 'blueprintId') return true
+				if (key === '_outputs.A') return false
+				return true
+			})
 			vi.mocked(mockContext.get).mockImplementation(async (key: string) => {
 				if (key === 'blueprintVersion') return null
 				return undefined
@@ -833,6 +865,162 @@ describe('BaseDistributedAdapter', () => {
 			await jobHandler(job)
 
 			expect(runtime.executeNode).toHaveBeenCalled()
+		})
+	})
+
+	describe('Idempotency Guard', () => {
+		it('should skip execution and enqueue successors when node is already completed', async () => {
+			const job: JobPayload = {
+				runId: 'run1',
+				blueprintId: 'linear',
+				nodeId: 'A',
+			}
+
+			vi.mocked(mockContext.has).mockImplementation(async (key: string) => {
+				if (key === 'blueprintId') return true
+				if (key === '_outputs.A') return true
+				return true
+			})
+			vi.mocked(mockContext.get).mockImplementation(async (key: string) => {
+				if (key === 'blueprintVersion') return null
+				if (key === '_outputs.A') return 'cached-output'
+				return undefined
+			})
+			vi.mocked(runtime.determineNextNodes).mockResolvedValue([
+				{ node: linearBlueprint.nodes[1], edge: linearBlueprint.edges[0] },
+			])
+
+			await jobHandler(job)
+
+			expect(runtime.executeNode).not.toHaveBeenCalled()
+			expect(mockContext.set).not.toHaveBeenCalledWith('_outputs.A', expect.anything())
+			expect(adapter.enqueueJob).toHaveBeenCalledWith({
+				runId: 'run1',
+				blueprintId: 'linear',
+				nodeId: 'B',
+			})
+		})
+
+		it('should declare workflow complete when idempotent skip completes last terminal node', async () => {
+			const job: JobPayload = {
+				runId: 'run1',
+				blueprintId: 'linear',
+				nodeId: 'B',
+			}
+
+			vi.mocked(mockContext.has).mockImplementation(async (key: string) => {
+				if (key === 'blueprintId') return true
+				if (key === '_outputs.B') return true
+				return true
+			})
+			vi.mocked(mockContext.get).mockImplementation(async (key: string) => {
+				if (key === 'blueprintVersion') return null
+				if (key === '_outputs.B') return 'cached-output'
+				return undefined
+			})
+			vi.mocked(mockContext.toJSON).mockResolvedValue({
+				'_outputs.A': 'result from A',
+				'_outputs.B': 'cached-output',
+			})
+			vi.mocked(runtime.determineNextNodes).mockResolvedValue([])
+
+			await jobHandler(job)
+
+			expect(runtime.executeNode).not.toHaveBeenCalled()
+			expect(adapter.publishFinalResult).toHaveBeenCalledWith(
+				'run1',
+				expect.objectContaining({ status: 'completed' }),
+			)
+		})
+	})
+
+	describe('Queue-Mode Retry Delegation', () => {
+		it('should disable in-process retries when shouldRetryInProcess returns false', async () => {
+			const retryBlueprint: WorkflowBlueprint = {
+				id: 'retry-test',
+				nodes: [
+					{ id: 'A', uses: 'test', config: { maxRetries: 5 } },
+					{ id: 'B', uses: 'output' },
+				],
+				edges: [{ source: 'A', target: 'B' }],
+			}
+			if (runtime.options.blueprints) {
+				runtime.options.blueprints['retry-test'] = retryBlueprint
+			}
+
+			const retryAdapter = new RetryAwareMockAdapter(
+				{
+					runtimeOptions: {
+						blueprints: runtime.options.blueprints,
+						logger: new NullLogger(),
+					},
+					coordinationStore: mockCoordinationStore,
+				},
+				false,
+			)
+			retryAdapter.createContext = vi.fn().mockReturnValue(mockContext)
+			retryAdapter.start()
+			const retryHandler = retryAdapter.processJobs.mock.calls[0][0]
+			const retryRuntime = (retryAdapter as any).runtime
+
+			vi.mocked(mockContext.has).mockImplementation(async (key: string) => {
+				if (key === 'blueprintId') return true
+				if (key === '_outputs.A') return false
+				return true
+			})
+			vi.mocked(retryRuntime.executeNode).mockResolvedValue({ output: 'success' })
+			vi.mocked(retryRuntime.determineNextNodes).mockResolvedValue([
+				{ node: retryBlueprint.nodes[1], edge: retryBlueprint.edges[0] },
+			])
+
+			await retryHandler({ runId: 'run1', blueprintId: 'retry-test', nodeId: 'A' })
+
+			const nodeDef = retryBlueprint.nodes[0]
+			expect(nodeDef.config?.maxRetries).toBe(1)
+		})
+
+		it('should not modify maxRetries when shouldRetryInProcess returns true', async () => {
+			const retryBlueprint: WorkflowBlueprint = {
+				id: 'retry-test-2',
+				nodes: [
+					{ id: 'A', uses: 'test', config: { maxRetries: 5 } },
+					{ id: 'B', uses: 'output' },
+				],
+				edges: [{ source: 'A', target: 'B' }],
+			}
+			if (runtime.options.blueprints) {
+				runtime.options.blueprints['retry-test-2'] = retryBlueprint
+			}
+
+			const retryAdapter = new RetryAwareMockAdapter(
+				{
+					runtimeOptions: {
+						blueprints: runtime.options.blueprints,
+						logger: new NullLogger(),
+					},
+					coordinationStore: mockCoordinationStore,
+				},
+				true,
+			)
+			retryAdapter.createContext = vi.fn().mockReturnValue(mockContext)
+			retryAdapter.start()
+			const retryHandler = retryAdapter.processJobs.mock.calls[0][0]
+			const retryRuntime = (retryAdapter as any).runtime
+
+			vi.mocked(mockContext.has).mockImplementation(async (key: string) => {
+				if (key === 'blueprintId') return true
+				if (key === '_outputs.A') return false
+				return true
+			})
+			vi.mocked(retryRuntime.executeNode).mockResolvedValue({ output: 'success' })
+			vi.mocked(retryRuntime.determineNextNodes).mockResolvedValue([
+				{ node: retryBlueprint.nodes[1], edge: retryBlueprint.edges[0] },
+			])
+
+			await retryHandler({ runId: 'run1', blueprintId: 'retry-test-2', nodeId: 'A' })
+
+			const nodeDef = retryBlueprint.nodes[0]
+			expect(nodeDef.config?.maxRetries).toBe(5)
 		})
 	})
 })

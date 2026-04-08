@@ -19,6 +19,11 @@ The base class for all distributed adapters. It handles the technology-agnostic 
 - **`protected abstract enqueueJob(job)`**: Must enqueue a new job onto the message queue.
 - **`protected abstract publishFinalResult(runId, result)`**: Must publish the final result of a workflow run.
 
+### Overridable Hooks
+
+- **`protected shouldRetryInProcess(nodeDef)`**: Returns `true` by default. Override to return `false` when your queue system should handle retries natively (e.g., BullMQ `attempts`/`backoff`). When `false`, the adapter forces `maxRetries = 1` so the executor runs exactly once and lets the queue schedule retries.
+- **`protected getQueueRetryOptions(nodeDef)`**: Returns `undefined` by default. Override to return queue-specific retry options (e.g., `{ attempts, backoff }`) that are applied when enqueuing successor jobs. Only used when `shouldRetryInProcess()` returns `false`.
+
 ## `ICoordinationStore` Interface
 
 Defines the contract for an atomic, distributed key-value store required for coordination tasks like fan-in joins and distributed locks.

@@ -1,6 +1,6 @@
-import type { ConnectionOptions, Job, JobsOptions } from 'bullmq'
+import type { ConnectionOptions, Job } from 'bullmq'
 import { Queue, Worker } from 'bullmq'
-import type { AdapterOptions, JobPayload } from 'flowcraft'
+import type { AdapterOptions, JobPayload, NodeDefinition } from 'flowcraft'
 import { BaseDistributedAdapter } from 'flowcraft'
 import Redis, { type RedisOptions } from 'ioredis'
 import { RedisContext } from './context'
@@ -22,9 +22,15 @@ export interface BullMQAdapterOptions extends AdapterOptions {
 	 */
 	stateTtlSeconds?: number
 	/**
-	 * Determines where `maxRetries` configured on a node is executed.
-	 * - `in-process`: Retries block the worker while synchronously backoff delaying (Default)
-	 * - `queue`: Retries are returned to BullMQ as a failure, generating a native new retry Job
+	 * Controls how node retries are handled.
+	 *
+	 * - `'in-process'` (default): Retries run in a tight loop inside the worker process
+	 *   via `withRetries()`. This is the legacy behavior and is backward-compatible.
+	 * - `'queue'`: Each retry is a separate BullMQ job. BullMQ's native `attempts`
+	 *   and `backoff` options handle retry scheduling, providing observability,
+	 *   crash resilience, and exponential backoff.
+	 *
+	 * @default 'in-process'
 	 */
 	retryMode?: 'in-process' | 'queue'
 }
@@ -61,8 +67,18 @@ export class BullMQAdapter extends BaseDistributedAdapter {
 		return new RedisContext(this.redisClient, runId)
 	}
 
-	protected shouldRetryInProcess(_nodeDef: any): boolean {
+	protected shouldRetryInProcess(_nodeDef: NodeDefinition): boolean {
 		return this.retryMode !== 'queue'
+	}
+
+	protected getQueueRetryOptions(nodeDef: NodeDefinition): Record<string, any> | undefined {
+		if (this.retryMode !== 'queue') return undefined
+		const maxRetries = nodeDef.config?.maxRetries ?? 1
+		const retryDelay = nodeDef.config?.retryDelay ?? 1000
+		return {
+			attempts: maxRetries,
+			backoff: { type: 'exponential', delay: retryDelay },
+		}
 	}
 
 	protected processJobs(handler: (job: JobPayload) => Promise<void>): void {
@@ -94,22 +110,13 @@ export class BullMQAdapter extends BaseDistributedAdapter {
 	}
 
 	protected async enqueueJob(job: JobPayload): Promise<void> {
-		const nodeDef = this.runtime.options.blueprints?.[job.blueprintId]?.nodes.find(
-			(n) => n.id === job.nodeId,
-		)
-		const opts: JobsOptions = {
-			jobId: `${job.runId}_${job.nodeId}`, // Idempotency deduplication
-		}
-
-		if (this.retryMode === 'queue') {
-			opts.attempts = nodeDef?.config?.maxRetries ?? 1
-			opts.backoff = {
-				type: 'exponential',
-				delay: nodeDef?.config?.retryDelay ?? 1000,
-			}
-		}
-
-		await this.queue.add('executeNode', job, opts)
+		const blueprint = this.runtime.options.blueprints?.[job.blueprintId]
+		const nodeDef = blueprint?.nodes.find((n) => n.id === job.nodeId)
+		const retryOptions = nodeDef ? this.getQueueRetryOptions(nodeDef) : undefined
+		await this.queue.add('executeNode', job, {
+			jobId: `${job.runId}_${job.nodeId}`,
+			...retryOptions,
+		})
 	}
 
 	protected async publishFinalResult(runId: string, result: any): Promise<void> {
