@@ -41,10 +41,11 @@ export class CosmosDbContext implements IAsyncContext<Record<string, any>> {
 	}
 
 	async set<K extends string>(key: K, value: any): Promise<void> {
-		// Use upsert for atomic create-or-replace operation
+		const existing = await this.readItem()
 		const updatedItem = {
 			id: this.runId,
 			runId: this.runId,
+			...existing,
 			[key]: value,
 		}
 		await this.container.items.upsert(updatedItem)

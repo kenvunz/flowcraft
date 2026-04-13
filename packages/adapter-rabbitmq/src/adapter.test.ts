@@ -8,7 +8,7 @@ import * as amqplib from 'amqplib'
 import type { JobPayload, PatchOperation } from 'flowcraft'
 import Redis from 'ioredis'
 import { Client as PgClient } from 'pg'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { RabbitMqAdapter } from './adapter'
 import { PostgresContext } from './context'
 import { RedisCoordinationStore } from './store'
@@ -133,5 +133,160 @@ describe('RabbitMqAdapter - Testcontainers Integration', () => {
 			count: 10,
 			status: 'completed',
 		})
+	})
+})
+
+describe('RabbitMqAdapter - Unit Tests', () => {
+	it('should throw on registerWebhookEndpoint', async () => {
+		const mockAmqp = {
+			createChannel: vi.fn().mockResolvedValue({}),
+		}
+		const mockPg = {
+			query: vi.fn().mockResolvedValue({}),
+		}
+
+		const adapter = new RabbitMqAdapter({
+			amqpConnection: mockAmqp as any,
+			pgClient: mockPg as any,
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await expect(adapter.registerWebhookEndpoint('run-1', 'node-1')).rejects.toThrow(
+			'registerWebhookEndpoint not implemented for RabbitMQAdapter',
+		)
+	})
+
+	it('should create context using createContext', () => {
+		const mockAmqp = {
+			createChannel: vi.fn().mockResolvedValue({}),
+		}
+		const mockPg = {
+			query: vi.fn().mockResolvedValue({}),
+		}
+
+		const adapter = new RabbitMqAdapter({
+			amqpConnection: mockAmqp as any,
+			pgClient: mockPg as any,
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		const context = (adapter as any).createContext('test-run')
+		expect(context).toBeDefined()
+		expect(context.runId).toBe('test-run')
+	})
+
+	it('should use default queue name', () => {
+		const mockAmqp = {
+			createChannel: vi.fn().mockResolvedValue({}),
+		}
+		const mockPg = {
+			query: vi.fn().mockResolvedValue({}),
+		}
+
+		const adapter = new RabbitMqAdapter({
+			amqpConnection: mockAmqp as any,
+			pgClient: mockPg as any,
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).queueName).toBe('flowcraft-queue')
+	})
+
+	it('should use custom queue name', () => {
+		const mockAmqp = {
+			createChannel: vi.fn().mockResolvedValue({}),
+		}
+		const mockPg = {
+			query: vi.fn().mockResolvedValue({}),
+		}
+
+		const adapter = new RabbitMqAdapter({
+			amqpConnection: mockAmqp as any,
+			pgClient: mockPg as any,
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			queueName: 'custom-queue',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).queueName).toBe('custom-queue')
+	})
+
+	it('should throw when enqueueJob and channel not available', async () => {
+		const mockAmqp = {
+			createChannel: vi.fn().mockResolvedValue({}),
+		}
+		const mockPg = {
+			query: vi.fn().mockResolvedValue({}),
+		}
+
+		const adapter = new RabbitMqAdapter({
+			amqpConnection: mockAmqp as any,
+			pgClient: mockPg as any,
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await expect(
+			(adapter as any).enqueueJob({ runId: 'r1', blueprintId: 'b1', nodeId: 'n1' }),
+		).rejects.toThrow('RabbitMQ channel is not available. Ensure the worker has been started.')
+	})
+
+	it('should warn when channel already set up', async () => {
+		const mockAmqp = {
+			createChannel: vi.fn().mockResolvedValue({}),
+		}
+		const mockPg = {
+			query: vi.fn().mockResolvedValue({}),
+		}
+
+		const adapter = new RabbitMqAdapter({
+			amqpConnection: mockAmqp as any,
+			pgClient: mockPg as any,
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		;(adapter as any).channel = {}
+		await (adapter as any).processJobs(() => {})
+	})
+
+	it('should stop and close channel', async () => {
+		const mockChannel = {
+			close: vi.fn().mockResolvedValue({}),
+		}
+		const mockAmqp = {
+			createChannel: vi.fn().mockResolvedValue({}),
+		}
+		const mockPg = {
+			query: vi.fn().mockResolvedValue({}),
+		}
+
+		const adapter = new RabbitMqAdapter({
+			amqpConnection: mockAmqp as any,
+			pgClient: mockPg as any,
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		;(adapter as any).channel = mockChannel
+		await adapter.stop()
+		expect(mockChannel.close).toHaveBeenCalled()
 	})
 })

@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Version](https://img.shields.io/npm/v/@flowcraft/opentelemetry-middleware.svg)](https://www.npmjs.com/package/@flowcraft/opentelemetry-middleware)
-[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/middleware-opentelemetry)](https://codecov.io/github/gorango/flowcraft)
+[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/master?flag=middleware-opentelemetry)](https://codecov.io/github/gorango/flowcraft/tree/master/packages/middleware-opentelemetry/src?flags[0]=middleware-opentelemetry)
 
 [OpenTelemetry](https://opentelemetry.io/) middleware for Flowcraft workflows, providing distributed tracing and observability.
 

@@ -12,11 +12,11 @@ else
 fi
 
 # Pull Cosmos DB emulator image
-docker pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
+docker pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview
 if [ $? -eq 0 ]; then
-	echo "Successfully pulled mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"
+	echo "Successfully pulled mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview"
 else
-	echo "Failed to pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"
+	echo "Failed to pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview"
 	exit 1
 fi
 
@@ -30,4 +30,3 @@ else
 fi
 
 echo "All specified Testcontainers images pre-loaded."
-

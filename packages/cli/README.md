@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Version](https://img.shields.io/npm/v/@flowcraft/cli.svg)](https://www.npmjs.com/package/@flowcraft/cli)
-[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/cli)](https://codecov.io/github/gorango/flowcraft)
+[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/master?flag=cli)](https://codecov.io/github/gorango/flowcraft/tree/master/packages/cli/src?flags[0]=cli)
 
 Command-line interface for Flowcraft workflow observability and debugging.
 

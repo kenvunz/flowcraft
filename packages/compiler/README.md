@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Version](https://img.shields.io/npm/v/@flowcraft/compiler.svg)](https://www.npmjs.com/package/@flowcraft/compiler)
-[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/compiler)](https://codecov.io/github/gorango/flowcraft)
+[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/master?flag=compiler)](https://codecov.io/github/gorango/flowcraft/tree/master/packages/compiler/src?flags[0]=compiler)
 
 The `@flowcraft/compiler` is an optional, opt-in toolchain that transforms intuitive, imperative TypeScript code into a declarative Flowcraft workflow blueprint. It gives you the best of both worlds: a natural developer experience using standard language features and a powerful, serializable, and predictable graph-based execution model at runtime.
 

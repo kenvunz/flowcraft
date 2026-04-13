@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Version](https://img.shields.io/npm/v/@flowcraft/postgres-history.svg)](https://www.npmjs.com/package/@flowcraft/postgres-history)
-[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/history-postgres)](https://codecov.io/github/gorango/flowcraft)
+[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/master?flag=history-postgres)](https://codecov.io/github/gorango/flowcraft/tree/master/packages/history-postgres/src?flags[0]=history-postgres)
 
 PostgreSQL-based event store for Flowcraft workflow observability.
 

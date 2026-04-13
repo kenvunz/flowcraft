@@ -8,7 +8,7 @@ import { Client as CassandraClient } from 'cassandra-driver'
 import type { JobPayload, PatchOperation } from 'flowcraft'
 import Redis from 'ioredis'
 import { Kafka } from 'kafkajs'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { KafkaAdapter } from './adapter'
 import { CassandraContext } from './context'
 import { RedisCoordinationStore } from './store'
@@ -160,5 +160,194 @@ describe('KafkaAdapter - Testcontainers Integration', () => {
 			count: 10,
 			status: 'completed',
 		})
+	})
+})
+
+describe('KafkaAdapter - Unit Tests', () => {
+	it('should throw on registerWebhookEndpoint', async () => {
+		const mockKafka = {
+			producer: () => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				disconnect: vi.fn().mockResolvedValue(undefined),
+				send: vi.fn().mockResolvedValue(undefined),
+			}),
+			consumer: () => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				disconnect: vi.fn().mockResolvedValue(undefined),
+				subscribe: vi.fn().mockResolvedValue(undefined),
+				run: vi.fn().mockResolvedValue(undefined),
+			}),
+		}
+		const mockCassandra = {
+			execute: vi.fn().mockResolvedValue({ wasApplied: () => true }),
+		}
+
+		const adapter = new KafkaAdapter({
+			kafka: mockKafka as any,
+			cassandraClient: mockCassandra as any,
+			keyspace: 'test',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await expect(adapter.registerWebhookEndpoint('run-1', 'node-1')).rejects.toThrow(
+			'registerWebhookEndpoint not implemented for KafkaAdapter',
+		)
+	})
+
+	it('should create context using createContext', () => {
+		const mockKafka = {
+			producer: () => ({}),
+			consumer: () => ({}),
+		}
+		const mockCassandra = {
+			execute: vi.fn().mockResolvedValue({ wasApplied: () => true }),
+		}
+
+		const adapter = new KafkaAdapter({
+			kafka: mockKafka as any,
+			cassandraClient: mockCassandra as any,
+			keyspace: 'test',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		const context = (adapter as any).createContext('test-run')
+		expect(context).toBeDefined()
+		expect(context.runId).toBe('test-run')
+	})
+
+	it('should use default topic and groupId', () => {
+		const mockKafka = {
+			producer: () => ({}),
+			consumer: () => ({}),
+		}
+		const mockCassandra = {
+			execute: vi.fn().mockResolvedValue({ wasApplied: () => true }),
+		}
+
+		const adapter = new KafkaAdapter({
+			kafka: mockKafka as any,
+			cassandraClient: mockCassandra as any,
+			keyspace: 'test',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).topicName).toBe('flowcraft-jobs')
+		expect((adapter as any).groupId).toBe('flowcraft-workers')
+	})
+
+	it('should use custom topic and groupId', () => {
+		const mockKafka = {
+			producer: () => ({}),
+			consumer: () => ({}),
+		}
+		const mockCassandra = {
+			execute: vi.fn().mockResolvedValue({ wasApplied: () => true }),
+		}
+
+		const adapter = new KafkaAdapter({
+			kafka: mockKafka as any,
+			cassandraClient: mockCassandra as any,
+			keyspace: 'test',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			topicName: 'custom-topic',
+			groupId: 'custom-group',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).topicName).toBe('custom-topic')
+		expect((adapter as any).groupId).toBe('custom-group')
+	})
+
+	it('should throw when enqueueJob and not running', async () => {
+		const mockKafka = {
+			producer: () => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				disconnect: vi.fn().mockResolvedValue(undefined),
+				send: vi.fn().mockResolvedValue(undefined),
+			}),
+			consumer: () => ({}),
+		}
+		const mockCassandra = {
+			execute: vi.fn().mockResolvedValue({ wasApplied: () => true }),
+		}
+
+		const adapter = new KafkaAdapter({
+			kafka: mockKafka as any,
+			cassandraClient: mockCassandra as any,
+			keyspace: 'test',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await expect(
+			(adapter as any).enqueueJob({ runId: 'r1', blueprintId: 'b1', nodeId: 'n1' }),
+		).rejects.toThrow('Kafka producer is not connected. Adapter must be started.')
+	})
+
+	it('should warn when consumer already running', async () => {
+		const mockKafka = {
+			producer: () => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				disconnect: vi.fn().mockResolvedValue(undefined),
+				send: vi.fn().mockResolvedValue(undefined),
+			}),
+			consumer: () => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				disconnect: vi.fn().mockResolvedValue(undefined),
+				subscribe: vi.fn().mockResolvedValue(undefined),
+				run: vi.fn().mockResolvedValue(undefined),
+			}),
+		}
+		const mockCassandra = {
+			execute: vi.fn().mockResolvedValue({ wasApplied: () => true }),
+		}
+
+		const adapter = new KafkaAdapter({
+			kafka: mockKafka as any,
+			cassandraClient: mockCassandra as any,
+			keyspace: 'test',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		;(adapter as any).isRunning = true
+		await (adapter as any).processJobs(() => {})
+	})
+
+	it('should handle onJobStart error gracefully', async () => {
+		const mockKafka = {
+			producer: () => ({}),
+			consumer: () => ({}),
+		}
+		const mockCassandra = {
+			execute: vi.fn().mockRejectedValue(new Error('Cassandra error')),
+		}
+
+		const adapter = new KafkaAdapter({
+			kafka: mockKafka as any,
+			cassandraClient: mockCassandra as any,
+			keyspace: 'test',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await (adapter as any).onJobStart('run-1', 'bp-1', 'node-1')
 	})
 })

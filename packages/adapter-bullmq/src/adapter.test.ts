@@ -172,8 +172,10 @@ describe('BullMQAdapter - Retry Mode', () => {
 		expect((adapter as any).retryMode).toBe('in-process')
 
 		const nodeDef: NodeDefinition = { id: 'A', uses: 'test', config: { maxRetries: 3 } }
-		expect(adapter.shouldRetryInProcess(nodeDef)).toBe(true)
-		expect(adapter.getQueueRetryOptions(nodeDef)).toBeUndefined()
+		const shouldRetry = (adapter as any).shouldRetryInProcess(nodeDef)
+		expect(shouldRetry).toBe(true)
+		const retryOpts = (adapter as any).getQueueRetryOptions(nodeDef)
+		expect(retryOpts).toBeUndefined()
 
 		await adapter.close()
 	})
@@ -195,9 +197,10 @@ describe('BullMQAdapter - Retry Mode', () => {
 			uses: 'test',
 			config: { maxRetries: 3, retryDelay: 2000 },
 		}
-		expect(adapter.shouldRetryInProcess(nodeDef)).toBe(false)
+		const shouldRetry = (adapter as any).shouldRetryInProcess(nodeDef)
+		expect(shouldRetry).toBe(false)
 
-		const retryOptions = adapter.getQueueRetryOptions(nodeDef)
+		const retryOptions = (adapter as any).getQueueRetryOptions(nodeDef)
 		expect(retryOptions).toEqual({
 			attempts: 3,
 			backoff: { type: 'exponential', delay: 2000 },
@@ -383,6 +386,224 @@ describe('BullMQAdapter - Default Job Options', () => {
 		expect(waitingJobs.length).toBe(1)
 		expect(waitingJobs[0].opts.removeOnComplete).toBe(true)
 		expect(waitingJobs[0].opts.removeOnFail).toBe(1000)
+
+		await adapter.close()
+	})
+})
+
+describe('BullMQAdapter - Context Methods', () => {
+	let redisContainer: StartedRedisContainer
+	let redis: Redis
+
+	beforeAll(async () => {
+		redisContainer = await new RedisContainer('redis:8.2.2').start()
+		redis = new Redis(redisContainer.getConnectionUrl())
+	}, 30000)
+
+	afterAll(async () => {
+		await redis.quit()
+		await redisContainer.stop()
+	})
+
+	it('should support has() to check key existence', async () => {
+		const runId = 'has-delete-run'
+		const context = new RedisContext(redis, runId)
+
+		expect(await context.has('missingKey')).toBe(false)
+		await context.set('existingKey', { value: 123 })
+		expect(await context.has('existingKey')).toBe(true)
+	})
+
+	it('should support delete() to remove keys', async () => {
+		const runId = 'delete-run'
+		const context = new RedisContext(redis, runId)
+
+		await context.set('toDelete', 'will be gone')
+		expect(await context.has('toDelete')).toBe(true)
+		expect(await context.delete('toDelete')).toBe(true)
+		expect(await context.has('toDelete')).toBe(false)
+		expect(await context.delete('alreadyDeleted')).toBe(false)
+	})
+})
+
+describe('BullMQAdapter - Coordination Store', () => {
+	let redisContainer: StartedRedisContainer
+	let redis: Redis
+
+	beforeAll(async () => {
+		redisContainer = await new RedisContainer('redis:8.2.2').start()
+		redis = new Redis(redisContainer.getConnectionUrl())
+	}, 30000)
+
+	afterAll(async () => {
+		await redis.quit()
+		await redisContainer.stop()
+	})
+
+	it('should increment counters with TTL', async () => {
+		const store = new RedisCoordinationStore(redis)
+		const key = 'test-counter'
+
+		const count1 = await store.increment(key, 60)
+		expect(count1).toBe(1)
+		const count2 = await store.increment(key, 60)
+		expect(count2).toBe(2)
+	})
+
+	it('should set values with NX (setIfNotExist)', async () => {
+		const store = new RedisCoordinationStore(redis)
+		const key = 'test-nx'
+
+		const set1 = await store.setIfNotExist(key, 'first', 60)
+		expect(set1).toBe(true)
+		const set2 = await store.setIfNotExist(key, 'second', 60)
+		expect(set2).toBe(false)
+	})
+
+	it('should extend TTL on keys', async () => {
+		const store = new RedisCoordinationStore(redis)
+		const key = 'test-ttl'
+
+		await redis.set(key, 'value')
+		const extended = await store.extendTTL(key, 120)
+		expect(extended).toBe(true)
+	})
+
+	it('should get and delete values', async () => {
+		const store = new RedisCoordinationStore(redis)
+		const key = 'test-get'
+
+		await store.setIfNotExist(key, 'value', 60)
+		const value = await store.get(key)
+		expect(value).toBe('value')
+		await store.delete(key)
+		const afterDelete = await store.get(key)
+		expect(afterDelete).toBeUndefined()
+	})
+})
+
+describe('BullMQAdapter - Patch Edge Cases', () => {
+	let redisContainer: StartedRedisContainer
+	let redis: Redis
+
+	beforeAll(async () => {
+		redisContainer = await new RedisContainer('redis:8.2.2').start()
+		redis = new Redis(redisContainer.getConnectionUrl())
+	}, 30000)
+
+	afterAll(async () => {
+		await redis.quit()
+		await redisContainer.stop()
+	})
+
+	it('should handle empty patch operations', async () => {
+		const runId = 'empty-patch-run'
+		const context = new RedisContext(redis, runId)
+
+		await context.set('existing', 'value')
+		await context.patch([])
+		expect(await context.get('existing')).toBe('value')
+	})
+})
+
+describe('BullMQAdapter - Context and Options', () => {
+	let redisContainer: StartedRedisContainer
+	let redis: Redis
+
+	beforeAll(async () => {
+		redisContainer = await new RedisContainer('redis:8.2.2').start()
+		redis = new Redis(redisContainer.getConnectionUrl())
+	}, 30000)
+
+	afterAll(async () => {
+		await redis.quit()
+		await redisContainer.stop()
+	})
+
+	it('should create context using createContext method', async () => {
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new BullMQAdapter({
+			connection: redis,
+			queueName: 'context-test',
+			coordinationStore,
+			runtimeOptions: {},
+		})
+
+		const context = (adapter as any).createContext('test-run')
+		expect(context).toBeDefined()
+		expect(context.type).toBe('async')
+
+		await context.set('key', 'value')
+		expect(await context.get('key')).toBe('value')
+
+		await adapter.close()
+	})
+
+	it('should use default queue name when not provided', async () => {
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new BullMQAdapter({
+			connection: redis,
+			coordinationStore,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).queueName).toBe('flowcraft-queue')
+		await adapter.close()
+	})
+
+	it('should use custom queue name', async () => {
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new BullMQAdapter({
+			connection: redis,
+			queueName: 'my-custom-queue',
+			coordinationStore,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).queueName).toBe('my-custom-queue')
+		await adapter.close()
+	})
+
+	it('should default stateTtlSeconds to 24 hours', async () => {
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new BullMQAdapter({
+			connection: redis,
+			queueName: 'ttl-default-test',
+			coordinationStore,
+			runtimeOptions: {},
+		})
+
+		expect((adapter as any).stateTtlSeconds).toBe(86400)
+		await adapter.close()
+	})
+})
+
+describe('BullMQAdapter - Unimplemented Methods', () => {
+	let redisContainer: StartedRedisContainer
+	let redis: Redis
+
+	beforeAll(async () => {
+		redisContainer = await new RedisContainer('redis:8.2.2').start()
+		redis = new Redis(redisContainer.getConnectionUrl())
+	}, 30000)
+
+	afterAll(async () => {
+		await redis.quit()
+		await redisContainer.stop()
+	})
+
+	it('should throw when calling unimplemented registerWebhookEndpoint', async () => {
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new BullMQAdapter({
+			connection: redis,
+			queueName: 'webhook-test',
+			coordinationStore,
+			runtimeOptions: {},
+		})
+
+		await expect(adapter.registerWebhookEndpoint('run-1', 'node-1')).rejects.toThrow(
+			'registerWebhookEndpoint not implemented for BullMQAdapter',
+		)
 
 		await adapter.close()
 	})

@@ -2,7 +2,7 @@ import type { StartedRedisContainer } from '@testcontainers/redis'
 import { RedisContainer } from '@testcontainers/redis'
 import type { ICoordinationStore, JobPayload, PatchOperation } from 'flowcraft'
 import Redis from 'ioredis'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { VercelQueueAdapter } from './adapter'
 import { VercelKvContext } from './context'
 import { VercelKvCoordinationStore } from './store'
@@ -185,5 +185,50 @@ describe('VercelQueueAdapter - Testcontainers Integration', () => {
 		const status = JSON.parse(statusJson!)
 		expect(status.status).toBe('running')
 		expect(status.lastUpdated).toBeDefined()
+	})
+})
+
+describe('VercelQueueAdapter - Unit Tests', () => {
+	it('should throw on registerWebhookEndpoint', async () => {
+		const mockRedis = {
+			get: vi.fn(),
+			set: vi.fn(),
+		}
+		const adapter = new VercelQueueAdapter({
+			redisClient: mockRedis as any,
+			topicName: 'test-topic',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await expect(adapter.registerWebhookEndpoint('run-1', 'node-1')).rejects.toThrow(
+			'registerWebhookEndpoint not implemented for VercelQueueAdapter',
+		)
+	})
+
+	it('should throw when calling processJobs', () => {
+		const mockRedis = { get: vi.fn(), set: vi.fn() }
+		const adapter = new VercelQueueAdapter({
+			redisClient: mockRedis as any,
+			topicName: 'test-topic',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		expect(() => (adapter as any).processJobs(() => {})).toThrow(
+			'processJobs() is not supported in serverless mode',
+		)
+	})
+
+	it('should warn when stop() is called', () => {
+		const mockRedis = { get: vi.fn(), set: vi.fn() }
+		const adapter = new VercelQueueAdapter({
+			redisClient: mockRedis as any,
+			topicName: 'test-topic',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		adapter.stop()
 	})
 })

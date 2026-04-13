@@ -1,4 +1,10 @@
-import { createDefaultContainer, createFlow, FlowRuntime } from 'flowcraft'
+import {
+	createDefaultContainer,
+	createFlow,
+	FlowRuntime,
+	type NodeClass,
+	type NodeFunction,
+} from 'flowcraft'
 
 // Mock vitest functions for demonstration purposes
 // In a real test environment, you would import { vi } from 'vitest'
@@ -100,7 +106,7 @@ export async function runTestingDemo() {
 	// Use container to inject mocks
 	const container = createDefaultContainer({
 		logger: mockLogger,
-		registry: mockRegistry,
+		registry: mockRegistry as unknown as Record<string, NodeFunction | NodeClass>,
 	})
 
 	const runtime = new FlowRuntime(container)

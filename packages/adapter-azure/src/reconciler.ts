@@ -1,9 +1,12 @@
 import type { CosmosClient } from '@azure/cosmos'
-import type { AzureQueueAdapter } from './adapter'
+
+export interface IAzureReconcilerAdapter {
+	reconcile(runId: string, nodeIds: string[]): Promise<Set<string>>
+}
 
 export interface AzureReconcilerOptions {
 	/** The configured AzureQueueAdapter instance. */
-	adapter: AzureQueueAdapter
+	adapter: IAzureReconcilerAdapter
 	/** The Cosmos DB client to use for querying. */
 	cosmosClient: CosmosClient
 	/** The name of the Cosmos DB database. */

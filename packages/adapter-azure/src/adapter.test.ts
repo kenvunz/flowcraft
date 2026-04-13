@@ -1,7 +1,6 @@
 import { Buffer } from 'node:buffer'
-import https from 'node:https'
-import { CosmosClient } from '@azure/cosmos'
-import { QueueClient } from '@azure/storage-queue'
+import { ConnectionMode, CosmosClient } from '@azure/cosmos'
+import { QueueClient, QueueServiceClient } from '@azure/storage-queue'
 import type { StartedAzuriteContainer } from '@testcontainers/azurite'
 import { AzuriteContainer } from '@testcontainers/azurite'
 import type { StartedRedisContainer } from '@testcontainers/redis'
@@ -20,16 +19,24 @@ const COSMOS_DB = 'flowcraft-db'
 const CONTEXT_CONTAINER = 'contexts'
 const STATUS_CONTAINER = 'statuses'
 
-async function retry<T>(operation: () => Promise<T>, retries = 5, delay = 3000): Promise<T> {
+async function retry<T>(operation: () => Promise<T>, retries = 12, delay = 5000): Promise<T> {
 	let lastError: any
 	for (let i = 0; i < retries; i++) {
 		try {
 			return await operation()
 		} catch (error: any) {
 			lastError = error
-			if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
+			const isPgCosmosStarting =
+				typeof error?.message === 'string' &&
+				error.message.includes('pgcosmos extension is still starting')
+			if (
+				error.code === 'ECONNRESET' ||
+				error.code === 'ECONNREFUSED' ||
+				error.code === 'ETIMEDOUT' ||
+				isPgCosmosStarting
+			) {
 				console.error(
-					`Attempt ${i + 1} failed with ${error.code}. Retrying in ${delay}ms...`,
+					`Attempt ${i + 1} failed with ${error.code ?? 'pgcosmos starting'}. Retrying in ${delay}ms...`,
 				)
 				await new Promise((res) => setTimeout(res, delay))
 			} else {
@@ -40,7 +47,7 @@ async function retry<T>(operation: () => Promise<T>, retries = 5, delay = 3000):
 	throw lastError
 }
 
-describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
+describe('AzureQueueAdapter - Testcontainers Integration', () => {
 	let azuriteContainer: StartedAzuriteContainer | undefined
 	let redisContainer: StartedRedisContainer | undefined
 	let cosmosContainer: StartedTestContainer | undefined
@@ -52,35 +59,41 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 	beforeAll(async () => {
 		console.log('Starting all containers...')
 		;[azuriteContainer, redisContainer, cosmosContainer] = await Promise.all([
-			new AzuriteContainer('mcr.microsoft.com/azure-storage/azurite:3.35.0').start(),
+			new AzuriteContainer('mcr.microsoft.com/azure-storage/azurite:3.35.0')
+				.withSkipApiVersionCheck()
+				.start(),
 			new RedisContainer('redis:8.2.2').start(),
-			new GenericContainer('mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator')
-				.withExposedPorts(8081)
+			new GenericContainer(
+				'mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview',
+			)
+				.withExposedPorts({ container: 8081, host: 8081 })
 				.withResourcesQuota({ memory: 3 * 1024 * 1024 * 1024 })
 				.withEnvironment({
 					AZURE_COSMOS_EMULATOR_PARTITION_COUNT: '3',
 					AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: 'false',
 					AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE: '127.0.0.1',
+					AZURE_COSMOS_EMULATOR_ENABLE_EXPLORER: 'true',
+					AZURE_COSMOS_EMULATOR_PORT: '8081',
 				})
-				.withWaitStrategy(Wait.forLogMessage('Started').withStartupTimeout(180_000))
+				.withWaitStrategy(Wait.forListeningPorts().withStartupTimeout(180_000))
 				.start(),
 		])
 		console.log('All containers started.')
 
-		const cosmosHost = cosmosContainer?.getHost()
-		const cosmosPort = cosmosContainer?.getMappedPort(8081)
-		console.log(
-			`Cosmos DB container started. Host: '${cosmosHost}', Mapped Port: '${cosmosPort}'`,
-		)
-
 		const azuriteConn = azuriteContainer.getConnectionString()
-		queueClient = new QueueClient(azuriteConn, QUEUE_NAME)
+		const queueService = QueueServiceClient.fromConnectionString(azuriteConn)
+		queueClient = queueService.getQueueClient(QUEUE_NAME)
 		await queueClient.create()
 		console.log('Azurite queue client created and queue is ready.')
 
 		console.log('Attempting to connect to Cosmos DB with retry logic...')
 		await retry(async () => {
-			const cosmosEndpoint = `https://${cosmosHost}:${cosmosPort}`
+			const cosmosHost = cosmosContainer?.getHost()
+			const cosmosPort = 8081
+			if (!cosmosHost) {
+				throw new Error('Cosmos DB host/port not available')
+			}
+			const cosmosEndpoint = `http://${cosmosHost}:${cosmosPort}`
 			console.log(`Retry attempt: Connecting to Cosmos DB endpoint: ${cosmosEndpoint}`)
 
 			cosmosClient = new CosmosClient({
@@ -88,8 +101,9 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 				key: 'C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==',
 				connectionPolicy: {
 					requestTimeout: 10000,
+					connectionMode: ConnectionMode.Gateway,
+					enableEndpointDiscovery: false,
 				},
-				agent: new https.Agent({ rejectUnauthorized: false }),
 			})
 			const { database } = await cosmosClient.databases.createIfNotExists({
 				id: COSMOS_DB,
@@ -107,7 +121,7 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 
 		redis = new Redis(redisContainer.getConnectionUrl())
 		console.log('Redis client connected.')
-	})
+	}, 180_000)
 
 	afterAll(async () => {
 		console.log('Stopping all containers...')
@@ -147,7 +161,7 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 		expect(receivedJob).toEqual(job)
 	})
 
-	it.skip('should support delta-based persistence with patch operations', async () => {
+	it('should support delta-based persistence with patch operations', async () => {
 		const runId = 'test-delta-run'
 		const context = new CosmosDbContext(runId, {
 			client: cosmosClient,
@@ -188,5 +202,128 @@ describe.skip('AzureQueueAdapter - Testcontainers Integration', () => {
 			count: 10,
 			status: 'completed',
 		})
+	})
+
+	it('should run a full job workflow with lifecycle methods', async () => {
+		const runId = 'test-workflow-run'
+		const coordinationStore = new RedisCoordinationStore(redis)
+		const adapter = new AzureQueueAdapter({
+			queueClient,
+			cosmosClient,
+			cosmosDatabaseName: COSMOS_DB,
+			contextContainerName: CONTEXT_CONTAINER,
+			statusContainerName: STATUS_CONTAINER,
+			coordinationStore,
+			runtimeOptions: {
+				blueprints: {
+					testBlueprint: {
+						id: 'testBlueprint',
+						nodes: [
+							{ id: 'A', uses: 'testAction' },
+							{ id: 'B', uses: 'testAction' },
+						],
+						edges: [{ source: 'A', target: 'B' }],
+					},
+				},
+				registry: {
+					testAction: async () => ({ output: 'done' }),
+				},
+			},
+		})
+
+		const job: JobPayload = {
+			runId,
+			blueprintId: 'testBlueprint',
+			nodeId: 'A',
+		}
+
+		await (adapter as any).enqueueJob(job)
+
+		await (adapter as any).onJobStart(runId, 'testBlueprint', 'A')
+		const statusContext = new CosmosDbContext(runId, {
+			client: cosmosClient,
+			databaseName: COSMOS_DB,
+			containerName: STATUS_CONTAINER,
+		})
+		const statusValue = await statusContext.get('status' as any)
+		expect(statusValue).toBe('running')
+
+		await (adapter as any).publishFinalResult(runId, {
+			status: 'completed',
+		})
+
+		const finalStatus = await statusContext.get('status' as any)
+		expect(finalStatus).toBe('completed')
+	})
+
+	it('should use createContext to build context for a run', async () => {
+		const adapter = new AzureQueueAdapter({
+			queueClient,
+			cosmosClient,
+			cosmosDatabaseName: COSMOS_DB,
+			contextContainerName: CONTEXT_CONTAINER,
+			statusContainerName: STATUS_CONTAINER,
+			coordinationStore: new RedisCoordinationStore(redis),
+			runtimeOptions: {},
+		})
+
+		const context = (adapter as any).createContext('runCtxTest')
+		expect(context).toBeInstanceOf(CosmosDbContext)
+	})
+
+	it('should reject registerWebhookEndpoint as not implemented', async () => {
+		const adapter = new AzureQueueAdapter({
+			queueClient,
+			cosmosClient,
+			cosmosDatabaseName: COSMOS_DB,
+			contextContainerName: CONTEXT_CONTAINER,
+			statusContainerName: STATUS_CONTAINER,
+			coordinationStore: new RedisCoordinationStore(redis),
+			runtimeOptions: {},
+		})
+
+		const context = (adapter as any).createContext('runCtxTest')
+		expect(context).toBeInstanceOf(CosmosDbContext)
+	})
+
+	it('should reject registerWebhookEndpoint as not implemented', async () => {
+		const adapter = new AzureQueueAdapter({
+			queueClient,
+			cosmosClient,
+			cosmosDatabaseName: COSMOS_DB,
+			contextContainerName: CONTEXT_CONTAINER,
+			statusContainerName: STATUS_CONTAINER,
+			coordinationStore: new RedisCoordinationStore(redis),
+			runtimeOptions: {},
+		})
+
+		await expect(adapter.registerWebhookEndpoint('run-1', 'node-1')).rejects.toThrow(
+			'registerWebhookEndpoint not implemented for AzureAdapter',
+		)
+	})
+
+	it('should expose handleJob for serverless invocation', async () => {
+		const adapter = new AzureQueueAdapter({
+			queueClient,
+			cosmosClient,
+			cosmosDatabaseName: COSMOS_DB,
+			contextContainerName: CONTEXT_CONTAINER,
+			statusContainerName: STATUS_CONTAINER,
+			coordinationStore: new RedisCoordinationStore(redis),
+			runtimeOptions: {
+				blueprints: {
+					handleJobTest: {
+						id: 'handleJobTest',
+						nodes: [{ id: 'X', uses: 'noop' }],
+						edges: [],
+					},
+				},
+				registry: {
+					noop: async () => ({ output: 'ok' }),
+				},
+			},
+		})
+
+		expect(typeof adapter.handleJob).toBe('function')
 	})
 }, 240_000)

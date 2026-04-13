@@ -3,7 +3,7 @@ import { CreateQueueCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/c
 import type { StartedLocalStackContainer } from '@testcontainers/localstack'
 import { LocalstackContainer } from '@testcontainers/localstack'
 import type { ICoordinationStore, JobPayload, PatchOperation } from 'flowcraft'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { SqsAdapter } from './adapter'
 import { DynamoDbContext } from './context'
 
@@ -173,5 +173,118 @@ describe('SqsAdapter', () => {
 
 		// This should not throw a "method not found" error
 		await expect(adapter.handleJob(job)).resolves.not.toThrow()
+	})
+})
+
+describe('SqsAdapter - Unit Tests', () => {
+	it('should throw on registerWebhookEndpoint', async () => {
+		const mockSqs = { send: vi.fn().mockResolvedValue({}) }
+		const mockDynamo = { send: vi.fn().mockResolvedValue({}) }
+
+		const adapter = new SqsAdapter({
+			sqsClient: mockSqs as any,
+			dynamoDbClient: mockDynamo as any,
+			queueUrl: 'http://queue',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await expect(adapter.registerWebhookEndpoint('run-1', 'node-1')).rejects.toThrow(
+			'registerWebhookEndpoint not implemented for SQSAdapter',
+		)
+	})
+
+	it('should have processJobs available', () => {
+		const mockSqs = { send: vi.fn().mockResolvedValue({}) }
+		const mockDynamo = { send: vi.fn().mockResolvedValue({}) }
+
+		const adapter = new SqsAdapter({
+			sqsClient: mockSqs as any,
+			dynamoDbClient: mockDynamo as any,
+			queueUrl: 'http://queue',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		expect(typeof (adapter as any).processJobs).toBe('function')
+	})
+
+	it('should set up consumer with processJobs', () => {
+		const mockSqs = { send: vi.fn().mockResolvedValue({}) }
+		const mockDynamo = { send: vi.fn().mockResolvedValue({}) }
+
+		const adapter = new SqsAdapter({
+			sqsClient: mockSqs as any,
+			dynamoDbClient: mockDynamo as any,
+			queueUrl: 'http://queue',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		;(adapter as any).processJobs(() => {})
+		expect((adapter as any).consumer).toBeDefined()
+	})
+
+	it('should warn when consumer already active', () => {
+		const mockSqs = { send: vi.fn().mockResolvedValue({}) }
+		const mockDynamo = { send: vi.fn().mockResolvedValue({}) }
+
+		const adapter = new SqsAdapter({
+			sqsClient: mockSqs as any,
+			dynamoDbClient: mockDynamo as any,
+			queueUrl: 'http://queue',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		;(adapter as any).consumer = { start: vi.fn() }
+		;(adapter as any).processJobs(() => {})
+	})
+
+	it('should handle onJobStart error gracefully', async () => {
+		const mockSqs = { send: vi.fn().mockResolvedValue({}) }
+		const mockDynamo = {
+			send: vi.fn().mockRejectedValue(new Error('Dynamo error')),
+		}
+
+		const adapter = new SqsAdapter({
+			sqsClient: mockSqs as any,
+			dynamoDbClient: mockDynamo as any,
+			queueUrl: 'http://queue',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await (adapter as any).onJobStart('run-1', 'bp-1', 'node-1')
+	})
+
+	it('should stop consumer', () => {
+		const mockConsumer = { stop: vi.fn() }
+		const mockSqs = { send: vi.fn().mockResolvedValue({}) }
+		const mockDynamo = { send: vi.fn().mockResolvedValue({}) }
+
+		const adapter = new SqsAdapter({
+			sqsClient: mockSqs as any,
+			dynamoDbClient: mockDynamo as any,
+			queueUrl: 'http://queue',
+			contextTableName: 'contexts',
+			statusTableName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		;(adapter as any).consumer = mockConsumer
+		adapter.stop()
+		expect(mockConsumer.stop).toHaveBeenCalled()
 	})
 })

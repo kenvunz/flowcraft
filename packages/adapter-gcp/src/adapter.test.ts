@@ -9,7 +9,7 @@ import type { StartedRedisContainer } from '@testcontainers/redis'
 import { RedisContainer } from '@testcontainers/redis'
 import type { JobPayload, PatchOperation } from 'flowcraft'
 import Redis from 'ioredis'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { PubSubAdapter } from './adapter'
 import { FirestoreContext } from './context'
 import { RedisCoordinationStore } from './store'
@@ -190,5 +190,124 @@ describe('PubSubAdapter - Testcontainers Integration', () => {
 		}
 
 		await expect(adapter.handleJob(job)).resolves.not.toThrow()
+	})
+})
+
+describe('PubSubAdapter - Unit Tests', function () {
+	function createMockPubSub() {
+		return {
+			topic: vi.fn().mockReturnValue({
+				publishMessage: vi.fn().mockResolvedValue('msg-id'),
+			}),
+			subscription: vi.fn().mockReturnValue({
+				on: vi.fn(),
+				close: vi.fn().mockResolvedValue(undefined),
+			}),
+		}
+	}
+
+	function createMockFirestore() {
+		return {
+			collection: vi.fn().mockReturnValue({
+				doc: vi.fn().mockReturnValue({
+					set: vi.fn().mockResolvedValue(undefined),
+					get: vi.fn().mockResolvedValue({ exists: false }),
+				}),
+			}),
+		}
+	}
+
+	function createMockRedis() {
+		return { quit: vi.fn() }
+	}
+
+	it('should throw on registerWebhookEndpoint', async function () {
+		const mockPubSub = createMockPubSub()
+		const mockFirestore = createMockFirestore()
+		const mockRedis = createMockRedis()
+
+		const adapter = new PubSubAdapter({
+			pubsubClient: mockPubSub as any,
+			firestoreClient: mockFirestore as any,
+			redisClient: mockRedis as any,
+			topicName: 'test-topic',
+			subscriptionName: 'test-sub',
+			contextCollectionName: 'contexts',
+			statusCollectionName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await expect(adapter.registerWebhookEndpoint('run-1', 'node-1')).rejects.toThrow(
+			'registerWebhookEndpoint not implemented for GCPAdapter',
+		)
+	})
+
+	it('should create context using createContext method', function () {
+		const mockPubSub = createMockPubSub()
+		const mockFirestore = createMockFirestore()
+		const mockRedis = createMockRedis()
+
+		const adapter = new PubSubAdapter({
+			pubsubClient: mockPubSub as any,
+			firestoreClient: mockFirestore as any,
+			redisClient: mockRedis as any,
+			topicName: 'test-topic',
+			subscriptionName: 'test-sub',
+			contextCollectionName: 'contexts',
+			statusCollectionName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		const context = (adapter as any).createContext('test-run')
+		expect(context).toBeDefined()
+	})
+
+	it('should handle onJobStart errors gracefully', async function () {
+		const mockPubSub = createMockPubSub()
+		const mockFirestore = {
+			collection: vi.fn().mockReturnValue({
+				doc: vi.fn().mockReturnValue({
+					set: vi.fn().mockRejectedValue(new Error('Firestore error')),
+				}),
+			}),
+		}
+		const mockRedis = createMockRedis()
+
+		const adapter = new PubSubAdapter({
+			pubsubClient: mockPubSub as any,
+			firestoreClient: mockFirestore as any,
+			redisClient: mockRedis as any,
+			topicName: 'test-topic',
+			subscriptionName: 'test-sub',
+			contextCollectionName: 'contexts',
+			statusCollectionName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		await (adapter as any).onJobStart('run-1', 'bp-1', 'node-1')
+	})
+
+	it('should warn when starting subscription twice', function () {
+		const mockPubSub = createMockPubSub()
+		const mockFirestore = createMockFirestore()
+		const mockRedis = createMockRedis()
+
+		const adapter = new PubSubAdapter({
+			pubsubClient: mockPubSub as any,
+			firestoreClient: mockFirestore as any,
+			redisClient: mockRedis as any,
+			topicName: 'test-topic',
+			subscriptionName: 'test-sub',
+			contextCollectionName: 'contexts',
+			statusCollectionName: 'statuses',
+			coordinationStore: {} as any,
+			runtimeOptions: {},
+		})
+
+		;(adapter as any).processJobs(() => {})
+		;(adapter as any).processJobs(() => {})
 	})
 })

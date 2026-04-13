@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Version](https://img.shields.io/npm/v/@flowcraft/sqlite-history.svg)](https://www.npmjs.com/package/@flowcraft/sqlite-history)
-[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/history-sqlite)](https://codecov.io/github/gorango/flowcraft)
+[![Codecov](https://img.shields.io/codecov/c/github/gorango/flowcraft/master?flag=history-sqlite)](https://codecov.io/github/gorango/flowcraft/tree/master/packages/history-sqlite/src?flags[0]=history-sqlite)
 
 SQLite-based event store for Flowcraft workflow observability.
 
