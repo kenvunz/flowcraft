@@ -1,6 +1,6 @@
 {
 	"name": "@flowcraft/kafka-adapter",
-	"version": "1.4.3",
+	"version": "1.4.4",
 	"homepage": "https://flowcraft.js.org",
 	"files": [
 		"dist"
@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"cassandra-driver": "^4.8.0",
-		"flowcraft": "^2.10.0",
+		"flowcraft": "^2.10.1",
 		"ioredis": "^5.10.1",
 		"kafkajs": "^2.2.4"
 	},

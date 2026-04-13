@@ -1,6 +1,6 @@
 {
 	"name": "@flowcraft/cloudflare-adapter",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"homepage": "https://flowcraft.js.org",
 	"files": [
 		"dist"
@@ -19,7 +19,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"flowcraft": "^2.10.0"
+		"flowcraft": "^2.10.1"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260413.1",

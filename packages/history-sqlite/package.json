@@ -1,6 +1,6 @@
 {
 	"name": "@flowcraft/sqlite-history",
-	"version": "1.0.0-beta.0",
+	"version": "1.0.0-beta.1",
 	"description": "SQLite-based event store for Flowcraft workflow observability",
 	"files": [
 		"dist"
@@ -21,7 +21,7 @@
 	},
 	"dependencies": {
 		"better-sqlite3": "^12.9.0",
-		"flowcraft": "^2.10.0"
+		"flowcraft": "^2.10.1"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.13",

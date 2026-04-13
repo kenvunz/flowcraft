@@ -1,6 +1,6 @@
 {
 	"name": "@flowcraft/sqs-adapter",
-	"version": "1.5.0",
+	"version": "1.5.1",
 	"homepage": "https://flowcraft.js.org",
 	"files": [
 		"dist"
@@ -23,7 +23,7 @@
 		"@aws-sdk/client-sqs": "^3.1029.0",
 		"@aws-sdk/lib-dynamodb": "^3.1029.0",
 		"@aws-sdk/util-dynamodb": "^3.996.2",
-		"flowcraft": "^2.10.0",
+		"flowcraft": "^2.10.1",
 		"sqs-consumer": "^14.2.6"
 	},
 	"devDependencies": {

@@ -1,5 +1,13 @@
 # @flowcraft/rabbitmq-adapter
 
+## 1.4.4
+
+### Patch Changes
+
+- Improve tree shaking in core, disable source maps, and improve test coverage.
+- Updated dependencies
+    - flowcraft@2.10.1
+
 ## 1.4.3
 
 ### Patch Changes

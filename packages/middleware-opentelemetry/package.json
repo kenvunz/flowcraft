@@ -1,6 +1,6 @@
 {
 	"name": "@flowcraft/opentelemetry-middleware",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "OpenTelemetry middleware for Flowcraft workflows",
 	"homepage": "https://flowcraft.js.org",
 	"files": [
@@ -29,6 +29,6 @@
 	},
 	"peerDependencies": {
 		"@opentelemetry/api": "^1.8.0",
-		"flowcraft": "^2.8.1"
+		"flowcraft": "^2.10.1"
 	}
 }

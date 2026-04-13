@@ -1,5 +1,11 @@
 # flowcraft
 
+## 2.10.1
+
+### Patch Changes
+
+- Improve tree shaking in core, disable source maps, and improve test coverage.
+
 ## 2.10.0
 
 ### Minor Changes

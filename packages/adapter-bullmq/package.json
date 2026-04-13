@@ -1,6 +1,6 @@
 {
 	"name": "@flowcraft/bullmq-adapter",
-	"version": "1.7.0",
+	"version": "1.7.1",
 	"homepage": "https://flowcraft.js.org",
 	"files": [
 		"dist"
@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"bullmq": "^5.73.5",
-		"flowcraft": "^2.10.0",
+		"flowcraft": "^2.10.1",
 		"ioredis": "^5.10.1"
 	},
 	"devDependencies": {

@@ -1,6 +1,6 @@
 {
 	"name": "@flowcraft/postgres-history",
-	"version": "1.0.0-beta.0",
+	"version": "1.0.0-beta.1",
 	"description": "PostgreSQL-based event store for Flowcraft workflow observability",
 	"files": [
 		"dist"
@@ -20,7 +20,7 @@
 		"test:coverage": "./testcontainers.sh && vitest run --coverage"
 	},
 	"dependencies": {
-		"flowcraft": "^2.10.0",
+		"flowcraft": "^2.10.1",
 		"pg": "^8.20.0"
 	},
 	"devDependencies": {

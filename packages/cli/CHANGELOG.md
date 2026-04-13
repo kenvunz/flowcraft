@@ -1,5 +1,15 @@
 # @flowcraft/cli
 
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- Improve tree shaking in core, disable source maps, and improve test coverage.
+- Updated dependencies
+    - flowcraft@2.10.1
+    - @flowcraft/postgres-history@1.0.0-beta.1
+    - @flowcraft/sqlite-history@1.0.0-beta.1
+
 ## 1.0.0-beta.0
 
 ### Patch Changes
