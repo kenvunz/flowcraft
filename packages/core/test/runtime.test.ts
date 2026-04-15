@@ -292,6 +292,69 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			expect(result.context['_outputs.endNode']).toBe('end-with-fallback-success')
 		})
 
+		describe('config.timeout', () => {
+			const hangUntilAbort = (signal?: AbortSignal) =>
+				new Promise<void>((_, reject) => {
+					if (signal?.aborted) { reject(signal.reason); return }
+					signal?.addEventListener('abort', () => reject(signal?.reason), { once: true })
+				})
+
+			it('should succeed when node completes before timeout', async () => {
+				const flow = createFlow('timeout-ok')
+				flow.node('A', async () => ({ output: 'done' }), { config: { timeout: 5000 } })
+
+				const runtime = new FlowRuntime()
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
+
+				expect(result.status).toBe('completed')
+				expect(result.context['_outputs.A']).toBe('done')
+			})
+
+			it('should fail fatally when node times out and no fallback', async () => {
+				const flow = createFlow('timeout-fatal')
+				flow.node(
+					'A',
+					async (ctx) => { await hangUntilAbort(ctx.signal); return { output: 'done' } },
+					{ config: { timeout: 1 } },
+				)
+
+				const runtime = new FlowRuntime()
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
+
+				expect(result.status).toBe('failed')
+				expect(result.errors?.some((e) => e.nodeId === 'A')).toBe(true)
+			})
+
+			it('should execute fallback when node times out', async () => {
+				const flow = createFlow('timeout-fallback')
+				flow
+					.node(
+						'A',
+						async (ctx) => { await hangUntilAbort(ctx.signal); return { output: 'done' } },
+						{ config: { timeout: 1, fallback: 'B' } },
+					)
+					.node('B', async () => ({ output: 'fallback result' }))
+
+				const runtime = new FlowRuntime()
+				const result = await runtime.run(
+					flow.toBlueprint(),
+					{},
+					{ functionRegistry: flow.getFunctionRegistry() },
+				)
+
+				expect(result.status).toBe('completed')
+				expect(result.context['_outputs.B']).toBe('fallback result')
+			})
+		})
+
 		it('should throw an error on a graph with a cycle when strict mode is on', async () => {
 			const flow = createFlow('cycle')
 			flow.node('A', async () => ({ output: 'A' }))

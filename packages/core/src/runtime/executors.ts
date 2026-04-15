@@ -39,6 +39,9 @@ async function withRetries<T>(
 					isFatal: false,
 				})
 			}
+			if (error instanceof DOMException && error.name === 'TimeoutError') {
+				throw error
+			}
 			if (error instanceof FlowcraftError && error.isFatal) break
 			if (attempt < maxRetries) {
 				context.dependencies.logger.warn(`Node execution failed, retrying`, {
@@ -136,12 +139,13 @@ export class ClassNodeExecutor implements ExecutionStrategy {
 					this.eventBus,
 				)
 			} catch (error) {
-				lastError = error instanceof Error ? error : new Error(String(error))
 				if (error instanceof DOMException && error.name === 'AbortError') {
-					throw new FlowcraftError('Workflow cancelled', {
-						isFatal: false,
-					})
+					throw new FlowcraftError('Workflow cancelled', { isFatal: false })
 				}
+				if (error instanceof DOMException && error.name === 'TimeoutError') {
+					throw error
+				}
+				lastError = error instanceof Error ? error : new Error(String(error))
 				if (error instanceof FlowcraftError && error.isFatal) {
 					throw error
 				}
@@ -158,9 +162,7 @@ export class ClassNodeExecutor implements ExecutionStrategy {
 		} catch (error) {
 			lastError = error instanceof Error ? error : new Error(String(error))
 			if (error instanceof DOMException && error.name === 'AbortError') {
-				throw new FlowcraftError('Workflow cancelled', {
-					isFatal: false,
-				})
+				throw new FlowcraftError('Workflow cancelled', { isFatal: false })
 			}
 			throw error
 		} finally {
@@ -214,6 +216,15 @@ export class NodeExecutor<
 	async execute(input: any): Promise<NodeExecutionResult> {
 		const asyncContext = this.context.state.getContext()
 
+		const timeoutMs = this.nodeDef.config?.timeout
+		const nodeSignal =
+			timeoutMs != null
+				? AbortSignal.any([
+						...(this.context.signal ? [this.context.signal] : []),
+						AbortSignal.timeout(timeoutMs),
+					])
+				: this.context.signal
+
 		const nodeContext: NodeContext<TContext, TDependencies, any> = {
 			context: asyncContext,
 			input,
@@ -224,7 +235,7 @@ export class NodeExecutor<
 				runtime: this.context,
 				workflowState: this.context.state,
 			},
-			signal: this.context.signal,
+			signal: nodeSignal,
 		}
 
 		const beforeHooks = this.context.services.middleware
@@ -246,11 +257,42 @@ export class NodeExecutor<
 					this.nodeDef,
 					nodeContext,
 					this.context.executionId,
-					this.context.signal,
+					nodeSignal,
 				)
 				return { status: 'success', result }
 			} catch (e: any) {
 				error = e instanceof Error ? e : new Error(String(e))
+				const fallbackNodeId = this.nodeDef.config?.fallback
+				const isLastAttempt = this.context.state.isLastAttempt ?? true
+
+				if (e instanceof DOMException && e.name === 'TimeoutError') {
+					const timeoutError = new FlowcraftError(`Node '${this.nodeDef.id}' timed out`, {
+						cause: e,
+						nodeId: this.nodeDef.id,
+						blueprintId: this.context.blueprint.id,
+						executionId: this.context.executionId,
+						isFatal: !fallbackNodeId,
+					})
+					if (fallbackNodeId && isLastAttempt) {
+						this.context.services.logger.warn(`Node timed out, fallback required`, {
+							nodeId: this.nodeDef.id,
+							fallbackNodeId,
+							executionId: this.context.executionId,
+						})
+						await this.context.services.eventBus.emit({
+							type: 'node:fallback',
+							payload: {
+								nodeId: this.nodeDef.id,
+								executionId: this.context.executionId || '',
+								fallback: fallbackNodeId,
+								blueprintId: this.context.blueprint.id,
+							},
+						})
+						return { status: 'failed_with_fallback', fallbackNodeId, error: timeoutError }
+					}
+					return { status: 'failed', error: timeoutError }
+				}
+
 				const flowcraftError =
 					error instanceof FlowcraftError
 						? error
@@ -262,8 +304,6 @@ export class NodeExecutor<
 								isFatal: false,
 							})
 
-				const fallbackNodeId = this.nodeDef.config?.fallback
-				const isLastAttempt = this.context.state.isLastAttempt ?? true
 				if (fallbackNodeId && !flowcraftError.isFatal && isLastAttempt) {
 					this.context.services.logger.warn(`Node failed, fallback required`, {
 						nodeId: this.nodeDef.id,

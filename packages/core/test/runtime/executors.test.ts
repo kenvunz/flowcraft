@@ -139,6 +139,52 @@ describe('FunctionNodeExecutor', () => {
 	})
 })
 
+describe('FunctionNodeExecutor - timeout', () => {
+	it('should not retry on TimeoutError', async () => {
+		const timeoutError = new DOMException('Timeout', 'TimeoutError')
+		const mockFunction = vi.fn().mockRejectedValue(timeoutError)
+		const executor = new FunctionNodeExecutor(mockFunction, 3, { emit: vi.fn() })
+		const nodeDef = { id: 'test', uses: 'test', params: {} }
+		const context = {
+			context: { get: vi.fn(), set: vi.fn(), type: 'sync', has: vi.fn(), delete: vi.fn(), toJSON: vi.fn() },
+			input: 'input',
+			params: {},
+			dependencies: { logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } },
+			signal: undefined,
+		} as any
+		await expect(executor.execute(nodeDef, context)).rejects.toThrow(timeoutError)
+		expect(mockFunction).toHaveBeenCalledTimes(1)
+	})
+})
+
+describe('ClassNodeExecutor - timeout', () => {
+	it('should not retry on TimeoutError in exec', async () => {
+		const timeoutError = new DOMException('Timeout', 'TimeoutError')
+		let attempts = 0
+		const mockImplementation = class {
+			prep: any; exec: any; post: any; fallback: any; recover: any
+			constructor(_params: any, _nodeId: string) {
+				this.prep = vi.fn().mockResolvedValue(null)
+				this.exec = vi.fn().mockImplementation(() => { attempts++; throw timeoutError })
+				this.post = vi.fn()
+				this.fallback = vi.fn()
+				this.recover = vi.fn()
+			}
+		}
+		const executor = new ClassNodeExecutor(mockImplementation as any, 3, { emit: vi.fn() })
+		const nodeDef = { id: 'test', uses: 'test', params: {} }
+		const context = {
+			context: { get: vi.fn(), set: vi.fn(), type: 'sync', has: vi.fn(), delete: vi.fn(), toJSON: vi.fn() },
+			input: 'input',
+			params: {},
+			dependencies: { logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } },
+			signal: undefined,
+		} as any
+		await expect(executor.execute(nodeDef, context)).rejects.toThrow(timeoutError)
+		expect(attempts).toBe(1)
+	})
+})
+
 describe('ClassNodeExecutor', () => {
 	it('should execute class nodes successfully', async () => {
 		// Simplified test without extending BaseNode due to type complexity
