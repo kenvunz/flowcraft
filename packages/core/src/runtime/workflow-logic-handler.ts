@@ -145,7 +145,7 @@ export class WorkflowLogicHandler {
 	): Promise<void> {
 		const asyncContext = context.type === 'sync' ? new AsyncContextView(context) : context
 		const predecessors = allPredecessors?.get(targetNode.id)
-		const _hasSinglePredecessor = predecessors && predecessors.size === 1
+		const hasSinglePredecessor = predecessors && predecessors.size === 1
 		const hasExplicitInputs = targetNode.inputs !== undefined
 		const hasEdgeTransform = edge.transform !== undefined
 
