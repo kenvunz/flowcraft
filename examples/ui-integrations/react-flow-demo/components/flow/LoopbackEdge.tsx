@@ -19,7 +19,7 @@ export function LoopbackEdge({
 	targetY,
 	sourcePosition,
 	targetPosition,
-	data
+	data,
 }: EdgeProps) {
 	let d: string
 
@@ -40,7 +40,14 @@ export function LoopbackEdge({
 			d = `M ${sourceX} ${sourceY} A ${radiusX} ${radiusY} 0 1 0 ${targetX} ${targetY}`
 		}
 	} else {
-		const [path] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })
+		const [path] = getBezierPath({
+			sourceX,
+			sourceY,
+			targetX,
+			targetY,
+			sourcePosition,
+			targetPosition,
+		})
 		d = path
 	}
 

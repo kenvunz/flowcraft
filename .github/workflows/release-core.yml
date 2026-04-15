@@ -1,89 +1,89 @@
 name: Release Core Tarball
 
 on:
-  push:
-    branches:
-      - master
-    tags:
-      - '*'
+    push:
+        branches:
+            - master
+        tags:
+            - '*'
 
 permissions:
-  contents: write
+    contents: write
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+            - uses: pnpm/action-setup@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install
+            - name: Install dependencies
+              run: pnpm install
 
-      - name: Run tests
-        run: pnpm --filter flowcraft test:coverage
+            - name: Run tests
+              run: pnpm --filter flowcraft test:coverage
 
-  release-core:
-    needs: test
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    release-core:
+        needs: test
+        runs-on: ubuntu-latest
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+            - uses: pnpm/action-setup@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install
+            - name: Install dependencies
+              run: pnpm install
 
-      - name: Build + pack core
-        run: |
-          mkdir -p artifacts
-          SHA="$(git rev-parse --short HEAD)"
-          ASSET="${SHA}.tgz"
-          pnpm --dir packages/core build
-          pnpm --dir packages/core pack --out "../../artifacts/${ASSET}"
-          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
-          echo "asset=${ASSET}" >> "$GITHUB_OUTPUT"
-        id: pack
+            - name: Build + pack core
+              run: |
+                  mkdir -p artifacts
+                  SHA="$(git rev-parse --short HEAD)"
+                  ASSET="${SHA}.tgz"
+                  pnpm --dir packages/core build
+                  pnpm --dir packages/core pack --out "../../artifacts/${ASSET}"
+                  echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+                  echo "asset=${ASSET}" >> "$GITHUB_OUTPUT"
+              id: pack
 
-      - name: Create or update GitHub release
-        run: |
-          SHA="${{ steps.pack.outputs.sha }}"
-          ASSET="${{ steps.pack.outputs.asset }}"
+            - name: Create or update GitHub release
+              run: |
+                  SHA="${{ steps.pack.outputs.sha }}"
+                  ASSET="${{ steps.pack.outputs.asset }}"
 
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            RELEASE_TAG="${GITHUB_REF_NAME}"
-            RELEASE_TITLE="${GITHUB_REF_NAME} (${SHA})"
-            RELEASE_NOTES="Release build from ${GITHUB_SHA}"
-          else
-            RELEASE_TAG="snapshot-${SHA}"
-            RELEASE_TITLE="${SHA}"
-            RELEASE_NOTES="Snapshot build from ${GITHUB_SHA}"
-          fi
+                  if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+                    RELEASE_TAG="${GITHUB_REF_NAME}"
+                    RELEASE_TITLE="${GITHUB_REF_NAME} (${SHA})"
+                    RELEASE_NOTES="Release build from ${GITHUB_SHA}"
+                  else
+                    RELEASE_TAG="snapshot-${SHA}"
+                    RELEASE_TITLE="${SHA}"
+                    RELEASE_NOTES="Snapshot build from ${GITHUB_SHA}"
+                  fi
 
-          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
-            gh release upload "${RELEASE_TAG}" "artifacts/${ASSET}" --clobber
-          else
-            gh release create "${RELEASE_TAG}" "artifacts/${ASSET}" --title "${RELEASE_TITLE}" --notes "${RELEASE_NOTES}" --target "${GITHUB_SHA}"
-          fi
+                  if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+                    gh release upload "${RELEASE_TAG}" "artifacts/${ASSET}" --clobber
+                  else
+                    gh release create "${RELEASE_TAG}" "artifacts/${ASSET}" --title "${RELEASE_TITLE}" --notes "${RELEASE_NOTES}" --target "${GITHUB_SHA}"
+                  fi
 
-          echo "Release: ${RELEASE_TAG}"
-          echo "Asset: ${ASSET}"
+                  echo "Release: ${RELEASE_TAG}"
+                  echo "Asset: ${ASSET}"

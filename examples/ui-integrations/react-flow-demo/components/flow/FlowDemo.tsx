@@ -12,7 +12,7 @@ import {
 	ReactFlowProvider,
 	useEdgesState,
 	useNodesState,
-	useReactFlow
+	useReactFlow,
 } from '@xyflow/react'
 import type { FlowBuilder, WorkflowResult } from 'flowcraft'
 import { ConsoleLogger, FlowRuntime, UnsafeEvaluator } from 'flowcraft'
@@ -27,11 +27,11 @@ import { DefaultNode, InputNode, OutputNode } from './nodes'
 const nodeTypes = {
 	input: InputNode,
 	default: DefaultNode,
-	output: OutputNode
+	output: OutputNode,
 }
 
 const edgeTypes = {
-	loopback: LoopbackEdge
+	loopback: LoopbackEdge,
 }
 
 function formatLabel(id: string): string {
@@ -61,7 +61,13 @@ export interface FlowDemoProps {
 
 // ─── Inner component — lives inside ReactFlowProvider ────────────────────────
 
-function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {} }: FlowDemoProps) {
+function FlowDemoInner({
+	flow,
+	positionsMap,
+	typesMap,
+	handlesMap = {},
+	init = {},
+}: FlowDemoProps) {
 	const { fitView } = useReactFlow()
 
 	// Create the event bus and runtime once, on first render.
@@ -72,7 +78,7 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 		runtimeRef.current = new FlowRuntime({
 			logger: new ConsoleLogger(),
 			eventBus: eventBusRef.current,
-			evaluator: new UnsafeEvaluator()
+			evaluator: new UnsafeEvaluator(),
 		})
 	}
 
@@ -90,14 +96,14 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 					label: formatLabel(node.id),
 					nodeData: { status: 'idle' } as NodeData,
 					sourcePosition: handlesMap[node.id]?.source ?? Position.Right,
-					targetPosition: handlesMap[node.id]?.target ?? Position.Left
+					targetPosition: handlesMap[node.id]?.target ?? Position.Left,
 				},
 				type: typesMap[node.id] || 'default',
 				sourcePosition: handlesMap[node.id]?.source ?? Position.Right,
-				targetPosition: handlesMap[node.id]?.target ?? Position.Left
+				targetPosition: handlesMap[node.id]?.target ?? Position.Left,
 			})),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[] // Static — positions and handles don't change after mount
+		[], // Static — positions and handles don't change after mount
 	)
 
 	const initialEdges: Edge[] = useMemo(
@@ -110,10 +116,10 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 				animated: true,
 				...(edge.data?.isLoopback
 					? { type: 'loopback', data: { pathType: 'bezier' }, animated: false }
-					: {})
+					: {}),
 			})),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[]
+		[],
 	)
 
 	// useNodesState hands drag/position management to React Flow internally,
@@ -135,16 +141,24 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 			setNodes((nds) =>
 				nds.map((n) =>
 					n.id === nodeId
-						? { ...n, data: { ...n.data, nodeData: { ...(n.data.nodeData as NodeData), ...patch } } }
-						: n
-				)
+						? {
+								...n,
+								data: {
+									...n.data,
+									nodeData: { ...(n.data.nodeData as NodeData), ...patch },
+								},
+							}
+						: n,
+				),
 			)
 		},
-		[setNodes]
+		[setNodes],
 	)
 
 	const resetNodeData = useCallback(() => {
-		setNodes((nds) => nds.map((n) => ({ ...n, data: { ...n.data, nodeData: { status: 'idle' } } })))
+		setNodes((nds) =>
+			nds.map((n) => ({ ...n, data: { ...n.data, nodeData: { status: 'idle' } } })),
+		)
 	}, [setNodes])
 
 	// Subscribe to flowcraft runtime events and mirror them into node state.
@@ -157,7 +171,7 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 			bus.on('node:finish', (e) => {
 				updateNodeData(e.payload.nodeId, {
 					status: 'completed',
-					outputs: (e.payload.result as any).output
+					outputs: (e.payload.result as any).output,
 				})
 			}),
 			bus.on('context:change', (e) => {
@@ -173,11 +187,11 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 								nodeData: {
 									...cur,
 									status: 'completed',
-									contextChanges: { ...cur.contextChanges, [key]: value }
-								}
-							}
+									contextChanges: { ...cur.contextChanges, [key]: value },
+								},
+							},
 						}
-					})
+					}),
 				)
 				setAwaitingNodes((prev) => prev.filter((id) => id !== sourceNode))
 			}),
@@ -185,8 +199,11 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 				updateNodeData(e.payload.batchId, { status: 'pending' })
 			}),
 			bus.on('batch:finish', (e) => {
-				updateNodeData(e.payload.batchId, { status: 'completed', outputs: e.payload.results })
-			})
+				updateNodeData(e.payload.batchId, {
+					status: 'completed',
+					outputs: e.payload.results,
+				})
+			}),
 		]
 		return () => off.forEach((fn) => fn())
 	}, [updateNodeData, setNodes])
@@ -227,7 +244,16 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 			await new Promise((r) => setTimeout(r))
 			fitView({ duration: 800 })
 		}
-	}, [executionResult, clearWorkflow, resetNodeData, blueprint, init, functionRegistry, updateNodeData, fitView])
+	}, [
+		executionResult,
+		clearWorkflow,
+		resetNodeData,
+		blueprint,
+		init,
+		functionRegistry,
+		updateNodeData,
+		fitView,
+	])
 
 	const resumeWorkflow = useCallback(
 		async (nodeId: string, payload: { output: any }) => {
@@ -235,9 +261,15 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 			setIsRunning(true)
 			setExecutionError(null)
 			try {
-				const result = await runtimeRef.current.resume(blueprint, serializedContext, payload, nodeId, {
-					functionRegistry
-				})
+				const result = await runtimeRef.current.resume(
+					blueprint,
+					serializedContext,
+					payload,
+					nodeId,
+					{
+						functionRegistry,
+					},
+				)
 				setExecutionResult(result)
 				if (result.status === 'awaiting') {
 					const waiting: string[] = (result.context as any)._awaitingNodeIds || []
@@ -257,7 +289,7 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 				fitView({ duration: 800 })
 			}
 		},
-		[serializedContext, blueprint, functionRegistry, updateNodeData, fitView]
+		[serializedContext, blueprint, functionRegistry, updateNodeData, fitView],
 	)
 
 	// ── Render ─────────────────────────────────────────────────────────────────
@@ -281,13 +313,17 @@ function FlowDemoInner({ flow, positionsMap, typesMap, handlesMap = {}, init = {
 						{awaitingNodes.map((nodeId) => (
 							<div key={nodeId} className="flex gap-1.5">
 								<button
-									onClick={() => resumeWorkflow(nodeId, { output: { approved: true } })}
+									onClick={() =>
+										resumeWorkflow(nodeId, { output: { approved: true } })
+									}
 									className="px-3 py-1 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
 								>
 									Approve
 								</button>
 								<button
-									onClick={() => resumeWorkflow(nodeId, { output: { approved: false } })}
+									onClick={() =>
+										resumeWorkflow(nodeId, { output: { approved: false } })
+									}
 									className="px-3 py-1 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
 								>
 									Deny

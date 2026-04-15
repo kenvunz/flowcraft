@@ -27,8 +27,8 @@ const expenseFlow = createFlow('expense-report-pipeline')
 			output: [
 				{ amount: 45, type: 'meals', receipt: 'receipt-1.jpg' },
 				{ amount: 120, type: 'travel', receipt: 'receipt-2.jpg' },
-				{ amount: 1500, type: 'equipment', receipt: 'receipt-3.jpg' }
-			]
+				{ amount: 1500, type: 'equipment', receipt: 'receipt-3.jpg' },
+			],
 		}
 	})
 	// 2. Batch: validate each line item in parallel
@@ -40,7 +40,7 @@ const expenseFlow = createFlow('expense-report-pipeline')
 			const ocrConfidence = item.amount > 1000 ? 0.7 : 0.95
 			return { output: { ...item, ocrConfidence, status: 'validated' } }
 		},
-		{ inputKey: 'fetch-report', outputKey: 'validated' }
+		{ inputKey: 'fetch-report', outputKey: 'validated' },
 	)
 	// 3. Aggregate totals from validated items
 	.node(
@@ -54,7 +54,7 @@ const expenseFlow = createFlow('expense-report-pipeline')
 			await context.set('ocrAttempts', 0)
 			return { output: { total, minConfidence } }
 		},
-		{ inputs: 'validated' }
+		{ inputs: 'validated' },
 	)
 	.edge('fetch-report', 'validate-items')
 	.edge('validate-items', 'compute-total')
@@ -72,7 +72,7 @@ const expenseFlow = createFlow('expense-report-pipeline')
 	.loop('ocrRetry', {
 		startNodeId: 'enhance-ocr',
 		endNodeId: 'enhance-ocr',
-		condition: 'minConfidence < 0.9 && ocrAttempts < 3'
+		condition: 'minConfidence < 0.9 && ocrAttempts < 3',
 	})
 	.edge('compute-total', 'ocrRetry')
 	.edge('ocrRetry', 'route-by-total')
@@ -83,7 +83,7 @@ const expenseFlow = createFlow('expense-report-pipeline')
 		return { output: { total } }
 	})
 	.edge('route-by-total', 'wait-manager', {
-		condition: 'route-by-total.total >= 500 && route-by-total.total <= 2000'
+		condition: 'route-by-total.total >= 500 && route-by-total.total <= 2000',
 	})
 	.edge('route-by-total', 'auto-approve', { condition: 'route-by-total.total < 500' })
 	.edge('route-by-total', 'auto-reject', { condition: 'route-by-total.total > 2000' })
@@ -93,7 +93,7 @@ const expenseFlow = createFlow('expense-report-pipeline')
 	.node('auto-approve', async () => ({ output: { status: 'approved', method: 'auto' } }))
 	// 5c. Auto-reject (over $2000)
 	.node('auto-reject', async () => ({
-		output: { status: 'rejected', reason: 'Exceeds single-report limit' }
+		output: { status: 'rejected', reason: 'Exceeds single-report limit' },
 	}))
 	// 6. Converge all paths and notify
 	.node(
@@ -102,43 +102,43 @@ const expenseFlow = createFlow('expense-report-pipeline')
 			await new Promise((r) => setTimeout(r, LAG))
 			return { output: { message: `Notification sent: ${(input as any).status}` } }
 		},
-		{ config: { joinStrategy: 'any' } }
+		{ config: { joinStrategy: 'any' } },
 	)
 	.edge('wait-manager', 'send-notification')
 	.edge('auto-approve', 'send-notification')
 	.edge('auto-reject', 'send-notification')
 
 const positionsMap = {
-	'fetch-report':      { x: 0,    y: 150 },
-	'validate-items':    { x: 0,    y: 300 },
-	'compute-total':     { x: 0,    y: 450 },
-	'enhance-ocr':       { x: 150,  y: 650 },
-	'route-by-total':    { x: 430,  y: 500 },
-	'wait-manager':      { x: 700,  y: 300 },
-	'auto-approve':      { x: 700,  y: 430 },
-	'auto-reject':       { x: 700,  y: 540 },
-	'send-notification': { x: 1000, y: 430 }
+	'fetch-report': { x: 0, y: 150 },
+	'validate-items': { x: 0, y: 300 },
+	'compute-total': { x: 0, y: 450 },
+	'enhance-ocr': { x: 150, y: 650 },
+	'route-by-total': { x: 430, y: 500 },
+	'wait-manager': { x: 700, y: 300 },
+	'auto-approve': { x: 700, y: 430 },
+	'auto-reject': { x: 700, y: 540 },
+	'send-notification': { x: 1000, y: 430 },
 }
 
 const typesMap: Record<string, 'input' | 'default' | 'output'> = {
-	'fetch-report':      'input',
-	'validate-items':    'default',
-	'compute-total':     'default',
-	'enhance-ocr':       'default',
-	'route-by-total':    'default',
-	'wait-manager':      'default',
-	'auto-approve':      'default',
-	'auto-reject':       'default',
-	'send-notification': 'output'
+	'fetch-report': 'input',
+	'validate-items': 'default',
+	'compute-total': 'default',
+	'enhance-ocr': 'default',
+	'route-by-total': 'default',
+	'wait-manager': 'default',
+	'auto-approve': 'default',
+	'auto-reject': 'default',
+	'send-notification': 'output',
 }
 
 // The first three nodes are stacked vertically, so they use Top/Bottom handles.
 // The rest of the graph flows left-to-right (default Right/Left handles).
 const handlesMap: Record<string, HandlePositions> = {
-	'fetch-report':   { source: Position.Bottom },
+	'fetch-report': { source: Position.Bottom },
 	'validate-items': { target: Position.Top, source: Position.Bottom },
-	'compute-total':  { target: Position.Top, source: Position.Bottom },
-	'enhance-ocr':    { target: Position.Top, source: Position.Right }
+	'compute-total': { target: Position.Top, source: Position.Bottom },
+	'enhance-ocr': { target: Position.Top, source: Position.Right },
 }
 
 export default function Home() {

@@ -30,7 +30,10 @@ export class EventBus implements IEventBus {
 		this.listeners.set(type, [...existing, handler])
 		return () => {
 			const list = this.listeners.get(type) || []
-			this.listeners.set(type, list.filter((h) => h !== handler))
+			this.listeners.set(
+				type,
+				list.filter((h) => h !== handler),
+			)
 		}
 	}
 }

@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { UnsafeEvaluator } from '../src/evaluator'
 import { createFlow } from '../src/flow'
-import { BaseNode } from '../src/node'
 import { FlowRuntime } from '../src/runtime'
 
 import type { FlowcraftEvent, IEventBus, Middleware, NodeResult } from '../src/types'
@@ -927,7 +926,11 @@ describe('Flowcraft Runtime - Integration Tests', () => {
 			})
 
 			const runtime = new FlowRuntime({})
-			await runtime.run(flow.toBlueprint(), {}, { functionRegistry: flow.getFunctionRegistry() })
+			await runtime.run(
+				flow.toBlueprint(),
+				{},
+				{ functionRegistry: flow.getFunctionRegistry() },
+			)
 
 			expect(capturedNodeId).toBe('A')
 		})
