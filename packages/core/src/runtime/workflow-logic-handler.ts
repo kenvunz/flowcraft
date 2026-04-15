@@ -151,8 +151,9 @@ export class WorkflowLogicHandler {
 
 		let sourceOutput = sourceResult.output
 
-		// When the target node has an explicit `inputs` map, resolve that node's output
-		if (hasEdgeTransform && hasExplicitInputs && typeof targetNode.inputs === 'string') {
+		// When the target node has an explicit `inputs` map pointing to another node, resolve that node's output.
+		// Skip if `inputs` was set by the internal merge accumulator (starts with `_inputs.`).
+		if (hasEdgeTransform && hasExplicitInputs && typeof targetNode.inputs === 'string' && !targetNode.inputs.startsWith('_inputs.')) {
 			const inputsKey = targetNode.inputs
 			const resolvedKey = inputsKey.startsWith('_') ? inputsKey : `_outputs.${inputsKey}`
 			if ((await asyncContext.has(resolvedKey as any)) && inputsKey !== edge.source) {
