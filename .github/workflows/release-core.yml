@@ -3,7 +3,7 @@ name: Release Core Tarball
 on:
     push:
         branches:
-            - master
+            - main
         tags:
             - '*'
 
